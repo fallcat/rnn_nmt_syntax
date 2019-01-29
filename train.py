@@ -2,6 +2,8 @@ from model.seq2seq import *
 from model.utils import *
 from evaluate import *
 
+from torch import optim
+
 
 teacher_forcing_ratio = 0.5
 

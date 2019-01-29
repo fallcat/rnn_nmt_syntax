@@ -1,14 +1,9 @@
 from __future__ import unicode_literals, print_function, division
 from io import open
 import unicodedata
-import string
 import re
-import random
-
 import torch
-import torch.nn as nn
-from torch import optim
-import torch.nn.functional as F
+
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -58,8 +53,6 @@ def unicode_to_ascii(s):
     )
 
 # Lowercase, trim, and remove non-letter characters
-
-
 def normalize_string(s):
     s = unicode_to_ascii(s.lower().strip())
     s = re.sub(r"([.!?])", r" \1", s)
@@ -70,7 +63,7 @@ def read_langs(lang1, lang2, reverse=False):
     print("Reading lines...")
 
     # Read the file and split into lines
-    lines = open('/Users/weiqiuyou/Documents/UMass/2019Spring/Independent Study/data/%s-%s.txt' % (lang1, lang2), encoding='utf-8').\
+    lines = open('data/%s-%s.txt' % (lang1, lang2), encoding='utf-8').\
         read().strip().split('\n')
 
     # Split every line into pairs and normalize
