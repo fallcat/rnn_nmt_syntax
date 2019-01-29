@@ -134,7 +134,7 @@ if __name__ == "__main__":
     # trainIters(encoder1, attn_decoder1, 5000, print_every=5000)
 
     start = time.time()
-    evaluate_randomly(encoder1, attn_decoder1, pairs)
+    evaluate_randomly(input_lang, output_lang, encoder1, attn_decoder1, pairs)
     print("Time elapsed:", time.time() - start)
 
     output_words, attentions = evaluate(input_lang, output_lang, encoder1, attn_decoder1, "je suis trop froid .")
