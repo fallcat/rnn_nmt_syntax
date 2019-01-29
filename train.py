@@ -108,7 +108,7 @@ def train_iters(encoder, decoder, n_iters, print_every=1000, plot_every=100, lea
         if iter % print_every == 0:
             print_loss_avg = print_loss_total / print_every
             print_loss_total = 0
-            print('%s (%d %d%%) %.4f' % (timeSince(start, iter / n_iters),
+            print('%s (%d %d%%) %.4f' % (time_since(start, iter / n_iters),
                                          iter, iter / n_iters * 100, print_loss_avg))
 
         if iter % plot_every == 0:
@@ -126,7 +126,7 @@ if __name__ == "__main__":
     print(random.choice(pairs))
 
     encoder1 = EncoderRNN(input_lang.n_words, hidden_size).to(device)
-    attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words, dropout_p=0.1).to(device)
+    attn_decoder1 = AttnKspanDecoderRNN(hidden_size, output_lang.n_words, dropout_p=0.1).to(device)
 
     train_iters(encoder1, attn_decoder1, 5000, print_every=5000)
     # trainIters(encoder1, attn_decoder1, 5000, print_every=5000)
