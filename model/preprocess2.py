@@ -110,6 +110,7 @@ def filter_pairs(pairs):
 def prepare_data(lang1, lang2, reverse=False):
     input_lang, output_lang, pairs = read_langs(lang1, lang2, reverse)
     print("Read %s sentence pairs" % len(pairs))
+    print(pairs[0])
     pairs = pairs[10000]
     print("Counting words...")
     for pair in pairs:
