@@ -62,7 +62,15 @@ def normalize_string(s):
 def read_langs(lang1, lang2, reverse=False):
     print("Reading lines...")
 
-    t = tarfile.open("/mnt/nfs/work1/miyyer/datasets/wmt/wmt_en_de.tar.gz", "rb")
+    t = tarfile.open("/mnt/nfs/work1/miyyer/datasets/wmt/wmt_en_de.tar.gz", "r")
+    file1 = t.extractfile('train.tok.clean.bpe.32000.%s' % (lang1))
+    print(type(file1))
+    s = file1.read()
+    print((type(s)))
+    s = bytes(s)
+    print((type(s)))
+    s = s.strip().split("\n")
+    print(s[0])
     lang1_lines = t.extractfile('train.tok.clean.bpe.32000.%s' % (lang1)).\
         read().strip().split('\n')
     lang2_lines = t.extractfile('train.tok.clean.bpe.32000.%s' % (lang2)).\
@@ -91,7 +99,7 @@ def read_langs(lang1, lang2, reverse=False):
     return input_lang, output_lang, pairs
 
 def get_vocab():
-    t = tarfile.open("/mnt/nfs/work1/miyyer/datasets/wmt/wmt_en_de.tar.gz", "rb")
+    t = tarfile.open("/mnt/nfs/work1/miyyer/datasets/wmt/wmt_en_de.tar.gz", "r")
     vocab = t.extractfile('vocab.bpe.32000').read().strip().split('\n')
     # vocab = open('/mnt/nfs/work1/miyyer/datasets/wmt/vocab.bpe.32000', encoding='utf-8').read().strip().split('\n')
     return vocab
