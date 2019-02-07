@@ -111,9 +111,10 @@ def prepare_data(lang1, lang2, reverse=False):
     input_lang, output_lang, pairs = read_langs(lang1, lang2, reverse)
     print("Read %s sentence pairs" % len(pairs))
     print(pairs[0])
-    pairs = pairs[10000]
+    pairs = pairs[100]
     print("Counting words...")
     for pair in pairs:
+        print(pair)
         input_lang.add_sentence(pair[0])
         output_lang.add_sentence(pair[1])
     print("Counted words:")
