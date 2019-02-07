@@ -3,7 +3,7 @@ from io import open
 import unicodedata
 import re
 import torch
-
+import tarfile
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -62,11 +62,17 @@ def normalize_string(s):
 def read_langs(lang1, lang2, reverse=False):
     print("Reading lines...")
 
+    t = tarfile.open("/mnt/nfs/work1/miyyer/datasets/wmt/wmt_en_de.tar.gz", "r")
+    lang1_lines = t.extractfile('train.tok.clean.bpe.32000.%s' % (lang1)).\
+        read().strip().split('\n')
+    lang2_lines = t.extractfile('train.tok.clean.bpe.32000.%s' % (lang2)).\
+        read().strip().split('\n')
+
     # Read the file and split into lines
-    lang1_lines = open('/mnt/nfs/work1/miyyer/datasets/wmt/train.tok.clean.bpe.32000.%s' % (lang1), encoding='utf-8').\
-        read().strip().split('\n')
-    lang2_lines = open('/mnt/nfs/work1/miyyer/datasets/wmt/train.tok.clean.bpe.32000.%s' % (lang2), encoding='utf-8'). \
-        read().strip().split('\n')
+    # lang1_lines = open('/mnt/nfs/work1/miyyer/datasets/wmt/train.tok.clean.bpe.32000.%s' % (lang1), encoding='utf-8').\
+    #     read().strip().split('\n')
+    # lang2_lines = open('/mnt/nfs/work1/miyyer/datasets/wmt/train.tok.clean.bpe.32000.%s' % (lang2), encoding='utf-8'). \
+    #     read().strip().split('\n')
     # lines = open('data/%s-%s.txt' % (lang1, lang2), encoding='utf-8').\
     #     read().strip().split('\n')
 
@@ -85,7 +91,9 @@ def read_langs(lang1, lang2, reverse=False):
     return input_lang, output_lang, pairs
 
 def get_vocab():
-    vocab = open('/mnt/nfs/work1/miyyer/datasets/wmt/vocab.bpe.32000', encoding='utf-8').read().strip().split('\n')
+    t = tarfile.open("/mnt/nfs/work1/miyyer/datasets/wmt/wmt_en_de.tar.gz", "r")
+    vocab = t.extractfile('vocab.bpe.32000').read().strip().split('\n')
+    # vocab = open('/mnt/nfs/work1/miyyer/datasets/wmt/vocab.bpe.32000', encoding='utf-8').read().strip().split('\n')
     return vocab
 
 def filter_pair(p):
