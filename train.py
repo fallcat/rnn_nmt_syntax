@@ -110,8 +110,8 @@ def train_iters(encoder, decoder, n_iters, print_every=1000, plot_every=100, lea
 if __name__ == "__main__":
     hidden_size = 256
 
-    input_lang, output_lang, pairs = prepare_data('en', 'de', True)
-    vocab = get_vocab()
+    input_lang, output_lang, pairs, vocab = prepare_data('en', 'de', True)
+
     print(len(pairs))
     print(pairs[0])
     print(pairs[1])

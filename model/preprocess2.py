@@ -108,19 +108,23 @@ def filter_pairs(pairs):
 
 def prepare_data(lang1, lang2, reverse=False):
     input_lang, output_lang, pairs = read_langs(lang1, lang2, reverse)
+    vocab = get_vocab()
     print("Read %s sentence pairs" % len(pairs))
     pairs = filter_pairs(pairs)
     print(pairs[0])
     pairs = pairs[:100]
     print("Counting words...")
-    for pair in pairs:
-        print(pair)
-        input_lang.add_sentence(pair[0])
-        output_lang.add_sentence(pair[1])
+    for v in vocab:
+        input_lang.add_word(v)
+        output_lang.add_word(v)
+    # for pair in pairs:
+    #     print(pair)
+    #     input_lang.add_sentence(pair[0])
+    #     output_lang.add_sentence(pair[1])
     print("Counted words:")
     print(input_lang.name, input_lang.n_words)
     print(output_lang.name, output_lang.n_words)
-    return input_lang, output_lang, pairs
+    return input_lang, output_lang, pairs, vocab
 
 
 def indexes_from_sentence(lang, sentence):
