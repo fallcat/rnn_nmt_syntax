@@ -67,7 +67,7 @@ def read_langs(lang1, lang2, reverse=False):
     print(type(file1))
     s = file1.read()
     print((type(s)))
-    s = bytes(s)
+    s = str(s)
     print((type(s)))
     s = s.strip().split("\n")
     print(s[0])
