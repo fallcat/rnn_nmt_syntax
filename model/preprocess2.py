@@ -10,7 +10,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 SOS_token = 0
 EOS_token = 1
 
-MAX_LENGTH = 10
+MAX_LENGTH = 50
 SPAN_SIZE = 3
 
 eng_prefixes = (
@@ -99,8 +99,7 @@ def get_vocab():
 
 def filter_pair(p):
     return len(p[0].split(' ')) < MAX_LENGTH and \
-        len(p[1].split(' ')) < MAX_LENGTH and \
-        p[1].startswith(eng_prefixes)
+        len(p[1].split(' ')) < MAX_LENGTH
 
 
 def filter_pairs(pairs):
@@ -110,6 +109,7 @@ def filter_pairs(pairs):
 def prepare_data(lang1, lang2, reverse=False):
     input_lang, output_lang, pairs = read_langs(lang1, lang2, reverse)
     print("Read %s sentence pairs" % len(pairs))
+    pairs = filter_pairs(pairs)
     print(pairs[0])
     pairs = pairs[:100]
     print("Counting words...")
