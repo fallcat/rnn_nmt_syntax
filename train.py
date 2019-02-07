@@ -41,8 +41,6 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
             decoder_input = []
             for si in range(span_size):
                 if di*span_size+si < target_length:
-#                     print("decoder", decoder_output[si])
-#                     print("target_tensor", target_tensor[di*span_size+si])
                     loss += criterion(decoder_output[si], target_tensor[di*span_size+si])
                     decoder_input.append(target_tensor[di*span_size+si])
                 else:
@@ -55,12 +53,8 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
             decoder_output, decoder_hidden, decoder_attention = decoder(
                 decoder_input, decoder_hidden, encoder_outputs)
             topi = [EOS_token] * SPAN_SIZE
-#             print(decoder_output)
             for si in range(span_size):
                 topv, topi[si] = decoder_output[si].topk(1)
-#             topv, topi = decoder_output.topk(1, dim=1)
-#             topv0, topi0 = decoder_output[0].topk(1)
-#             topv1, topi1 = decoder_output[1].topk(1)
             decoder_input = tuple([topi[si].squeeze().detach() for si in range(span_size)])  # detach from history as input
 
             for si in range(span_size):
@@ -68,14 +62,6 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
                     loss += criterion(decoder_output[si], target_tensor[di*span_size+si])
                 else:
                     break
-#             loss += criterion(decoder_output[0], target_tensor[di*2])
-#             if di*2+1 < target_length:
-#                 loss += criterion(decoder_output[1], target_tensor[di*2+1])
-#                 if decoder_input[1].item() == EOS_token:
-#                     break
-#             else:
-#                 if decoder_input[0].item() == EOS_token:
-#                     break
 
     loss.backward()
 
@@ -125,25 +111,26 @@ if __name__ == "__main__":
     hidden_size = 256
 
     input_lang, output_lang, pairs = prepare_data('eng', 'fra', True)
+    vocab = get_vocab()
     print(random.choice(pairs))
 
-    encoder1 = EncoderRNN(input_lang.n_words, hidden_size).to(device)
-    attn_decoder1 = AttnKspanDecoderRNN(hidden_size, output_lang.n_words, dropout_p=0.1).to(device)
+    encoder1 = EncoderRNN(len(vocab), hidden_size).to(device)
+    attn_decoder1 = AttnKspanDecoderRNN(hidden_size, len(vocab), dropout_p=0.1).to(device)
 
     train_iters(encoder1, attn_decoder1, 5000, print_every=5000)
-    # trainIters(encoder1, attn_decoder1, 5000, print_every=5000)
+    # trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
 
     start = time.time()
     evaluate_randomly(input_lang, output_lang, encoder1, attn_decoder1, pairs)
     print("Time elapsed:", time.time() - start)
 
-    output_words, attentions = evaluate(input_lang, output_lang, encoder1, attn_decoder1, "je suis trop froid .")
-    plt.matshow(attentions.numpy())
-
-    evaluate_and_show_attention(input_lang, output_lang, encoder1, attn_decoder1, "elle a cinq ans de moins que moi .")
-
-    evaluate_and_show_attention(input_lang, output_lang, encoder1, attn_decoder1, "elle est trop petit .")
-
-    evaluate_and_show_attention(input_lang, output_lang, encoder1, attn_decoder1, "je ne crains pas de mourir .")
-
-    evaluate_and_show_attention(input_lang, output_lang, encoder1, attn_decoder1, "c est un jeune directeur plein de talent .")
+    # output_words, attentions = evaluate(input_lang, output_lang, encoder1, attn_decoder1, "je suis trop froid .")
+    # plt.matshow(attentions.numpy())
+    #
+    # evaluate_and_show_attention(input_lang, output_lang, encoder1, attn_decoder1, "elle a cinq ans de moins que moi .")
+    #
+    # evaluate_and_show_attention(input_lang, output_lang, encoder1, attn_decoder1, "elle est trop petit .")
+    #
+    # evaluate_and_show_attention(input_lang, output_lang, encoder1, attn_decoder1, "je ne crains pas de mourir .")
+    #
+    # evaluate_and_show_attention(input_lang, output_lang, encoder1, attn_decoder1, "c est un jeune directeur plein de talent .")
