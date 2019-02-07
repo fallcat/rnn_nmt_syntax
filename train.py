@@ -112,6 +112,9 @@ if __name__ == "__main__":
 
     input_lang, output_lang, pairs = prepare_data('en', 'de', True)
     vocab = get_vocab()
+    print(len(pairs))
+    print(pairs[0])
+    print(pairs[1])
     print(random.choice(pairs))
 
     encoder1 = EncoderRNN(len(vocab), hidden_size).to(device)
