@@ -62,7 +62,7 @@ def normalize_string(s):
 def read_langs(lang1, lang2, reverse=False):
     print("Reading lines...")
 
-    t = tarfile.open("/mnt/nfs/work1/miyyer/datasets/wmt/wmt_en_de.tar.gz", "r")
+    t = tarfile.open("/mnt/nfs/work1/miyyer/datasets/wmt/wmt_en_de.tar.gz", "rb")
     lang1_lines = t.extractfile('train.tok.clean.bpe.32000.%s' % (lang1)).\
         read().strip().split('\n')
     lang2_lines = t.extractfile('train.tok.clean.bpe.32000.%s' % (lang2)).\
@@ -91,7 +91,7 @@ def read_langs(lang1, lang2, reverse=False):
     return input_lang, output_lang, pairs
 
 def get_vocab():
-    t = tarfile.open("/mnt/nfs/work1/miyyer/datasets/wmt/wmt_en_de.tar.gz", "r")
+    t = tarfile.open("/mnt/nfs/work1/miyyer/datasets/wmt/wmt_en_de.tar.gz", "rb")
     vocab = t.extractfile('vocab.bpe.32000').read().strip().split('\n')
     # vocab = open('/mnt/nfs/work1/miyyer/datasets/wmt/vocab.bpe.32000', encoding='utf-8').read().strip().split('\n')
     return vocab
