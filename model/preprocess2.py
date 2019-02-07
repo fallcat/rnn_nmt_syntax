@@ -111,6 +111,7 @@ def prepare_data(lang1, lang2, reverse=False):
     vocab = get_vocab()
     print("Read %s sentence pairs" % len(pairs))
     pairs = filter_pairs(pairs)
+    print("Trimmed to %s sentence pairs" % len(pairs))
     print(pairs[0])
     pairs = pairs[:100]
     print("Counting words...")
