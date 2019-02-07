@@ -67,9 +67,10 @@ def read_langs(lang1, lang2, reverse=False):
     print(type(file1))
     s = file1.read()
     print((type(s)))
-    s = str(s).encode('utf-8')
+    s = str(s)
     print((type(s)))
     s = s.strip().split("\n")
+    print(len(s))
     print(s[0])
     lang1_lines = t.extractfile('train.tok.clean.bpe.32000.%s' % (lang1)).\
         read().strip().split('\n')
