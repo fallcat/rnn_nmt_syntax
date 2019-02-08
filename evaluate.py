@@ -44,6 +44,8 @@ def evaluate(input_lang, output_lang, encoder, decoder, sentence, max_length=MAX
             #             decoder_input = tuple(topi.squeeze().detach())
             print("decoder_input", decoder_input[0])
             print("topi", topi[0].item())
+            print("EOS_token", EOS_token)
+            print("equal?", topi[0].item() == EOS_token)
             for si in range(span_size):
                 if topi[si].item() == EOS_token:
                     decoded_words.append('<EOS>')
