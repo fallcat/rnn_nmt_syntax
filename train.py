@@ -1,8 +1,16 @@
+"""
+    Train RNN machine translation model
+"""
+
+import argparse
+
 from model.seq2seq import *
 from model.utils import *
 from evaluate import *
 
 from torch import optim
+
+
 
 
 teacher_forcing_ratio = 0.5
@@ -70,6 +78,8 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
         loss.backward()
     except:
         print(loss)
+        print(decoder_output)
+        print(target_tensor)
 
     encoder_optimizer.step()
     decoder_optimizer.step()
@@ -113,7 +123,19 @@ def train_iters(encoder, decoder, n_iters, print_every=1000, plot_every=100, lea
     show_plot(plot_losses)
 
 
+def get_cl_args():
+    '''Get the command line arguments using argparse.'''
+    arg_parser = argparse.ArgumentParser(description='Train machine translation model with RNN + Syntax')
+
+    arg_parser.add_argument('-r', '--restore', action='store',
+                            help='Specify the path of checkpoint to load the stored model')
+
+    return arg_parser.parse_args()
+
+
 if __name__ == "__main__":
+    args = get_cl_args()
+    print(args)
     hidden_size = 256
 
     input_lang, output_lang, pairs, vocab = prepare_data('en', 'de', True)
