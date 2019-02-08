@@ -49,6 +49,7 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
 
     else:
         # Without teacher forcing: use its own predictions as the next input
+        break_out = False
         for di in range(int((target_length+1)/2)):
             decoder_output, decoder_hidden, decoder_attention = decoder(
                 decoder_input, decoder_hidden, encoder_outputs)
@@ -61,7 +62,10 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
                 if di*span_size+si < target_length and decoder_input[si].item() != EOS_token:
                     loss += criterion(decoder_output[si], target_tensor[di*span_size+si])
                 else:
+                    break_out = True
                     break
+            if break_out:
+                break
     try:
         loss.backward()
     except:
