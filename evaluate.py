@@ -42,7 +42,10 @@ def evaluate(input_lang, output_lang, encoder, decoder, sentence, max_length=MAX
             decoder_input = tuple([topi[si].squeeze().detach() for si in range(span_size)])
 
             #             decoder_input = tuple(topi.squeeze().detach())
+            print("decoder_input", decoder_input[0])
+            print("topi", topi[0].item())
             for si in range(span_size):
+
                 if di * span_size + si < max_length and topi[si].item() != EOS_token:
                     decoded_words.append(output_lang.index2word[topi[si].item()])
                 else:
