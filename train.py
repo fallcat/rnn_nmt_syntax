@@ -156,7 +156,7 @@ def get_cl_args():
     arg_parser.add_argument('-s', '--save', action='store',
                             help='Specify the path of checkpoint to save the stored model')
 
-    arg_parser.add_argument('-r', '--restore', action='store',
+    arg_parser.add_argument('-r', '--restore', action='store', default=None,
                             help='Specify the path of checkpoint to load the stored model')
 
     return arg_parser.parse_args()
@@ -164,6 +164,8 @@ def get_cl_args():
 
 if __name__ == "__main__":
     args = get_cl_args()
+    if 'r' in vars(args):
+        print(args.r)
     print(args)
     hidden_size = 256
 
