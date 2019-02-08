@@ -3,6 +3,7 @@
 """
 
 import argparse
+import shutil
 
 from model.seq2seq import *
 from model.utils import *
@@ -43,6 +44,7 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
 
     if use_teacher_forcing:
         # Teacher forcing: Feed the target as the next input
+        break_out = False
         for di in range(int((target_length+1)/span_size)):
             decoder_output, decoder_hidden, decoder_attention = decoder(
                 decoder_input, decoder_hidden, encoder_outputs)
@@ -52,7 +54,10 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
                     loss += criterion(decoder_output[si], target_tensor[di*span_size+si])
                     decoder_input.append(target_tensor[di*span_size+si])
                 else:
+                    break_out = True
                     break
+            if break_out:
+                break
             decoder_input = tuple(decoder_input)
 
     else:
@@ -99,6 +104,8 @@ def train_iters(encoder, decoder, n_iters, print_every=1000, plot_every=100, lea
                       for i in range(n_iters)]
     criterion = nn.NLLLoss()
 
+    best_loss = float("inf")
+
     for iter in range(1, n_iters + 1):
         training_pair = training_pairs[iter - 1]
         input_tensor = training_pair[0]
@@ -106,6 +113,11 @@ def train_iters(encoder, decoder, n_iters, print_every=1000, plot_every=100, lea
 
         loss = train(input_tensor, target_tensor, encoder,
                      decoder, encoder_optimizer, decoder_optimizer, criterion)
+        if best_loss > loss:
+            best_loss = loss
+            is_best = True
+        else:
+            is_best = False
         print_loss_total += loss
         plot_loss_total += loss
 
@@ -114,6 +126,14 @@ def train_iters(encoder, decoder, n_iters, print_every=1000, plot_every=100, lea
             print_loss_total = 0
             print('%s (%d %d%%) %.4f' % (time_since(start, iter / n_iters),
                                          iter, iter / n_iters * 100, print_loss_avg))
+            save_checkpoint({
+                'epoch': iter + 1,
+                'encoder_state': encoder.state_dict(),
+                'decoder_state': decoder.state_dict(),
+                'loss': loss,
+                'encoder_optimizer': encoder_optimizer.state_dict(),
+                'decoder_optimizer': decoder_optimizer.state_dict(),
+            }, is_best)
 
         if iter % plot_every == 0:
             plot_loss_avg = plot_loss_total / plot_every
@@ -123,9 +143,18 @@ def train_iters(encoder, decoder, n_iters, print_every=1000, plot_every=100, lea
     show_plot(plot_losses)
 
 
+def save_checkpoint(state, is_best, filename='experiments/exp01/checkpoint.pth.tar'):
+    torch.save(state, filename)
+    if is_best:
+        shutil.copyfile(filename, 'experiments/exp01/model_best.pth.tar')
+
+
 def get_cl_args():
     '''Get the command line arguments using argparse.'''
     arg_parser = argparse.ArgumentParser(description='Train machine translation model with RNN + Syntax')
+
+    arg_parser.add_argument('-s', '--save', action='store',
+                            help='Specify the path of checkpoint to save the stored model')
 
     arg_parser.add_argument('-r', '--restore', action='store',
                             help='Specify the path of checkpoint to load the stored model')
