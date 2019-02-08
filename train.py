@@ -120,7 +120,7 @@ if __name__ == "__main__":
     encoder1 = EncoderRNN(len(vocab), hidden_size).to(device)
     attn_decoder1 = AttnKspanDecoderRNN(hidden_size, len(vocab), dropout_p=0.1).to(device)
 
-    train_iters(encoder1, attn_decoder1, 1000, print_every=5000)
+    train_iters(encoder1, attn_decoder1, 75000, print_every=5000)
     # trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
 
     start = time.time()
