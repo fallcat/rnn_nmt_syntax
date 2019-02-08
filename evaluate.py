@@ -29,6 +29,7 @@ def evaluate(input_lang, output_lang, encoder, decoder, sentence, max_length=MAX
         decoded_words = []
         decoder_attentions = torch.zeros(max_length, max_length)
 
+        break_out = False
         for di in range(int((max_length + 1) / span_size)):
             #             print("input[0]", decoder_input[0].shape)
             #             print("hidden[0]", decoder_hidden[0].shape)
@@ -42,19 +43,15 @@ def evaluate(input_lang, output_lang, encoder, decoder, sentence, max_length=MAX
             decoder_input = tuple([topi[si].squeeze().detach() for si in range(span_size)])
 
             #             decoder_input = tuple(topi.squeeze().detach())
-            print("decoder_input", decoder_input[0])
-            print("topi", topi[0].item())
-            print("EOS_token", EOS_token)
-            print("equal?", topi[0].item() == EOS_token)
             for si in range(span_size):
-                if topi[si].item() == EOS_token:
-                    decoded_words.append('<EOS>')
-                    break
                 if di * span_size + si < max_length and topi[si].item() != EOS_token:
                     decoded_words.append(output_lang.index2word[topi[si].item()])
                 else:
                     decoded_words.append('<EOS>')
+                    break_out = True
                     break
+            if break_out:
+                break
 
         return decoded_words, decoder_attentions[:di + 1]
 
