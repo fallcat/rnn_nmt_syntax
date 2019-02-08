@@ -62,8 +62,10 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
                     loss += criterion(decoder_output[si], target_tensor[di*span_size+si])
                 else:
                     break
-
-    loss.backward()
+    try:
+        loss.backward()
+    except:
+        print(loss)
 
     encoder_optimizer.step()
     decoder_optimizer.step()
