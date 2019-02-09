@@ -79,12 +79,14 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
                     break
             if break_out:
                 break
-    try:
-        loss.backward()
-    except:
-        print(loss)
-        print(decoder_output)
-        print(target_tensor)
+    # try:
+    #     loss.backward()
+    # except:
+    #     print(loss)
+    #     print(decoder_output)
+    #     print(target_tensor)
+
+    loss.backward()
 
     encoder_optimizer.step()
     decoder_optimizer.step()
@@ -110,9 +112,13 @@ def train_iters(encoder, decoder, n_iters, print_every=1000, plot_every=100, lea
         training_pair = training_pairs[iter - 1]
         input_tensor = training_pair[0]
         target_tensor = training_pair[1]
+        try:
+            loss = train(input_tensor, target_tensor, encoder,
+                         decoder, encoder_optimizer, decoder_optimizer, criterion)
+        except:
+            print("excpetion :( ", training_pair)
+            continue
 
-        loss = train(input_tensor, target_tensor, encoder,
-                     decoder, encoder_optimizer, decoder_optimizer, criterion)
         if best_loss > loss:
             best_loss = loss
             is_best = True
@@ -139,6 +145,9 @@ def train_iters(encoder, decoder, n_iters, print_every=1000, plot_every=100, lea
             plot_loss_avg = plot_loss_total / plot_every
             plot_losses.append(plot_loss_avg)
             plot_loss_total = 0
+
+
+
 
     show_plot(plot_losses)
 
