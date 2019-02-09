@@ -2,6 +2,7 @@
     Train RNN machine translation model
 """
 
+import os
 import argparse
 import shutil
 
@@ -94,7 +95,7 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
     return loss.item() / target_length
 
 
-def train_iters(encoder, decoder, n_iters, print_every=1000, plot_every=100, learning_rate=0.01):
+def train_iters(encoder, decoder, n_iters, print_every=1000, plot_every=100, learning_rate=0.01, restore=None):
     start = time.time()
     plot_losses = []
     print_loss_total = 0  # Reset every print_every
@@ -108,7 +109,26 @@ def train_iters(encoder, decoder, n_iters, print_every=1000, plot_every=100, lea
 
     best_loss = float("inf")
 
-    for iter in range(1, n_iters + 1):
+    checkpoint_loaded = False
+
+    start_iter = 1
+
+    # load checkpoint
+    if restore is not None:
+        if os.path.isfile(restore):
+            print("=> loading checkpoint '{}'".format(restore))
+            checkpoint = torch.load(restore)
+            start_iter = checkpoint['epoch']
+            encoder.load_state_dict(checkpoint['encoder_state'])
+            decoder.load_state_dict(checkpoint['decoder_state'])
+            encoder_optimizer.load_state_dict(checkpoint['encoder_optimizer'])
+            decoder_optimizer.load_state_dict(checkpoint['decoder_optimizer'])
+            print("=> loaded checkpoint '{}' (iter {})".format(restore, checkpoint['epoch']))
+            checkpoint_loaded = True
+        else:
+            print("=> no checkpoint found at '{}'".format(restore))
+
+    for iter in range(start_iter, n_iters + 1):
         training_pair = training_pairs[iter - 1]
         input_tensor = training_pair[0]
         target_tensor = training_pair[1]
@@ -189,7 +209,10 @@ if __name__ == "__main__":
     encoder1 = EncoderRNN(len(vocab), hidden_size).to(device)
     attn_decoder1 = AttnKspanDecoderRNN(hidden_size, len(vocab), dropout_p=0.1).to(device)
 
-    train_iters(encoder1, attn_decoder1, 600000, print_every=5000)
+    if 'r' in vars(args):
+        train_iters(encoder1, attn_decoder1, 600000, print_every=5000, restore=args.r)
+    else:
+        train_iters(encoder1, attn_decoder1, 600000, print_every=5000)
     # trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
 
     start = time.time()
