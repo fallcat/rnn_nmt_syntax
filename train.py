@@ -3,8 +3,6 @@
 """
 
 import os
-import argparse
-import shutil
 
 from model.seq2seq import *
 from model.utils import *
@@ -15,7 +13,7 @@ from torch import optim
 teacher_forcing_ratio = 0.5
 
 
-def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, max_length=MAX_LENGTH, span_size=SPAN_SIZE):
+def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, num_layers=4, max_length=MAX_LENGTH, span_size=SPAN_SIZE):
     encoder_hidden = encoder.init_hidden()
 
     encoder_optimizer.zero_grad()
@@ -36,7 +34,7 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
     decoder_input = tuple([torch.tensor([[SOS_token]], device=device) for i in range(span_size)])
 #     print("len decoder input", len(decoder_input))
 
-    decoder_hidden = encoder_hidden
+    decoder_hiddens = [encoder_hidden for _ in range(num_layers)]
 
     use_teacher_forcing = True if random.random() < teacher_forcing_ratio else False
 
@@ -44,8 +42,8 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
         # Teacher forcing: Feed the target as the next input
         break_out = False
         for di in range(int((target_length+1)/span_size)):
-            decoder_output, decoder_hidden, decoder_attention = decoder(
-                decoder_input, decoder_hidden, encoder_outputs)
+            decoder_output, decoder_hiddens, decoder_attention = decoder(
+                decoder_input, decoder_hiddens, encoder_outputs)
             decoder_input = []
             for si in range(span_size):
                 if di*span_size+si < target_length:
@@ -62,8 +60,8 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
         # Without teacher forcing: use its own predictions as the next input
         break_out = False
         for di in range(int((target_length+1)/2)):
-            decoder_output, decoder_hidden, decoder_attention = decoder(
-                decoder_input, decoder_hidden, encoder_outputs)
+            decoder_output, decoder_hiddens, decoder_attention = decoder(
+                decoder_input, decoder_hiddens, encoder_outputs)
             topi = [EOS_token] * SPAN_SIZE
             for si in range(span_size):
                 topv, topi[si] = decoder_output[si].topk(1)
@@ -92,7 +90,7 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
     return loss.item() / target_length
 
 
-def train_iters(encoder, decoder, n_iters, print_every=1000, plot_every=100, learning_rate=0.01, restore=None):
+def train_iters(encoder, decoder, n_iters, num_layers=4, print_every=1000, plot_every=100, learning_rate=0.01, restore=None):
     start = time.time()
     plot_losses = []
     print_loss_total = 0  # Reset every print_every
@@ -131,7 +129,7 @@ def train_iters(encoder, decoder, n_iters, print_every=1000, plot_every=100, lea
         target_tensor = training_pair[1]
         try:
             loss = train(input_tensor, target_tensor, encoder,
-                         decoder, encoder_optimizer, decoder_optimizer, criterion)
+                         decoder, encoder_optimizer, decoder_optimizer, criterion, num_layers=num_layers)
         except:
             print("excpetion :( ", training_pair)
             continue
@@ -163,37 +161,15 @@ def train_iters(encoder, decoder, n_iters, print_every=1000, plot_every=100, lea
             plot_losses.append(plot_loss_avg)
             plot_loss_total = 0
 
-
-
-
     show_plot(plot_losses)
-
-
-def save_checkpoint(state, is_best, filename='experiments/exp01/checkpoint.pth.tar'):
-    torch.save(state, filename)
-    if is_best:
-        shutil.copyfile(filename, 'experiments/exp01/model_best.pth.tar')
-
-
-def get_cl_args():
-    '''Get the command line arguments using argparse.'''
-    arg_parser = argparse.ArgumentParser(description='Train machine translation model with RNN + Syntax')
-
-    arg_parser.add_argument('-s', '--save', action='store',
-                            help='Specify the path of checkpoint to save the stored model')
-
-    arg_parser.add_argument('-r', '--restore', action='store', default=None,
-                            help='Specify the path of checkpoint to load the stored model')
-
-    return arg_parser.parse_args()
 
 
 if __name__ == "__main__":
     args = get_cl_args()
-    if 'r' in vars(args):
-        print(args.r)
+    if 'restore' in vars(args):
+        print(args.restore)
     print(args)
-    hidden_size = 256
+
 
     input_lang, output_lang, pairs, vocab = prepare_data('en', 'de', True)
     pairs = pairs[:100000]
@@ -203,13 +179,13 @@ if __name__ == "__main__":
     print(pairs[1])
     print(random.choice(pairs))
 
-    encoder1 = EncoderRNN(len(vocab), hidden_size).to(device)
-    attn_decoder1 = AttnKspanDecoderRNN(hidden_size, len(vocab), dropout_p=0.1).to(device)
+    encoder1 = EncoderRNN(len(vocab), args.h).to(device)
+    attn_decoder1 = AttnKspanDecoderRNN(args.h, len(vocab), dropout_p=args.d).to(device)
 
-    if 'r' in vars(args):
-        train_iters(encoder1, attn_decoder1, 100000, print_every=5000, restore=args.r)
+    if 'restore' in vars(args):
+        train_iters(encoder1, attn_decoder1, 105000, num_layers=args.l, print_every=5000, restore=args.restore)
     else:
-        train_iters(encoder1, attn_decoder1, 100000, print_every=5000)
+        train_iters(encoder1, attn_decoder1, 105000, print_every=5000)
     # trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
 
     start = time.time()
