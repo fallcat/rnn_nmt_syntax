@@ -196,7 +196,7 @@ if __name__ == "__main__":
     hidden_size = 256
 
     input_lang, output_lang, pairs, vocab = prepare_data('en', 'de', True)
-    pairs = pairs[:10000]
+    pairs = pairs[:100000]
 
     print(len(pairs))
     print(pairs[0])
