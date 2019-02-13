@@ -1,5 +1,4 @@
 from model.seq2seq import *
-# from train import *
 
 import matplotlib.pyplot as plt
 plt.switch_backend('agg')

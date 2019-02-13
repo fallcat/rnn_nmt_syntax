@@ -9,10 +9,7 @@ import shutil
 from model.seq2seq import *
 from model.utils import *
 from evaluate import *
-
 from torch import optim
-
-
 
 
 teacher_forcing_ratio = 0.5
@@ -199,7 +196,7 @@ if __name__ == "__main__":
     hidden_size = 256
 
     input_lang, output_lang, pairs, vocab = prepare_data('en', 'de', True)
-    pairs = pairs[:100000]
+    pairs = pairs[:10000]
 
     print(len(pairs))
     print(pairs[0])
@@ -210,9 +207,9 @@ if __name__ == "__main__":
     attn_decoder1 = AttnKspanDecoderRNN(hidden_size, len(vocab), dropout_p=0.1).to(device)
 
     if 'r' in vars(args):
-        train_iters(encoder1, attn_decoder1, 600000, print_every=5000, restore=args.r)
+        train_iters(encoder1, attn_decoder1, 10000, print_every=5000, restore=args.r)
     else:
-        train_iters(encoder1, attn_decoder1, 600000, print_every=5000)
+        train_iters(encoder1, attn_decoder1, 10000, print_every=5000)
     # trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
 
     start = time.time()
