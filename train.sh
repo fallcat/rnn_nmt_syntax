@@ -7,7 +7,7 @@
 #SBATCH --mem=64GB
 #SBATCH -d singleton
 #SBATCH --open-mode append
-#SBATCH -o /mnt/nfs/work1/miyyer/wyou/RNN-NMT-Syntax/experiments/exp01/translate.txt
+#SBATCH -o /mnt/nfs/work1/miyyer/wyou/RNN-NMT-Syntax/experiments/exp01/translate_lstm.txt
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=wyou@cs.umass.edu
 
