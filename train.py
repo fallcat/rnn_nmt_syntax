@@ -127,12 +127,14 @@ def train_iters(encoder, decoder, n_iters, num_layers=4, print_every=1000, plot_
         training_pair = training_pairs[iter - 1]
         input_tensor = training_pair[0]
         target_tensor = training_pair[1]
-        try:
-            loss = train(input_tensor, target_tensor, encoder,
-                         decoder, encoder_optimizer, decoder_optimizer, criterion, num_layers=num_layers)
-        except:
-            print("excpetion :( ", training_pair)
-            continue
+        loss = train(input_tensor, target_tensor, encoder,
+                     decoder, encoder_optimizer, decoder_optimizer, criterion, num_layers=num_layers)
+        # try:
+        #     loss = train(input_tensor, target_tensor, encoder,
+        #                  decoder, encoder_optimizer, decoder_optimizer, criterion, num_layers=num_layers)
+        # except:
+        #     print("excpetion :( ", training_pair)
+        #     continue
 
         if best_loss > loss:
             best_loss = loss
