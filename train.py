@@ -172,7 +172,7 @@ if __name__ == "__main__":
     print
 
     input_lang, output_lang, pairs, vocab = prepare_data('en', 'de', True)
-    pairs = pairs[:10000]
+    pairs = pairs[:1000]
 
     print(len(pairs))
     print(pairs[0])
