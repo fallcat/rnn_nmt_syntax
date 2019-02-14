@@ -169,7 +169,7 @@ if __name__ == "__main__":
     if 'restore' in vars(args):
         print(args.restore)
     print(args)
-
+    print
 
     input_lang, output_lang, pairs, vocab = prepare_data('en', 'de', True)
     pairs = pairs[:10000]

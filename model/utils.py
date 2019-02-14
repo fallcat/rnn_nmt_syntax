@@ -33,13 +33,13 @@ def get_cl_args():
     arg_parser.add_argument('-r', '--restore', action='store', default=None,
                             help='Specify the path of checkpoint to load the stored model')
 
-    arg_parser.add_argument('--hidden-size', action='store', default=1000,
+    arg_parser.add_argument('--hidden-size', action='store', type=int, default=1000,
                             help='Specify the hidden size of the model')
 
-    arg_parser.add_argument('-d', '--dropout', action='store', default=0.2,
+    arg_parser.add_argument('-d', '--dropout', action='store', type=float, default=0.2,
                             help='Specify the dropout rate of the model')
 
-    arg_parser.add_argument('-l', '--num-layers', action='store', default=4,
+    arg_parser.add_argument('-l', '--num-layers', action='store', type=int, default=4,
                             help='Specify the number of GRU layers of the model')
 
     return arg_parser.parse_args()
