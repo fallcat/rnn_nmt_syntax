@@ -7,7 +7,7 @@
 #SBATCH --mem=64GB
 #SBATCH -d singleton
 #SBATCH --open-mode append
-#SBATCH -o /mnt/nfs/work1/miyyer/wyou/RNN-NMT-Syntax/experiments/exp01/translate_lstm.txt
+#SBATCH -o /mnt/nfs/work1/miyyer/wyou/RNN-NMT-Syntax/experiments/exp01/translate_gru.txt
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=wyou@cs.umass.edu
 
@@ -23,7 +23,7 @@ source $PROJECT_PATH/../py36/bin/activate
 # otherwise it defaults to the loaded slurm module which breaks for pynvml with python3
 PYTHONPATH=$BASE_PATH/wyou/py36/lib/python3.6/site-packages/:$PYTHONPATH
 
-python train.py -l 4
+python train.py
 
 #BASE_PARAMS=( \
 #  -d "$BASE_PATH/datasets/wmt/" \

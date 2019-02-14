@@ -14,7 +14,7 @@ teacher_forcing_ratio = 0.5
 
 
 def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, num_layers=4, max_length=MAX_LENGTH, span_size=SPAN_SIZE):
-    encoder_hidden = encoder.init_hidden()
+    encoder_hiddens = encoder.init_hidden()
 
     encoder_optimizer.zero_grad()
     decoder_optimizer.zero_grad()
@@ -27,14 +27,15 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
     loss = 0
 
     for ei in range(input_length):
-        encoder_output, encoder_hidden = encoder(
-            input_tensor[ei], encoder_hidden)
+        encoder_output, encoder_hiddens = encoder(
+            input_tensor[ei], encoder_hiddens)
         encoder_outputs[ei] = encoder_output[0, 0]
 
     decoder_input = tuple([torch.tensor([[SOS_token]], device=device) for i in range(span_size)])
 #     print("len decoder input", len(decoder_input))
 
-    decoder_hiddens = [encoder_hidden for _ in range(num_layers)]
+    decoder_hiddens = encoder_hiddens
+    # decoder_hiddens = [encoder_hidden for _ in range(num_layers)]
 
     use_teacher_forcing = True if random.random() < teacher_forcing_ratio else False
 
@@ -182,7 +183,7 @@ if __name__ == "__main__":
     print(random.choice(pairs))
 
     encoder1 = EncoderRNN(len(vocab), args.hidden_size).to(device)
-    attn_decoder1 = AttnKspanLSTMDecoderRNN(args.hidden_size, len(vocab), dropout_p=args.dropout).to(device)
+    attn_decoder1 = AttnKspanDecoderRNN(args.hidden_size, len(vocab), dropout_p=args.dropout).to(device)
 
     train_iters(encoder1, attn_decoder1, 40000, num_layers=args.num_layers, print_every=5000, restore=args.restore)
     # trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
