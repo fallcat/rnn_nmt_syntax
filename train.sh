@@ -23,7 +23,7 @@ source $PROJECT_PATH/../py36/bin/activate
 # otherwise it defaults to the loaded slurm module which breaks for pynvml with python3
 PYTHONPATH=$BASE_PATH/wyou/py36/lib/python3.6/site-packages/:$PYTHONPATH
 
-python train.py
+python train.py -l 5
 
 #BASE_PARAMS=( \
 #  -d "$BASE_PATH/datasets/wmt/" \

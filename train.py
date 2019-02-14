@@ -172,7 +172,7 @@ if __name__ == "__main__":
 
 
     input_lang, output_lang, pairs, vocab = prepare_data('en', 'de', True)
-    pairs = pairs[:100000]
+    pairs = pairs[:10000]
 
     print(len(pairs))
     print(pairs[0])
@@ -183,9 +183,9 @@ if __name__ == "__main__":
     attn_decoder1 = AttnKspanDecoderRNN(args.h, len(vocab), dropout_p=args.d).to(device)
 
     if 'restore' in vars(args):
-        train_iters(encoder1, attn_decoder1, 105000, num_layers=args.l, print_every=5000, restore=args.restore)
+        train_iters(encoder1, attn_decoder1, 10000, num_layers=args.l, print_every=5000, restore=args.restore)
     else:
-        train_iters(encoder1, attn_decoder1, 105000, print_every=5000)
+        train_iters(encoder1, attn_decoder1, 10000, print_every=5000)
     # trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
 
     start = time.time()
