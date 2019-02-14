@@ -180,12 +180,9 @@ if __name__ == "__main__":
     print(random.choice(pairs))
 
     encoder1 = EncoderRNN(len(vocab), args.hidden_size).to(device)
-    attn_decoder1 = AttnKspanDecoderRNN(args.hidden_size, len(vocab), dropout_p=args.droupout).to(device)
+    attn_decoder1 = AttnKspanDecoderRNN(args.hidden_size, len(vocab), dropout_p=args.dropout).to(device)
 
-    if 'restore' in vars(args):
-        train_iters(encoder1, attn_decoder1, 10000, num_layers=args.num_layers, print_every=5000, restore=args.restore)
-    else:
-        train_iters(encoder1, attn_decoder1, 10000, print_every=5000)
+    train_iters(encoder1, attn_decoder1, 10000, num_layers=args.num_layers, print_every=5000, restore=args.restore)
     # trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
 
     start = time.time()
