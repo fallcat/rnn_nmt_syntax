@@ -13,7 +13,7 @@
 
 BASE_PATH=/mnt/nfs/work1/miyyer
 PROJECT_PATH=$BASE_PATH/wyou/RNN-NMT-Syntax
-EXPERIMENT_PATH=$PROJECT_PATH/experiments/exp01
+EXPERIMENT_PATH=$PROJECT_PATH/experiments/exp02
 
 # Load in python3 and source the venv
 module load python3/3.6.6-1810
@@ -23,7 +23,7 @@ source $PROJECT_PATH/../py36/bin/activate
 # otherwise it defaults to the loaded slurm module which breaks for pynvml with python3
 PYTHONPATH=$BASE_PATH/wyou/py36/lib/python3.6/site-packages/:$PYTHONPATH
 
-python train.py
+python train.py --save $EXPERIMENT_PATH/checkpoint.pth.tar
 
 #BASE_PARAMS=( \
 #  -d "$BASE_PATH/datasets/wmt/" \

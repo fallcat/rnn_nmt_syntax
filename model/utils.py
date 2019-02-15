@@ -46,7 +46,7 @@ def get_cl_args():
     '''Get the command line arguments using argparse.'''
     arg_parser = argparse.ArgumentParser(description='Train machine translation model with RNN + Syntax')
 
-    arg_parser.add_argument('-s', '--save', action='store',
+    arg_parser.add_argument('-s', '--save', action='store', default='experiments/exp02/checkpoint.pth.tar',
                             help='Specify the path of checkpoint to save the stored model')
 
     arg_parser.add_argument('-r', '--restore', action='store', default=None,

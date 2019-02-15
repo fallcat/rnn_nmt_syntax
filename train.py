@@ -92,7 +92,7 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
     return loss.item() / target_length
 
 
-def train_iters(encoder, decoder, n_iters, num_layers=4, print_every=1000, plot_every=100, learning_rate=0.01, restore=None):
+def train_iters(encoder, decoder, n_iters, num_layers=4, print_every=1000, plot_every=100, learning_rate=0.01, restore=None, save_path='experiments/exp02/checkpoint.pth.tar'):
     start = time.time()
     plot_losses = []
     print_loss_total = 0  # Reset every print_every
@@ -147,7 +147,7 @@ def train_iters(encoder, decoder, n_iters, num_layers=4, print_every=1000, plot_
                 'loss': loss,
                 'encoder_optimizer': encoder_optimizer.state_dict(),
                 'decoder_optimizer': decoder_optimizer.state_dict(),
-            }, is_best)
+            }, is_best, save_path)
 
         if iter % plot_every == 0:
             plot_loss_avg = plot_loss_total / plot_every
@@ -175,7 +175,7 @@ if __name__ == "__main__":
     encoder1 = EncoderRNN(len(vocab), args.hidden_size).to(device)
     attn_decoder1 = AttnKspanDecoderRNN(args.hidden_size, len(vocab), dropout_p=args.dropout).to(device)
 
-    train_iters(encoder1, attn_decoder1, 40000, num_layers=args.num_layers, print_every=5000, restore=args.restore)
+    train_iters(encoder1, attn_decoder1, 40000, num_layers=args.num_layers, print_every=5000, restore=args.restore, save_path=args.save)
     # trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
 
     start = time.time()
