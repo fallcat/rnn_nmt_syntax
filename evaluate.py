@@ -12,18 +12,18 @@ def evaluate(input_lang, output_lang, encoder, decoder, sentence, num_layers=4, 
     with torch.no_grad():
         input_tensor = tensor_from_sentence(input_lang, sentence)
         input_length = input_tensor.size()[0]
-        encoder_hiddens = encoder.init_hidden()
+        encoder_hidden = encoder.init_hidden()
 
         encoder_outputs = torch.zeros(max_length, encoder.hidden_size, device=device)
 
         for ei in range(input_length):
             encoder_output, encoder_hidden = encoder(input_tensor[ei],
-                                                     encoder_hiddens)
+                                                     encoder_hidden)
             encoder_outputs[ei] += encoder_output[0, 0]
 
         decoder_input = tuple([torch.tensor([[SOS_token]], device=device) for i in range(span_size)])  # SOS
 
-        decoder_hiddens = encoder_hiddens  # [encoder_hidden for _ in range(num_layers)]
+        decoder_hidden = encoder_hidden  # [encoder_hidden for _ in range(num_layers)]
 
         decoded_words = []
         decoder_attentions = torch.zeros(max_length, max_length)
@@ -32,8 +32,8 @@ def evaluate(input_lang, output_lang, encoder, decoder, sentence, num_layers=4, 
         for di in range(int((max_length + 1) / span_size)):
             #             print("input[0]", decoder_input[0].shape)
             #             print("hidden[0]", decoder_hidden[0].shape)
-            decoder_output, decoder_hiddens, decoder_attention = decoder(
-                decoder_input, decoder_hiddens, encoder_outputs)
+            decoder_output, decoder_hidden, decoder_attention = decoder(
+                decoder_input, decoder_hidden, encoder_outputs)
             decoder_attentions[di] = decoder_attention.data
             #             topv, topi = decoder_output.topk(1, dim=1)
             topi = [EOS_token] * SPAN_SIZE

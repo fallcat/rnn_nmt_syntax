@@ -14,7 +14,7 @@ teacher_forcing_ratio = 0.5
 
 
 def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, num_layers=4, max_length=MAX_LENGTH, span_size=SPAN_SIZE):
-    encoder_hiddens = encoder.init_hidden()
+    encoder_hidden = encoder.init_hidden()
 
     encoder_optimizer.zero_grad()
     decoder_optimizer.zero_grad()
@@ -27,14 +27,14 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
     loss = 0
 
     for ei in range(input_length):
-        encoder_output, encoder_hiddens = encoder(
-            input_tensor[ei], encoder_hiddens)
+        encoder_output, encoder_hidden = encoder(
+            input_tensor[ei], encoder_hidden)
         encoder_outputs[ei] = encoder_output[0, 0]
 
     decoder_input = tuple([torch.tensor([[SOS_token]], device=device) for i in range(span_size)])
 #     print("len decoder input", len(decoder_input))
 
-    decoder_hiddens = encoder_hiddens
+    decoder_hidden = encoder_hidden
     # decoder_hiddens = [encoder_hidden for _ in range(num_layers)]
 
     use_teacher_forcing = True if random.random() < teacher_forcing_ratio else False
@@ -43,8 +43,8 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
         # Teacher forcing: Feed the target as the next input
         break_out = False
         for di in range(int((target_length+1)/span_size)):
-            decoder_output, decoder_hiddens, decoder_attention = decoder(
-                decoder_input, decoder_hiddens, encoder_outputs)
+            decoder_output, decoder_hidden, decoder_attention = decoder(
+                decoder_input, decoder_hidden, encoder_outputs)
             decoder_input = []
             for si in range(span_size):
                 if di*span_size+si < target_length:
@@ -61,8 +61,8 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
         # Without teacher forcing: use its own predictions as the next input
         break_out = False
         for di in range(int((target_length+1)/2)):
-            decoder_output, decoder_hiddens, decoder_attention = decoder(
-                decoder_input, decoder_hiddens, encoder_outputs)
+            decoder_output, decoder_hidden, decoder_attention = decoder(
+                decoder_input, decoder_hidden, encoder_outputs)
             topi = [EOS_token] * SPAN_SIZE
             for si in range(span_size):
                 topv, topi[si] = decoder_output[si].topk(1)
@@ -110,19 +110,7 @@ def train_iters(encoder, decoder, n_iters, num_layers=4, print_every=1000, plot_
     start_iter = 1
 
     # load checkpoint
-    if restore is not None:
-        if os.path.isfile(restore):
-            print("=> loading checkpoint '{}'".format(restore))
-            checkpoint = torch.load(restore)
-            start_iter = checkpoint['epoch']
-            encoder.load_state_dict(checkpoint['encoder_state'])
-            decoder.load_state_dict(checkpoint['decoder_state'])
-            encoder_optimizer.load_state_dict(checkpoint['encoder_optimizer'])
-            decoder_optimizer.load_state_dict(checkpoint['decoder_optimizer'])
-            print("=> loaded checkpoint '{}' (iter {})".format(restore, checkpoint['epoch']))
-            checkpoint_loaded = True
-        else:
-            print("=> no checkpoint found at '{}'".format(restore))
+    restore_checkpoint(encoder, decoder, encoder_optimizer, decoder_optimizer, restore)
 
     for iter in range(start_iter, n_iters + 1):
         training_pair = training_pairs[iter - 1]
@@ -137,6 +125,7 @@ def train_iters(encoder, decoder, n_iters, num_layers=4, print_every=1000, plot_
             print("excpetion :( ", training_pair)
             continue
 
+        # prepare information to print
         if best_loss > loss:
             best_loss = loss
             is_best = True

@@ -10,20 +10,21 @@ class EncoderRNN(nn.Module):
         self.hidden_size = hidden_size
         self.num_layers = num_layers
 
-        self.embedding = nn.Embedding(input_size, hidden_size)
-        # self.gru = nn.GRU(hidden_size, hidden_size)
-        self.grus = nn.ModuleList([nn.GRU(self.hidden_size, self.hidden_size) for _ in range(num_layers)])
+        self.embedding = nn.Embedding(self.input_size, self.hidden_size)
+        self.gru = nn.GRU(self.hidden_size, self.hidden_size, self.num_layers)
+        # self.grus = nn.ModuleList([nn.GRU(self.hidden_size, self.hidden_size) for _ in range(num_layers)])
 
-    def forward(self, input, hiddens):
+    def forward(self, input, hidden):
         embedded = self.embedding(input).view(1, 1, -1)
         output = embedded
-        # output, hidden = self.gru(output, hidden)
-        for i, gru in enumerate(self.grus):
-            output, hiddens[i] = gru(output, hiddens[i])
-        return output, hiddens
+        output, hidden = self.gru(output, hidden)
+        # for i, gru in enumerate(self.grus):
+        #     output, hiddens[i] = gru(output, hiddens[i])
+        return output, hidden
 
     def init_hidden(self):
-        return [torch.zeros(1, 1, self.hidden_size, device=device) for _ in range(self.num_layers)]
+        return torch.zeros(self.num_layers, 1, self.hidden_size, device=device)
+        # return [torch.zeros(1, 1, self.hidden_size, device=device) for _ in range(self.num_layers)]
 
 
 class DecoderRNN(nn.Module):
@@ -97,14 +98,15 @@ class AttnKspanDecoderRNN(nn.Module):
         self.attn = nn.Linear(self.hidden_size * (1 + span_size), self.max_length)
         self.attn_combine = nn.Linear(self.hidden_size * (1 + span_size), self.hidden_size)
         self.dropout = nn.Dropout(self.dropout_p)
-        self.grus = nn.ModuleList([nn.GRU(self.hidden_size, self.hidden_size) for _ in range(num_layers)])
+        self.gru = nn.GRU(self.hidden_size, self.hidden_size, self.num_layers)
+        # self.grus = nn.ModuleList([nn.GRU(self.hidden_size, self.hidden_size) for _ in range(num_layers)])
         self.out = nn.Linear(self.hidden_size, self.output_size * span_size)
 
-    def forward(self, input, hiddens, encoder_outputs):
+    def forward(self, input, hidden, encoder_outputs):
         embeddeds = tuple([self.embedding(input_i).view(1, 1, -1)[0] for input_i in input])
         embeddeds = torch.cat(embeddeds, 1)
         embeddeds = self.dropout(embeddeds)
-        attn_weights = torch.cat((embeddeds, hiddens[0][0]), 1)
+        attn_weights = torch.cat((embeddeds, hidden[0]), 1)
         attn_weights = self.attn(attn_weights)
         attn_weights = F.softmax(attn_weights, dim=1)
         attn_applied = torch.bmm(attn_weights.unsqueeze(0),
@@ -114,16 +116,17 @@ class AttnKspanDecoderRNN(nn.Module):
         output = self.attn_combine(output).unsqueeze(0)
 
         output = F.relu(output)
-        for i, gru in enumerate(self.grus):
-            output, hiddens[i] = gru(output, hiddens[i])
+        output, hidden = self.gru(output, hidden)
+        # for i, gru in enumerate(self.grus):
+        #     output, hiddens[i] = gru(output, hiddens[i])
         output = self.out(output[0])
         output = torch.split(output, self.output_size, dim=1)
 
         output = tuple([F.log_softmax(output_i, dim=1) for output_i in output])
-        return output, hiddens, attn_weights
+        return output, hidden, attn_weights
 
     def init_hidden(self):
-        return [torch.zeros(1, 1, self.hidden_size, device=device) for _ in range(self.num_layers)]
+        return torch.zeros(self.num_layers, 1, self.hidden_size, device=device)
 
 
 class AttnKspanLSTMDecoderRNN(nn.Module):
@@ -140,14 +143,14 @@ class AttnKspanLSTMDecoderRNN(nn.Module):
         self.attn = nn.Linear(self.hidden_size * (1 + span_size), self.max_length)
         self.attn_combine = nn.Linear(self.hidden_size * (1 + span_size), self.hidden_size)
         self.dropout = nn.Dropout(self.dropout_p)
-        self.lstms = nn.ModuleList([nn.LSTM(self.hidden_size, self.hidden_size) for _ in range(num_layers)])
+        self.lstm = nn.LSTM(self.hidden_size, self.hidden_size, self.num_layers)
         self.out = nn.Linear(self.hidden_size, self.output_size * span_size)
 
-    def forward(self, input, hiddens, encoder_outputs):
+    def forward(self, input, hidden, encoder_outputs):
         embeddeds = tuple([self.embedding(input_i).view(1, 1, -1)[0] for input_i in input])
         embeddeds = torch.cat(embeddeds, 1)
         embeddeds = self.dropout(embeddeds)
-        attn_weights = torch.cat((embeddeds, hiddens[0][0]), 1)
+        attn_weights = torch.cat((embeddeds, hidden[0]), 1)
         attn_weights = self.attn(attn_weights)
         attn_weights = F.softmax(attn_weights, dim=1)
         attn_applied = torch.bmm(attn_weights.unsqueeze(0),
@@ -157,13 +160,12 @@ class AttnKspanLSTMDecoderRNN(nn.Module):
         output = self.attn_combine(output).unsqueeze(0)
 
         output = F.relu(output)
-        for i, lstm in enumerate(self.lstms):
-            output, hiddens[i] = lstm(output, hiddens[i])
+        output, hidden = self.lstm(output, hidden)
         output = self.out(output[0])
         output = torch.split(output, self.output_size, dim=1)
 
         output = tuple([F.log_softmax(output_i, dim=1) for output_i in output])
-        return output, hiddens, attn_weights
+        return output, hidden, attn_weights
 
     def init_hidden(self):
-        return [torch.zeros(1, 1, self.hidden_size, device=device) for _ in range(self.num_layers)]
+        return torch.zeros(self.num_layers, 1, self.hidden_size, device=device)

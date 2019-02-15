@@ -1,8 +1,10 @@
+import os
 import time
 import math
 import torch
 import argparse
 import shutil
+
 
 def as_minutes(s):
     m = math.floor(s / 60)
@@ -17,10 +19,27 @@ def time_since(since, percent):
     rs = es - s
     return '%s (- %s)' % (as_minutes(s), as_minutes(rs))
 
+
 def save_checkpoint(state, is_best, filename='experiments/exp01/checkpoint.pth.tar'):
     torch.save(state, filename)
     if is_best:
         shutil.copyfile(filename, 'experiments/exp01/model_best.pth.tar')
+
+
+def restore_checkpoint(encoder, decoder, encoder_optimizer, decoder_optimizer, restore):
+    if restore is not None:
+        if os.path.isfile(restore):
+            print("=> loading checkpoint '{}'".format(restore))
+            checkpoint = torch.load(restore)
+            start_iter = checkpoint['epoch']
+            encoder.load_state_dict(checkpoint['encoder_state'])
+            decoder.load_state_dict(checkpoint['decoder_state'])
+            encoder_optimizer.load_state_dict(checkpoint['encoder_optimizer'])
+            decoder_optimizer.load_state_dict(checkpoint['decoder_optimizer'])
+            print("=> loaded checkpoint '{}' (iter {})".format(restore, checkpoint['epoch']))
+            checkpoint_loaded = True
+        else:
+            print("=> no checkpoint found at '{}'".format(restore))
 
 
 def get_cl_args():
