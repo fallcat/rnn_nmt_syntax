@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#SBATCH --job-name=exp01-rnn
+#SBATCH --job-name=exp02-rnn
 #SBATCH --partition=1080ti-short
 #SBATCH --gres=gpu:8
 #SBATCH --ntasks-per-node=24
