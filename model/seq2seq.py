@@ -10,7 +10,7 @@ class EncoderRNN(nn.Module):
         self.hidden_size = hidden_size
         self.num_layers = num_layers
 
-        self.embedding = nn.Embedding(self.input_size, self.hidden_size)
+        self.embedding = nn.Embedding(input_size, self.hidden_size)
         self.gru = nn.GRU(self.hidden_size, self.hidden_size, self.num_layers)
         # self.grus = nn.ModuleList([nn.GRU(self.hidden_size, self.hidden_size) for _ in range(num_layers)])
 

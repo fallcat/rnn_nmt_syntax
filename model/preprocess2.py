@@ -4,14 +4,9 @@ import unicodedata
 import re
 import torch
 import tarfile
+from model import SOS_token, EOS_token, MAX_LENGTH, SPAN_SIZE
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-SOS_token = 0
-EOS_token = 1
-
-MAX_LENGTH = 50
-SPAN_SIZE = 3
 
 eng_prefixes = (
     "i am ", "i m ",

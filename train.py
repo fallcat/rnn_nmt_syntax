@@ -8,6 +8,7 @@ from model.seq2seq import *
 from model.utils import *
 from evaluate import *
 from torch import optim
+from model import SOS_token, EOS_token, MAX_LENGTH, SPAN_SIZE
 
 
 teacher_forcing_ratio = 0.5
