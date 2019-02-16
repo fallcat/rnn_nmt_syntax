@@ -106,7 +106,7 @@ class Trainer(object):
 
         num_exceptions = 0
 
-        for iter in range(0, self.config['num_iters']):
+        for iter in range(1, self.config['num_iters'] + 1):
             training_pair = training_pairs[iter - 1]
             input_tensor = training_pair[0]
             target_tensor = training_pair[1]
