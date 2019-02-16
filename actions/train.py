@@ -100,7 +100,7 @@ class Trainer(object):
         plot_loss_total = 0  # Reset every plot_every
 
         training_pairs = [self.dataset.tensors_from_pair(random.choice(self.dataset.pairs)) \
-                          for _ in range(self.config['n_iters'])]
+                          for _ in range(self.config['num_iters'])]
 
         best_loss = float("inf")
 
