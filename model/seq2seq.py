@@ -1,7 +1,7 @@
-from .preprocess2 import *
-
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from model import SOS_token, EOS_token, MAX_LENGTH, SPAN_SIZE, DEVICE
 
 
 class EncoderRNN(nn.Module):
@@ -23,7 +23,7 @@ class EncoderRNN(nn.Module):
         return output, hidden
 
     def init_hidden(self):
-        return torch.zeros(self.num_layers, 1, self.hidden_size, device=device)
+        return torch.zeros(self.num_layers, 1, self.hidden_size, device=DEVICE)
         # return [torch.zeros(1, 1, self.hidden_size, device=device) for _ in range(self.num_layers)]
 
 
@@ -45,7 +45,7 @@ class DecoderRNN(nn.Module):
         return output, hidden
 
     def init_hidden(self):
-        return torch.zeros(1, 1, self.hidden_size, device=device)
+        return torch.zeros(1, 1, self.hidden_size, device=DEVICE)
 
 
 class AttnDecoderRNN(nn.Module):
@@ -81,7 +81,7 @@ class AttnDecoderRNN(nn.Module):
         return output, hidden, attn_weights
 
     def init_hidden(self):
-        return torch.zeros(1, 1, self.hidden_size, device=device)
+        return torch.zeros(1, 1, self.hidden_size, device=DEVICE)
 
 
 class AttnKspanDecoderRNN(nn.Module):
@@ -126,7 +126,7 @@ class AttnKspanDecoderRNN(nn.Module):
         return output, hidden, attn_weights
 
     def init_hidden(self):
-        return torch.zeros(self.num_layers, 1, self.hidden_size, device=device)
+        return torch.zeros(self.num_layers, 1, self.hidden_size, device=DEVICE)
 
 
 class AttnKspanLSTMDecoderRNN(nn.Module):
@@ -168,4 +168,4 @@ class AttnKspanLSTMDecoderRNN(nn.Module):
         return output, hidden, attn_weights
 
     def init_hidden(self):
-        return torch.zeros(self.num_layers, 1, self.hidden_size, device=device)
+        return torch.zeros(self.num_layers, 1, self.hidden_size, device=DEVICE)

@@ -4,6 +4,7 @@
 
 import os
 
+from model.preprocess2 import *
 from model.seq2seq import *
 from model.utils import *
 from evaluate import *
@@ -175,7 +176,7 @@ if __name__ == "__main__":
     encoder1 = EncoderRNN(len(vocab), args.hidden_size).to(device)
     attn_decoder1 = AttnKspanDecoderRNN(args.hidden_size, len(vocab), dropout_p=args.dropout).to(device)
 
-    train_iters(encoder1, attn_decoder1, 40000, num_layers=args.num_layers, print_every=5000, restore=args.restore, save_path=args.save)
+    train_iters(encoder1, attn_decoder1, 80000, num_layers=args.num_layers, print_every=5000, restore=args.restore, save_path=args.save)
     # trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
 
     start = time.time()

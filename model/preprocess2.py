@@ -39,6 +39,7 @@ class Lang:
         else:
             self.word2count[word] += 1
 
+
 # Turn a Unicode string to plain ASCII, thanks to
 # https://stackoverflow.com/a/518232/2809427
 def unicode_to_ascii(s):
@@ -46,6 +47,7 @@ def unicode_to_ascii(s):
         c for c in unicodedata.normalize('NFD', s)
         if unicodedata.category(c) != 'Mn'
     )
+
 
 # Lowercase, trim, and remove non-letter characters
 def normalize_string(s):
