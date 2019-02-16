@@ -13,6 +13,7 @@ from model import DEVICE
 
 def main():
     args = get_cl_args()
+    print(args)
     dataset = WMTDataset(max_length=args.max_length)
     encoder1 = EncoderRNN(dataset.num_words, args.hidden_size, num_layers=args.num_layers).to(DEVICE)
     attn_decoder1 = AttnKspanDecoderRNN(args.hidden_size, dataset.num_words, num_layers=args.num_layers,
