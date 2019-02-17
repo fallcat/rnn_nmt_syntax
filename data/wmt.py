@@ -1,13 +1,15 @@
 import tarfile
 import torch
+import torch.utils.data as Data
 from model import EOS_token, DEVICE
+
 
 
 class WMTDataset(object):
     """
     Prepare data from WMTDataset
     """
-    def __init__(self, max_length, reverse=False):
+    def __init__(self, max_length, minibatch_size=128, reverse=False):
         self.word2index = {}
         self.word2count = {}
         self.index2word = {0: "SOS", 1: "EOS"}
@@ -21,7 +23,10 @@ class WMTDataset(object):
         }
         self.reverse = reverse
         self.max_length = max_length
+        self.minibatch_size = minibatch_size
+
         self.pairs = self.prepare_data()
+        self.dataloader = self.prepare_dataloader()
 
     def read_vocab(self):
         t = tarfile.open(self.tar_path, "r")
@@ -64,6 +69,7 @@ class WMTDataset(object):
         self.read_vocab()
         print("Counted words:", self.num_words)
         return pairs
+
 
     def filter_pair(self, p):
         return len(p[0].split(' ')) < self.max_length and \

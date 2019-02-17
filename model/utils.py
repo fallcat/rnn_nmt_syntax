@@ -86,10 +86,10 @@ def get_cl_args():
     arg_parser.add_argument('--learning-rate', action='store', type=float, default=0.01,
                             help='Specify the learning rate')
 
-    arg_parser.add_argument('--print-every', action='store', type=int, default=5000,
-                            help='Specify the number of iterations to print loss')
+    arg_parser.add_argument('--print-every', action='store', type=int, default=40,
+                            help='Specify the number of batches to report loss')
 
-    arg_parser.add_argument('--plot-every', action='store', type=int, default=100,
+    arg_parser.add_argument('--plot-every', action='store', type=int, default=1,
                             help='Specify the number of iterations to record loss and print later')
 
     arg_parser.add_argument('--teacher-forcing-ratio', action='store', type=float, default=0.5,
@@ -100,6 +100,9 @@ def get_cl_args():
     arg_parser.add_argument('--train-size', action='store', type=int, default=None,
                             help='Specify the size of data to train. If specify a small number,'
                                  'can try to make the model converge before training on larger data.')
+
+    arg_parser.add_argument('--minibatch-size', action='store', type=int, default=128,
+                            help='Specify the size of minibatch')
 
     return arg_parser.parse_args()
 

@@ -3,12 +3,13 @@ import torch
 import random
 import time
 import shutil
+import torch.utils.data as Data
 from torch import nn, optim
 from model import SOS_token, EOS_token, DEVICE
 from model.utils import save_plot, time_since
 
 # config: max_length, span_size, teacher_forcing_ratio, learning_rate, num_iters, print_every, plot_every, save_path,
-#         restore_path, best_save_path, plot_path
+#         restore_path, best_save_path, plot_path, minibatch_size
 
 
 class Trainer(object):
@@ -92,67 +93,137 @@ class Trainer(object):
 
         return loss.item() / target_length
 
-    def train_epoch(self, epoch, train_size=None):
+    def train_epoch(self, dataloader, epoch):
         print("===== epoch " + str(epoch) + " =====")
         start = time.time()
         plot_losses = []
         print_loss_total = 0  # Reset every print_every
+        print_count = 0
         plot_loss_total = 0  # Reset every plot_every
+        plot_count = 0
 
+        for step, batch in enumerate(dataloader):
+            training_pairs = batch
+
+            best_loss = float("inf")
+
+            num_exceptions = 0
+
+            len_training_pairs = len(training_pairs)
+
+            for iter in range(1, len_training_pairs + 1):
+                training_pair = training_pairs[iter - 1]
+                input_tensor = training_pair[0]
+                target_tensor = training_pair[1]
+                try:
+                    loss = self.train_iter(input_tensor, target_tensor)
+                except:
+                    num_exceptions += 1
+                    continue
+
+                # prepare information to print
+                if best_loss > loss:
+                    best_loss = loss
+                    is_best = True
+                else:
+                    is_best = False
+                print_loss_total += loss
+                print_count += 1
+                plot_loss_total += loss
+                plot_count += 1
+
+            if step % self.config['print_every'] == 0:
+                print_loss_avg = print_loss_total / print_count
+                print_loss_total = 0
+                print_count = 0
+                print('%s (%d %d%%) %.4f' % (time_since(start, step / len_training_pairs),
+                                             step, step / len_training_pairs * 100, print_loss_avg))
+                self.save_checkpoint({
+                    'epoch': step + 1,
+                    'encoder_state': self.encoder.state_dict(),
+                    'decoder_state': self.decoder.state_dict(),
+                    'encoder_optimizer': self.encoder_optimizer.state_dict(),
+                    'decoder_optimizer': self.decoder_optimizer.state_dict(),
+                })
+
+            if step % self.config['plot_every'] == 0:
+                plot_loss_avg = plot_loss_total / plot_count
+                plot_losses.append(plot_loss_avg)
+                plot_loss_total = 0
+                plot_count = 0
+
+            if num_exceptions > 0:
+                print("Number of exceptions: ", num_exceptions)
+
+        # training_pairs = [self.dataset.tensors_from_pair(random.choice(pairs)) \
+        #                   for _ in range(self.config['num_iters'])]
+        #
+        # best_loss = float("inf")
+        #
+        # num_exceptions = 0
+        #
+        # for iter in range(1, self.config['num_iters'] + 1):
+        #     training_pair = training_pairs[iter - 1]
+        #     input_tensor = training_pair[0]
+        #     target_tensor = training_pair[1]
+        #     try:
+        #         loss = self.train_iter(input_tensor, target_tensor)
+        #     except:
+        #         num_exceptions += 1
+        #         continue
+        #
+        #     # prepare information to print
+        #     if best_loss > loss:
+        #         best_loss = loss
+        #         is_best = True
+        #     else:
+        #         is_best = False
+        #     print_loss_total += loss
+        #     plot_loss_total += loss
+        #
+        #     if iter % self.config['print_every'] == 0:
+        #         print_loss_avg = print_loss_total / self.config['print_every']
+        #         print_loss_total = 0
+        #         print('%s (%d %d%%) %.4f' % (time_since(start, iter / self.config['num_iters']),
+        #                                      iter, iter / self.config['num_iters'] * 100, print_loss_avg))
+        #         self.save_checkpoint({
+        #             'epoch': iter + 1,
+        #             'encoder_state': self.encoder.state_dict(),
+        #             'decoder_state': self.decoder.state_dict(),
+        #             'loss': loss,
+        #             'encoder_optimizer': self.encoder_optimizer.state_dict(),
+        #             'decoder_optimizer': self.decoder_optimizer.state_dict(),
+        #         }, is_best)
+        #
+        #     if iter % self.config['plot_every'] == 0:
+        #         plot_loss_avg = plot_loss_total / self.config['plot_every']
+        #         plot_losses.append(plot_loss_avg)
+        #         plot_loss_total = 0
+        #
+        # if num_exceptions > 0:
+        #     print("Number of exceptions: ", num_exceptions)
+        #
+        # save_plot(plot_losses, self.config['plot_path'])
+
+    def train(self, train_size=None):
+        dataloader = self.prepare_dataloader(train_size)
+        for epoch in range(self.config['num_epochs']):
+            self.train_epoch(dataloader, epoch)
+
+    def prepare_dataloader(self, train_size):
         if train_size is not None:
             pairs = self.dataset.pairs[:train_size]
         else:
             pairs = self.dataset.pairs
-
-        training_pairs = [self.dataset.tensors_from_pair(random.choice(pairs)) \
-                          for _ in range(self.config['num_iters'])]
-
-        best_loss = float("inf")
-
-        num_exceptions = 0
-
-        for iter in range(1, self.config['num_iters'] + 1):
-            training_pair = training_pairs[iter - 1]
-            input_tensor = training_pair[0]
-            target_tensor = training_pair[1]
-            try:
-                loss = self.train_iter(input_tensor, target_tensor)
-            except:
-                num_exceptions += 1
-                continue
-
-            # prepare information to print
-            if best_loss > loss:
-                best_loss = loss
-                is_best = True
-            else:
-                is_best = False
-            print_loss_total += loss
-            plot_loss_total += loss
-
-            if iter % self.config['print_every'] == 0:
-                print_loss_avg = print_loss_total / self.config['print_every']
-                print_loss_total = 0
-                print('%s (%d %d%%) %.4f' % (time_since(start, iter / self.config['num_iters']),
-                                             iter, iter / self.config['num_iters'] * 100, print_loss_avg))
-                self.save_checkpoint({
-                    'epoch': iter + 1,
-                    'encoder_state': self.encoder.state_dict(),
-                    'decoder_state': self.decoder.state_dict(),
-                    'loss': loss,
-                    'encoder_optimizer': self.encoder_optimizer.state_dict(),
-                    'decoder_optimizer': self.decoder_optimizer.state_dict(),
-                }, is_best)
-
-            if iter % self.config['plot_every'] == 0:
-                plot_loss_avg = plot_loss_total / self.config['plot_every']
-                plot_losses.append(plot_loss_avg)
-                plot_loss_total = 0
-
-        if num_exceptions > 0:
-            print("Number of exceptions: ", num_exceptions)
-
-        save_plot(plot_losses, self.config['plot_path'])
+        pairs = torch.tensor(pairs)
+        torch_dataset = Data.TensorDataset(pairs)
+        loader = Data.DataLoader(
+            dataset=torch_dataset,
+            batch_size=self.config['minibatch_size'],
+            shuffle=True,
+            num_workers=2
+        )
+        return loader
 
     def restore_checkpoint(self, restore_path):
         if restore_path is not None:
@@ -168,7 +239,7 @@ class Trainer(object):
             else:
                 print("=> no checkpoint found at '{}'".format(restore_path))
 
-    def save_checkpoint(self, state, is_best):
+    def save_checkpoint(self, state):
         torch.save(state, self.config['save_path'])
-        if is_best:
-            shutil.copyfile(self.config['save_path'], self.config['best_save_path'])
+        # if is_best:
+        #     shutil.copyfile(self.config['save_path'], self.config['best_save_path'])
