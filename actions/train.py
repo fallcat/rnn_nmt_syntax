@@ -215,7 +215,7 @@ class Trainer(object):
             pairs = self.dataset.pairs[:train_size]
         else:
             pairs = self.dataset.pairs
-        pairs = torch.tensor([self.dataset.tensors_from_pair(pair) for pair in pairs])
+        pairs = [self.dataset.tensors_from_pair(pair) for pair in pairs]
         torch_dataset = Data.TensorDataset(pairs)
         loader = Data.DataLoader(
             dataset=torch_dataset,
