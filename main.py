@@ -36,7 +36,7 @@ def main():
     if args.restore is not None:
         trainer.restore_checkpoint(args.restore)
     for epoch in range(args.num_epochs):
-        trainer.train_epoch(epoch)
+        trainer.train_epoch(epoch, args.train_size)
 
 
 if __name__ == "__main__":

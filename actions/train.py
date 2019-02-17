@@ -92,14 +92,19 @@ class Trainer(object):
 
         return loss.item() / target_length
 
-    def train_epoch(self, epoch):
+    def train_epoch(self, epoch, train_size=None):
         print("===== epoch " + str(epoch) + " =====")
         start = time.time()
         plot_losses = []
         print_loss_total = 0  # Reset every print_every
         plot_loss_total = 0  # Reset every plot_every
 
-        training_pairs = [self.dataset.tensors_from_pair(random.choice(self.dataset.pairs)) \
+        if train_size is not None:
+            pairs = self.dataset.pairs[:train_size]
+        else:
+            pairs = self.dataset.pairs
+
+        training_pairs = [self.dataset.tensors_from_pair(random.choice(pairs)) \
                           for _ in range(self.config['num_iters'])]
 
         best_loss = float("inf")

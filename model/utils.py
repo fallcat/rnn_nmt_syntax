@@ -97,6 +97,10 @@ def get_cl_args():
                                  ' - use ground truth target words instead of generated'
                                  'words to predict next words')
 
+    arg_parser.add_argument('--train-size', action='store', type=int, default=None,
+                            help='Specify the size of data to train. If specify a small number,'
+                                 'can try to make the model converge before training on larger data.')
+
     return arg_parser.parse_args()
 
 
