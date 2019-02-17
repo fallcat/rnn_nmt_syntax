@@ -30,13 +30,15 @@ def main():
         'save_path': args.save,
         'restore_path': args.restore,
         'best_save_path': args.best_model,
-        'plot_path': args.plot
+        'plot_path': args.plot,
+        'minibatch_size': args.minibatch_size
     }
     trainer = Trainer(config=config, models=models, dataset=dataset)
     if args.restore is not None:
         trainer.restore_checkpoint(args.restore)
-    for epoch in range(args.num_epochs):
-        trainer.train_epoch(epoch, args.train_size)
+    trainer.train(args.train_size)
+    # for epoch in range(args.num_epochs):
+    #     trainer.train_epoch(epoch, args.train_size)
 
 
 if __name__ == "__main__":

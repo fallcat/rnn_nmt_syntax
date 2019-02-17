@@ -26,7 +26,6 @@ class WMTDataset(object):
         self.minibatch_size = minibatch_size
 
         self.pairs = self.prepare_data()
-        self.dataloader = self.prepare_dataloader()
 
     def read_vocab(self):
         t = tarfile.open(self.tar_path, "r")
@@ -69,7 +68,6 @@ class WMTDataset(object):
         self.read_vocab()
         print("Counted words:", self.num_words)
         return pairs
-
 
     def filter_pair(self, p):
         return len(p[0].split(' ')) < self.max_length and \
