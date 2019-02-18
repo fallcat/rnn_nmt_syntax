@@ -139,25 +139,31 @@ class Trainer(object):
                 plot_loss_total += loss
                 plot_count += 1
 
-            if step % self.config['print_every'] == 0:
+            if step+1 % self.config['print_every'] == 0:
                 print_loss_avg = print_loss_total / print_count
                 print_loss_total = 0
                 print_count = 0
-                print('%s (%d %d%%) %.4f' % (time_since(start, step+1 / len_training_pairs),
+                try:
+                    print('%s (%d %d%%) %.4f' % (time_since(start, step+1 / len_training_pairs),
                                              step+1, step+1 / len_training_pairs * 100, print_loss_avg))
-                self.save_checkpoint({
-                    'epoch': step + 1,
-                    'encoder_state': self.encoder.state_dict(),
-                    'decoder_state': self.decoder.state_dict(),
-                    'encoder_optimizer': self.encoder_optimizer.state_dict(),
-                    'decoder_optimizer': self.decoder_optimizer.state_dict(),
-                })
+                    self.save_checkpoint({
+                        'epoch': step + 1,
+                        'encoder_state': self.encoder.state_dict(),
+                        'decoder_state': self.decoder.state_dict(),
+                        'encoder_optimizer': self.encoder_optimizer.state_dict(),
+                        'decoder_optimizer': self.decoder_optimizer.state_dict(),
+                    })
+                except:
+                    print("divide by zero when printing loss")
 
-            if step+1 % self.config['plot_every'] == 0:
-                plot_loss_avg = plot_loss_total / plot_count
-                plot_losses.append(plot_loss_avg)
-                plot_loss_total = 0
-                plot_count = 0
+            try:
+                if step+1 % self.config['plot_every'] == 0:
+                    plot_loss_avg = plot_loss_total / plot_count
+                    plot_losses.append(plot_loss_avg)
+                    plot_loss_total = 0
+                    plot_count = 0
+            except:
+                print("divide by zero when plotting loss")
 
             if num_exceptions > 0:
                 print("Number of exceptions: ", num_exceptions)
