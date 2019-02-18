@@ -12,7 +12,7 @@ from model.utils import save_plot, time_since
 
 
 class Trainer(object):
-    def __init__(self, config, models, dataset):
+    def __init__(self, config, models, dataset, experiment=None):
         self.config = config
         self.encoder = models['encoder']
         self.decoder = models['decoder']
@@ -21,6 +21,7 @@ class Trainer(object):
         self.criterion = nn.NLLLoss()
         self.epoch = 0
         self.dataset = dataset
+        self.experiment = experiment
 
     def train_iter(self, input_tensor, target_tensor):
         encoder_hidden = self.encoder.init_hidden()
@@ -94,6 +95,7 @@ class Trainer(object):
 
     def train_epoch(self, epoch, train_size=None):
         print("===== epoch " + str(epoch) + " =====")
+        self.experiment.log_current_epoch(epoch)
         start = time.time()
         plot_losses = []
         print_loss_total = 0  # Reset every print_every
@@ -118,12 +120,15 @@ class Trainer(object):
 
             len_training_pairs = len(training_pairs)
 
+            step_loss = 0
+
             for iter in range(1, len_training_pairs + 1):
                 training_pair = training_pairs[iter - 1]
                 input_tensor = training_pair[0]
                 target_tensor = training_pair[1]
                 try:
                     loss = self.train_iter(input_tensor, target_tensor)
+                    step_loss += loss
                 except:
                     num_exceptions += 1
                     continue
@@ -139,13 +144,16 @@ class Trainer(object):
                 plot_loss_total += loss
                 plot_count += 1
 
+            # Log to Comet.ml
+            self.experiment.log_metric("loss", step_loss / (len_training_pairs - num_exceptions), step=step)
+
             if step+1 % self.config['print_every'] == 0:
                 print_loss_avg = print_loss_total / print_count
                 print_loss_total = 0
                 print_count = 0
                 try:
-                    print('%s (%d %d%%) %.4f' % (time_since(start, step+1 / len_training_pairs),
-                                             step+1, step+1 / len_training_pairs * 100, print_loss_avg))
+                    print('%s (%d %d%%) %.4f' % (time_since(start, step+1 / (len_training_pairs - num_exceptions)),
+                          step+1, step+1 / (len_training_pairs - num_exceptions) * 100, print_loss_avg))
                     self.save_checkpoint({
                         'epoch': step + 1,
                         'encoder_state': self.encoder.state_dict(),
@@ -167,56 +175,6 @@ class Trainer(object):
 
             if num_exceptions > 0:
                 print("Number of exceptions: ", num_exceptions)
-
-        # training_pairs = [self.dataset.tensors_from_pair(random.choice(pairs)) \
-        #                   for _ in range(self.config['num_iters'])]
-        #
-        # best_loss = float("inf")
-        #
-        # num_exceptions = 0
-        #
-        # for iter in range(1, self.config['num_iters'] + 1):
-        #     training_pair = training_pairs[iter - 1]
-        #     input_tensor = training_pair[0]
-        #     target_tensor = training_pair[1]
-        #     try:
-        #         loss = self.train_iter(input_tensor, target_tensor)
-        #     except:
-        #         num_exceptions += 1
-        #         continue
-        #
-        #     # prepare information to print
-        #     if best_loss > loss:
-        #         best_loss = loss
-        #         is_best = True
-        #     else:
-        #         is_best = False
-        #     print_loss_total += loss
-        #     plot_loss_total += loss
-        #
-        #     if iter % self.config['print_every'] == 0:
-        #         print_loss_avg = print_loss_total / self.config['print_every']
-        #         print_loss_total = 0
-        #         print('%s (%d %d%%) %.4f' % (time_since(start, iter / self.config['num_iters']),
-        #                                      iter, iter / self.config['num_iters'] * 100, print_loss_avg))
-        #         self.save_checkpoint({
-        #             'epoch': iter + 1,
-        #             'encoder_state': self.encoder.state_dict(),
-        #             'decoder_state': self.decoder.state_dict(),
-        #             'loss': loss,
-        #             'encoder_optimizer': self.encoder_optimizer.state_dict(),
-        #             'decoder_optimizer': self.decoder_optimizer.state_dict(),
-        #         }, is_best)
-        #
-        #     if iter % self.config['plot_every'] == 0:
-        #         plot_loss_avg = plot_loss_total / self.config['plot_every']
-        #         plot_losses.append(plot_loss_avg)
-        #         plot_loss_total = 0
-        #
-        # if num_exceptions > 0:
-        #     print("Number of exceptions: ", num_exceptions)
-        #
-        # save_plot(plot_losses, self.config['plot_path'])
 
     def train(self, train_size=None):
         # dataloader = self.prepare_dataloader(train_size)

@@ -104,6 +104,9 @@ def get_cl_args():
     arg_parser.add_argument('--minibatch-size', action='store', type=int, default=128,
                             help='Specify the size of minibatch')
 
+    arg_parser.add_argument('--do-experiment', action='store_true',
+                            help='Record this run in experiment')
+
     return arg_parser.parse_args()
 
 

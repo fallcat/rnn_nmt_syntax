@@ -2,6 +2,7 @@
 Main entrance of the program
 """
 
+from comet_ml import Experiment
 from model.utils import get_cl_args
 from data.wmt import WMTDataset
 from actions.train import Trainer
@@ -34,7 +35,26 @@ def main():
         'minibatch_size': args.minibatch_size,
         'num_epochs': args.num_epochs
     }
-    trainer = Trainer(config=config, models=models, dataset=dataset)
+    if args.do_experiment:
+        experiment = Experiment()
+        hyper_params = {
+            'max_length': args.max_length,
+            'span_size': args.span_size,
+            'teacher_forcing_ratio': args.teacher_forcing_ratio,
+            'learning_rate': args.learning_rate,
+            'num_iters': args.num_iters,
+            'save_path': args.save,
+            'restore_path': args.restore,
+            'best_save_path': args.best_model,
+            'plot_path': args.plot,
+            'minibatch_size': args.minibatch_size,
+            'num_epochs': args.num_epochs,
+            'train_size': args.train_size
+        }
+        experiment.log_parameters(hyper_params)
+    else:
+        experiment = None
+    trainer = Trainer(config=config, models=models, dataset=dataset, experiment=experiment)
     if args.restore is not None:
         trainer.restore_checkpoint(args.restore)
     trainer.train(args.train_size)
