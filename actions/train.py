@@ -92,7 +92,7 @@ class Trainer(object):
 
         return loss.item() / target_length
 
-    def train_epoch(self, epoch):
+    def train_epoch(self, epoch, train_size=None):
         print("===== epoch " + str(epoch) + " =====")
         start = time.time()
         plot_losses = []
@@ -101,7 +101,10 @@ class Trainer(object):
         plot_loss_total = 0  # Reset every plot_every
         plot_count = 0
 
-        pairs = self.dataset.pairs
+        if train_size is not None:
+            pairs = self.dataset.pairs[:train_size]
+        else:
+            pairs = self.dataset.pairs
         random.shuffle(pairs)
 
         for step in range(len(self.dataset.pairs)/self.config['minibatch_size']):
@@ -212,7 +215,7 @@ class Trainer(object):
     def train(self, train_size=None):
         # dataloader = self.prepare_dataloader(train_size)
         for epoch in range(self.config['num_epochs']):
-            self.train_epoch(epoch)
+            self.train_epoch(epoch, train_size)
 
     # def prepare_dataloader(self, train_size):
     #     if train_size is not None:

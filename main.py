@@ -31,7 +31,8 @@ def main():
         'restore_path': args.restore,
         'best_save_path': args.best_model,
         'plot_path': args.plot,
-        'minibatch_size': args.minibatch_size
+        'minibatch_size': args.minibatch_size,
+        'num_epochs': args.num_epochs
     }
     trainer = Trainer(config=config, models=models, dataset=dataset)
     if args.restore is not None:
