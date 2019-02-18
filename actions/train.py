@@ -95,7 +95,8 @@ class Trainer(object):
 
     def train_epoch(self, epoch, train_size=None):
         print("===== epoch " + str(epoch) + " =====")
-        self.experiment.log_current_epoch(epoch)
+        if self.experiment is not None:
+            self.experiment.log_current_epoch(epoch)
         start = time.time()
         plot_losses = []
         print_loss_total = 0  # Reset every print_every
@@ -145,7 +146,8 @@ class Trainer(object):
                 plot_count += 1
 
             # Log to Comet.ml
-            self.experiment.log_metric("loss", step_loss / (len_training_pairs - num_exceptions), step=step)
+            if self.experiment is not None:
+                self.experiment.log_metric("loss", step_loss / (len_training_pairs - num_exceptions), step=step)
 
             if step+1 % self.config['print_every'] == 0:
                 print_loss_avg = print_loss_total / print_count
