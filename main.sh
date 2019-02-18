@@ -23,7 +23,8 @@ source $PROJECT_PATH/../py36/bin/activate
 # otherwise it defaults to the loaded slurm module which breaks for pynvml with python3
 PYTHONPATH=$BASE_PATH/wyou/py36/lib/python3.6/site-packages/:$PYTHONPATH
 
-python main.py -i 10000 -s $EXPERIMENT_PATH/checkpoint.pth.tar -b $EXPERIMENT_PATH/model_best.pth.tar \
+env $(cat ~/.comet.ml | xargs) python main.py -i 10000 -s $EXPERIMENT_PATH/checkpoint.pth.tar \
+    -b $EXPERIMENT_PATH/model_best.pth.tar \
     -p $EXPERIMENT_PATH/plot.pdf --train-size 10000
 
 #BASE_PARAMS=( \
