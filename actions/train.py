@@ -101,10 +101,13 @@ class Trainer(object):
         plot_loss_total = 0  # Reset every plot_every
         plot_count = 0
 
+        pairs = self.dataset.pairs
+        random.shuffle(pairs)
+
         for step in range(len(self.dataset.pairs)/self.config['minibatch_size']):
             training_pairs = [self.dataset.tensors_from_pair(pair)
-                              for pair in self.dataset.pairs[step * self.config['minibatch_size']:
-                                                             (step + 1) * self.config['minibatch_size']]]
+                              for pair in pairs[step * self.config['minibatch_size']:
+                                                (step + 1) * self.config['minibatch_size']]]
 
             best_loss = float("inf")
 
