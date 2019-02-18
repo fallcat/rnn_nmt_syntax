@@ -107,7 +107,7 @@ class Trainer(object):
             pairs = self.dataset.pairs
         random.shuffle(pairs)
 
-        for step in range(len(self.dataset.pairs)/self.config['minibatch_size']):
+        for step in range(int((len(self.dataset.pairs)-1)/self.config['minibatch_size'])+1):
             training_pairs = [self.dataset.tensors_from_pair(pair)
                               for pair in pairs[step * self.config['minibatch_size']:
                                                 (step + 1) * self.config['minibatch_size']]]
