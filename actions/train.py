@@ -143,8 +143,8 @@ class Trainer(object):
                 print_loss_avg = print_loss_total / print_count
                 print_loss_total = 0
                 print_count = 0
-                print('%s (%d %d%%) %.4f' % (time_since(start, step / len_training_pairs),
-                                             step, step / len_training_pairs * 100, print_loss_avg))
+                print('%s (%d %d%%) %.4f' % (time_since(start, step+1 / len_training_pairs),
+                                             step+1, step+1 / len_training_pairs * 100, print_loss_avg))
                 self.save_checkpoint({
                     'epoch': step + 1,
                     'encoder_state': self.encoder.state_dict(),
