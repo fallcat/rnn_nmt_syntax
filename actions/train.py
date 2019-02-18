@@ -153,7 +153,7 @@ class Trainer(object):
                     'decoder_optimizer': self.decoder_optimizer.state_dict(),
                 })
 
-            if step % self.config['plot_every'] == 0:
+            if step+1 % self.config['plot_every'] == 0:
                 plot_loss_avg = plot_loss_total / plot_count
                 plot_losses.append(plot_loss_avg)
                 plot_loss_total = 0
