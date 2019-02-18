@@ -153,7 +153,7 @@ class Trainer(object):
                         'encoder_optimizer': self.encoder_optimizer.state_dict(),
                         'decoder_optimizer': self.decoder_optimizer.state_dict(),
                     })
-                except:
+                except ZeroDivisionError:
                     print("divide by zero when printing loss")
 
             try:
@@ -162,7 +162,7 @@ class Trainer(object):
                     plot_losses.append(plot_loss_avg)
                     plot_loss_total = 0
                     plot_count = 0
-            except:
+            except ZeroDivisionError:
                 print("divide by zero when plotting loss")
 
             if num_exceptions > 0:
