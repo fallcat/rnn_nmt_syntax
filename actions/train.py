@@ -3,7 +3,6 @@ import torch
 import random
 import time
 import shutil
-import torch.utils.data as Data
 from torch import nn, optim
 from model import SOS_token, EOS_token, DEVICE
 from model.utils import save_plot, time_since
@@ -93,7 +92,7 @@ class Trainer(object):
 
         return loss.item() / target_length
 
-    def train_epoch(self, dataloader, epoch):
+    def train_epoch(self, epoch):
         print("===== epoch " + str(epoch) + " =====")
         start = time.time()
         plot_losses = []
@@ -102,8 +101,10 @@ class Trainer(object):
         plot_loss_total = 0  # Reset every plot_every
         plot_count = 0
 
-        for step, batch in enumerate(dataloader):
-            training_pairs = batch
+        for step in range(len(self.dataset.pairs)/self.config['minibatch_size']):
+            training_pairs = [self.dataset.tensors_from_pair(pair)
+                              for pair in self.dataset.pairs[step * self.config['minibatch_size']:
+                                                             (step + 1) * self.config['minibatch_size']]]
 
             best_loss = float("inf")
 
@@ -206,25 +207,25 @@ class Trainer(object):
         # save_plot(plot_losses, self.config['plot_path'])
 
     def train(self, train_size=None):
-        dataloader = self.prepare_dataloader(train_size)
+        # dataloader = self.prepare_dataloader(train_size)
         for epoch in range(self.config['num_epochs']):
-            self.train_epoch(dataloader, epoch)
+            self.train_epoch(epoch)
 
-    def prepare_dataloader(self, train_size):
-        if train_size is not None:
-            pairs = self.dataset.pairs[:train_size]
-        else:
-            pairs = self.dataset.pairs
-        pairs = torch.cat([self.dataset.tensors_from_pair(pair) for pair in pairs])
-        print(pairs)
-        torch_dataset = Data.TensorDataset(pairs)
-        loader = Data.DataLoader(
-            dataset=torch_dataset,
-            batch_size=self.config['minibatch_size'],
-            shuffle=True,
-            num_workers=2
-        )
-        return loader
+    # def prepare_dataloader(self, train_size):
+    #     if train_size is not None:
+    #         pairs = self.dataset.pairs[:train_size]
+    #     else:
+    #         pairs = self.dataset.pairs
+    #     pairs = torch.cat([self.dataset.tensors_from_pair(pair) for pair in pairs])
+    #     print(pairs)
+    #     torch_dataset = Data.TensorDataset(pairs)
+    #     loader = Data.DataLoader(
+    #         dataset=torch_dataset,
+    #         batch_size=self.config['minibatch_size'],
+    #         shuffle=True,
+    #         num_workers=2
+    #     )
+    #     return loader
 
     def restore_checkpoint(self, restore_path):
         if restore_path is not None:
