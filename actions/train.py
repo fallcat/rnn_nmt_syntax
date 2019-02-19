@@ -19,7 +19,7 @@ class Trainer(object):
         self.encoder_optimizer = optim.SGD(self.encoder.parameters(), lr=self.config['learning_rate'])
         self.decoder_optimizer = optim.SGD(self.decoder.parameters(), lr=self.config['learning_rate'])
         self.criterion = nn.NLLLoss()
-        self.epoch = 0
+        self.epoch = -1
         self.dataset = dataset
         self.experiment = experiment
 
@@ -115,13 +115,14 @@ class Trainer(object):
                               for pair in pairs[step * self.config['minibatch_size']:
                                                 (step + 1) * self.config['minibatch_size']]]
 
-            best_loss = float("inf")
+            # best_loss = float("inf")
 
             num_exceptions = 0
 
             len_training_pairs = len(training_pairs)
 
             step_loss = 0
+            step_loss_count = 0
 
             for iter in range(1, len_training_pairs + 1):
                 training_pair = training_pairs[iter - 1]
@@ -130,16 +131,17 @@ class Trainer(object):
                 try:
                     loss = self.train_iter(input_tensor, target_tensor)
                     step_loss += loss
+                    step_loss_count += 1
                 except:
                     num_exceptions += 1
                     continue
 
                 # prepare information to print
-                if best_loss > loss:
-                    best_loss = loss
-                    is_best = True
-                else:
-                    is_best = False
+                # if best_loss > loss:
+                #     best_loss = loss
+                #     is_best = True
+                # else:
+                #     is_best = False
                 print_loss_total += loss
                 print_count += 1
                 plot_loss_total += loss
@@ -147,41 +149,54 @@ class Trainer(object):
 
             # Log to Comet.ml
             if self.experiment is not None:
-                if len_training_pairs - num_exceptions != 0:
-                    self.experiment.log_metric("loss", step_loss / (len_training_pairs - num_exceptions), step=step)
-
-            if step+1 % self.config['print_every'] == 0:
-                print_loss_avg = print_loss_total / print_count
-                print_loss_total = 0
-                print_count = 0
-                try:
-                    print('%s (%d %d%%) %.4f' % (time_since(start, step+1 / (len_training_pairs - num_exceptions)),
-                          step+1, step+1 / (len_training_pairs - num_exceptions) * 100, print_loss_avg))
+                if step_loss_count != 0:
+                    step_loss_avg = step_loss / step_loss_count
+                    self.experiment.log_metric("loss", step_loss_avg, step=step)
+                    print('%s (%d %d%%) %.4f' % (
+                        time_since(start, step + 1 / (int((len(pairs) - 1) / self.config['minibatch_size']) + 2)),
+                        step + 1, step + 1 / (int((len(pairs) - 1) / self.config['minibatch_size']) + 2) * 100,
+                        step_loss_avg))
                     self.save_checkpoint({
                         'epoch': epoch,
+                        'step': step,
                         'encoder_state': self.encoder.state_dict(),
                         'decoder_state': self.decoder.state_dict(),
                         'encoder_optimizer': self.encoder_optimizer.state_dict(),
                         'decoder_optimizer': self.decoder_optimizer.state_dict(),
                     })
-                except ZeroDivisionError:
-                    print("divide by zero when printing loss")
-
-            try:
-                if step+1 % self.config['plot_every'] == 0:
-                    plot_loss_avg = plot_loss_total / plot_count
-                    plot_losses.append(plot_loss_avg)
-                    plot_loss_total = 0
-                    plot_count = 0
-            except ZeroDivisionError:
-                print("divide by zero when plotting loss")
+            #
+            # if step+1 % self.config['print_every'] == 0:
+            #     print_loss_avg = print_loss_total / print_count
+            #     print_loss_total = 0
+            #     print_count = 0
+            #     try:
+            #         print('%s (%d %d%%) %.4f' % (time_since(start, step+1 / (int((len(pairs)-1)/self.config['minibatch_size'])+2)),
+            #               step+1, step+1 / (int((len(pairs)-1)/self.config['minibatch_size'])+2) * 100, print_loss_avg))
+            #         self.save_checkpoint({
+            #             'epoch': epoch,
+            #             'encoder_state': self.encoder.state_dict(),
+            #             'decoder_state': self.decoder.state_dict(),
+            #             'encoder_optimizer': self.encoder_optimizer.state_dict(),
+            #             'decoder_optimizer': self.decoder_optimizer.state_dict(),
+            #         })
+            #     except ZeroDivisionError:
+            #         print("divide by zero when printing loss")
+            #
+            # try:
+            #     if step+1 % self.config['plot_every'] == 0:
+            #         plot_loss_avg = plot_loss_total / plot_count
+            #         plot_losses.append(plot_loss_avg)
+            #         plot_loss_total = 0
+            #         plot_count = 0
+            # except ZeroDivisionError:
+            #     print("divide by zero when plotting loss")
 
             if num_exceptions > 0:
-                print("Number of exceptions: ", num_exceptions)
+                print("Step %s, Number of exceptions: %s" % (step, num_exceptions))
 
     def train(self, train_size=None):
         # dataloader = self.prepare_dataloader(train_size)
-        for epoch in range(self.config['num_epochs']):
+        for epoch in range(self.epoch + 1, self.config['num_epochs']):
             self.train_epoch(epoch, train_size)
 
     # def prepare_dataloader(self, train_size):
@@ -206,6 +221,7 @@ class Trainer(object):
                 print("=> loading checkpoint '{}'".format(restore_path))
                 checkpoint = torch.load(restore_path)
                 self.epoch = checkpoint['epoch']
+                self.step = checkpoint['step']
                 self.encoder.load_state_dict(checkpoint['encoder_state'])
                 self.decoder.load_state_dict(checkpoint['decoder_state'])
                 self.encoder_optimizer.load_state_dict(checkpoint['encoder_optimizer'])
