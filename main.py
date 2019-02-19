@@ -6,6 +6,7 @@ from comet_ml import Experiment
 from model.utils import get_cl_args
 from data.wmt import WMTDataset
 from actions.train import Trainer
+from actions.evaluate import Evaluator
 from model.seq2seq import EncoderRNN, AttnKspanDecoderRNN
 from model import DEVICE
 
@@ -33,7 +34,8 @@ def main():
         'best_save_path': args.best_model,
         'plot_path': args.plot,
         'minibatch_size': args.minibatch_size,
-        'num_epochs': args.num_epochs
+        'num_epochs': args.num_epochs,
+        'num_evaluate': args.num_evaluate
     }
     if args.do_experiment:
         experiment = Experiment()
@@ -58,6 +60,8 @@ def main():
     if args.restore is not None:
         trainer.restore_checkpoint(args.restore)
     trainer.train(args.train_size)
+    evaluator = Evaluator(config=config, models=models, dataset=dataset, experiment=experiment)
+    evaluator.evaluate_randomly()
     # for epoch in range(args.num_epochs):
     #     trainer.train_epoch(epoch, args.train_size)
 

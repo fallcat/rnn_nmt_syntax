@@ -105,12 +105,12 @@ class Trainer(object):
         plot_count = 0
 
         if train_size is not None:
-            pairs = self.dataset.pairs[:train_size]
+            pairs = self.dataset.pairs['train'][:train_size]
         else:
             pairs = self.dataset.pairs
         random.shuffle(pairs)
 
-        for step in range(int((len(self.dataset.pairs)-1)/self.config['minibatch_size'])+1):
+        for step in range(int((len(pairs)-1)/self.config['minibatch_size'])+1):
             training_pairs = [self.dataset.tensors_from_pair(pair)
                               for pair in pairs[step * self.config['minibatch_size']:
                                                 (step + 1) * self.config['minibatch_size']]]

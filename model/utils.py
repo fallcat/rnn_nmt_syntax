@@ -107,6 +107,9 @@ def get_cl_args():
     arg_parser.add_argument('--do-experiment', action='store_true',
                             help='Record this run in experiment')
 
+    arg_parser.add_argument('--num-evaluate', action='store', type=int, default=10,
+                            help='Record this run in experiment')
+
     return arg_parser.parse_args()
 
 

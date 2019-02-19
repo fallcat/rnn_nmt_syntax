@@ -9,7 +9,7 @@ class WMTDataset(object):
     """
     Prepare data from WMTDataset
     """
-    def __init__(self, max_length, minibatch_size=128, reverse=False):
+    def __init__(self, max_length, reverse=False):
         self.word2index = {}
         self.word2count = {}
         self.index2word = {0: "SOS", 1: "EOS"}
@@ -23,9 +23,9 @@ class WMTDataset(object):
         }
         self.reverse = reverse
         self.max_length = max_length
-        self.minibatch_size = minibatch_size
 
-        self.pairs = self.prepare_data()
+        self.pairs = {}
+        self.prepare_data()
 
     def read_vocab(self):
         t = tarfile.open(self.tar_path, "r")
@@ -47,27 +47,29 @@ class WMTDataset(object):
 
         t = tarfile.open(self.tar_path, "r")
 
-        en_lines = str(t.extractfile('%s.bpe.32000.en' % (self.splits['train'])).read(), 'utf-8').strip().split('\n')
-        de_lines = str(t.extractfile('%s.bpe.32000.de' % (self.splits['train'])).read(), 'utf-8').strip().split('\n')
+        for split in self.splits:
+            en_lines = str(t.extractfile('%s.bpe.32000.en' % (self.splits[split])).read(), 'utf-8').strip().split('\n')
+            de_lines = str(t.extractfile('%s.bpe.32000.de' % (self.splits[split])).read(), 'utf-8').strip().split('\n')
 
-        # Split every line into pairs
-        pairs = [[s1, s2] for s1, s2 in zip(de_lines, en_lines)]
+            # Split every line into pairs
+            pairs = [[s1, s2] for s1, s2 in zip(de_lines, en_lines)]
 
-        # Reverse pairs, make Lang instances
-        if self.reverse:
-            pairs = [list(reversed(p)) for p in pairs]
+            # Reverse pairs, make Lang instances
+            if self.reverse:
+                pairs = [list(reversed(p)) for p in pairs]
 
-        return pairs
+            print("Read %s sentence pairs in %s" % (len(pairs), split))
+
+            pairs = self.filter_pairs(pairs)
+            print("Trimmed to %s sentence pairs" % len(pairs))
+
+            self.pairs[split] = pairs
 
     def prepare_data(self):
-        pairs = self.read_langs()
-        print("Read %s sentence pairs" % len(pairs))
-        pairs = self.filter_pairs(pairs)
-        print("Trimmed to %s sentence pairs" % len(pairs))
+        self.read_langs()
         print("Counting words from vocab file...")
         self.read_vocab()
         print("Counted words:", self.num_words)
-        return pairs
 
     def filter_pair(self, p):
         return len(p[0].split(' ')) < self.max_length and \
