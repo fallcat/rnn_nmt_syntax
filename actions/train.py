@@ -147,7 +147,8 @@ class Trainer(object):
 
             # Log to Comet.ml
             if self.experiment is not None:
-                self.experiment.log_metric("loss", step_loss / (len_training_pairs - num_exceptions), step=step)
+                if len_training_pairs - num_exceptions != 0:
+                    self.experiment.log_metric("loss", step_loss / (len_training_pairs - num_exceptions), step=step)
 
             if step+1 % self.config['print_every'] == 0:
                 print_loss_avg = print_loss_total / print_count
@@ -157,7 +158,7 @@ class Trainer(object):
                     print('%s (%d %d%%) %.4f' % (time_since(start, step+1 / (len_training_pairs - num_exceptions)),
                           step+1, step+1 / (len_training_pairs - num_exceptions) * 100, print_loss_avg))
                     self.save_checkpoint({
-                        'epoch': step + 1,
+                        'epoch': epoch,
                         'encoder_state': self.encoder.state_dict(),
                         'decoder_state': self.decoder.state_dict(),
                         'encoder_optimizer': self.encoder_optimizer.state_dict(),
