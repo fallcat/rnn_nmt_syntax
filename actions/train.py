@@ -20,6 +20,7 @@ class Trainer(object):
         self.decoder_optimizer = optim.SGD(self.decoder.parameters(), lr=self.config['learning_rate'])
         self.criterion = nn.NLLLoss()
         self.epoch = -1
+        self.step = -1
         self.dataset = dataset
         self.experiment = experiment
 
@@ -110,7 +111,7 @@ class Trainer(object):
             pairs = self.dataset.pairs
         random.shuffle(pairs)
 
-        for step in range(int((len(pairs)-1)/self.config['minibatch_size'])+1):
+        for step in range(self.step + 1, int((len(pairs)-1)/self.config['minibatch_size'])+1):
             training_pairs = [self.dataset.tensors_from_pair(pair)
                               for pair in pairs[step * self.config['minibatch_size']:
                                                 (step + 1) * self.config['minibatch_size']]]
@@ -130,6 +131,8 @@ class Trainer(object):
                 target_tensor = training_pair[1]
                 try:
                     loss = self.train_iter(input_tensor, target_tensor)
+                    if loss > 10:
+                        print(pairs[step * self.config['minibatch_size'] + iter - 1])
                     step_loss += loss
                     step_loss_count += 1
                 except:
@@ -155,7 +158,7 @@ class Trainer(object):
                     print('%s (%d %d%%) %.4f' % (
                         time_since(start, step + 1 / (int((len(pairs) - 1) / self.config['minibatch_size']) + 2)),
                         step + 1, step + 1 / (int((len(pairs) - 1) / self.config['minibatch_size']) + 2) * 100,
-                        step_loss_avg))
+                        step_loss_avg), flush=True)
                     self.save_checkpoint({
                         'epoch': epoch,
                         'step': step,
@@ -192,7 +195,8 @@ class Trainer(object):
             #     print("divide by zero when plotting loss")
 
             if num_exceptions > 0:
-                print("Step %s, Number of exceptions: %s" % (step, num_exceptions))
+                print("Step %s, Number of exceptions: %s" % (step, num_exceptions), flush=True)
+        self.step = -1
 
     def train(self, train_size=None):
         # dataloader = self.prepare_dataloader(train_size)

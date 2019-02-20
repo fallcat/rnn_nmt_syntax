@@ -1,7 +1,7 @@
 import tarfile
 import torch
 import torch.utils.data as Data
-from model import EOS_token, DEVICE
+from model import EOS_token, DEVICE, UNK_token
 
 
 
@@ -12,8 +12,8 @@ class WMTDataset(object):
     def __init__(self, max_length, reverse=False):
         self.word2index = {}
         self.word2count = {}
-        self.index2word = {0: "SOS", 1: "EOS"}
-        self.num_words = 2  # Count SOS and EOS
+        self.index2word = {0: "SOS", 1: "EOS", 2: "UNK"}
+        self.num_words = 3  # Count SOS and EOS and UNK
         self.tar_path = "/mnt/nfs/work1/miyyer/datasets/wmt/wmt_en_de.tar.gz"
         self.vocab_file = 'vocab.bpe.32000'
         self.splits = {
@@ -79,7 +79,8 @@ class WMTDataset(object):
         return [pair for pair in pairs if self.filter_pair(pair)]
 
     def indexes_from_sentence(self, sentence):
-        return [self.word2index[word] for word in sentence.split(' ')]
+        return [self.word2index[word] if word in self.word2index else self.word2index[UNK_token]
+                for word in sentence.split(' ')]
 
     def tensor_from_sentence(self, sentence):
         indexes = self.indexes_from_sentence(sentence)
