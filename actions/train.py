@@ -108,7 +108,7 @@ class Trainer(object):
         if train_size is not None:
             pairs = self.dataset.pairs['train'][:train_size]
         else:
-            pairs = self.dataset.pairs
+            pairs = self.dataset.pairs['train']
         random.shuffle(pairs)
 
         for step in range(self.step + 1, int((len(pairs)-1)/self.config['minibatch_size'])+1):
