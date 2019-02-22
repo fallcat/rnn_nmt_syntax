@@ -58,7 +58,7 @@ class Evaluator(object):
 
             return decoded_words, decoder_attentions[:di + 1]
 
-    def evaluate_randomly(self, dataset_split='val'):
+    def evaluate_randomly(self, dataset_split='valid'):
         for i in range(self.config['num_evaluate']):
             pair = random.choice(self.dataset.pairs[dataset_split])
             print('>', pair[0])
