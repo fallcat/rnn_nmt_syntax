@@ -112,9 +112,13 @@ class Trainer(object):
         random.shuffle(pairs)
 
         for step in range(self.step + 1, int((len(pairs)-1)/self.config['minibatch_size'])+1):
-            training_pairs = [self.dataset.tensors_from_pair(pair)
-                              for pair in pairs[step * self.config['minibatch_size']:
-                                                (step + 1) * self.config['minibatch_size']]]
+            # training_pairs = [self.dataset.tensors_from_pair(pair)
+            #                   for pair in pairs[step * self.config['minibatch_size']:
+            #                                     (step + 1) * self.config['minibatch_size']]]
+
+            training_pairs_str = [pair for pair in pairs[step * self.config['minibatch_size']:
+                                                         (step + 1) * self.config['minibatch_size']]]
+            training_pairs = [self.dataset.tensors_from_pair(pair) for pair in training_pairs_str]
 
             # best_loss = float("inf")
 
@@ -132,11 +136,12 @@ class Trainer(object):
                 try:
                     loss = self.train_iter(input_tensor, target_tensor)
                     if loss > 10:
-                        print(pairs[step * self.config['minibatch_size'] + iter - 1])
+                        print("large loss", pairs[step * self.config['minibatch_size'] + iter - 1], "loss", loss)
                     step_loss += loss
                     step_loss_count += 1
                 except:
                     num_exceptions += 1
+                    print("exception sentences", training_pairs_str[iter - 1])
                     continue
 
                 # prepare information to print
