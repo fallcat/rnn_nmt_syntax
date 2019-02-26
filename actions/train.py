@@ -205,8 +205,12 @@ class Trainer(object):
 
     def train(self, train_size=None):
         # dataloader = self.prepare_dataloader(train_size)
-        for epoch in range(self.epoch + 1, self.config['num_epochs']):
-            self.train_epoch(epoch, train_size)
+        if self.step > -1:
+            for epoch in range(self.epoch, self.config['num_epochs']):
+                self.train_epoch(epoch, train_size)
+        else:
+            for epoch in range(self.epoch + 1, self.config['num_epochs']):
+                self.train_epoch(epoch, train_size)
 
     # def prepare_dataloader(self, train_size):
     #     if train_size is not None:
