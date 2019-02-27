@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from model import SOS_token, EOS_token, MAX_LENGTH, SPAN_SIZE, DEVICE
+from rnn_nmt_syntax.model import SOS_token, EOS_token, MAX_LENGTH, SPAN_SIZE, DEVICE
 
 
 class EncoderRNN(nn.Module):

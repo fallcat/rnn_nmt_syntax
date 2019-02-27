@@ -1,6 +1,6 @@
 import torch
 import random
-from model import DEVICE, SOS_token, EOS_token
+from rnn_nmt_syntax.model import DEVICE, SOS_token, EOS_token
 
 # config: max_length, span_size
 
