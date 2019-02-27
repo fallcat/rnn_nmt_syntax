@@ -75,6 +75,7 @@ class IWSLTDataset(object):
         return [pair for pair in pairs if self.filter_pair(pair)]
 
     def indexes_from_sentence(self, sentence):
+        print(sentence)
         return [self.word2index[word] if word in self.word2index else self.word2index[UNK_token] \
                 for word in sentence.split(' ')]
 
