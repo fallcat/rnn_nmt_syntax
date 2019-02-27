@@ -1,4 +1,3 @@
-import tarfile
 import torch
 import torch.utils.data as Data
 # from model import EOS_token, DEVICE, UNK_token
