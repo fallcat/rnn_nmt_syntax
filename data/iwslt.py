@@ -76,7 +76,7 @@ class IWSLTDataset(object):
 
     def indexes_from_sentence(self, sentence):
         print(sentence)
-        return [self.word2index[word] if word in self.word2index else self.word2index[UNK_token] \
+        return [self.word2index[word] if word in self.word2index else UNK_token \
                 for word in sentence.split(' ')]
 
     def tensor_from_sentence(self, sentence):
