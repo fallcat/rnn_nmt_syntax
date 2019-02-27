@@ -44,8 +44,6 @@ class IWSLTDataset(object):
     def read_langs(self):
         print("Reading lines...")
 
-        t = tarfile.open(self.tar_path, "r")
-
         for split in self.splits:
             en_lines = open(self.dir_path + '%s.en' % (self.splits[split])).read().strip().split('\n')
             de_lines = open(self.dir_path + '%s.de' % (self.splits[split])).read().strip().split('\n')
