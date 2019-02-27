@@ -10,7 +10,7 @@ class IWSLTDataset(object):
     Prepare data from WMTDataset
     """
     def __init__(self, max_length, reverse=False):
-        self.word2index = {}
+        self.word2index = {"SOS": 0, "EOS": 1, "UNK": 2}
         self.word2count = {}
         self.index2word = {0: "SOS", 1: "EOS", 2: "UNK"}
         self.num_words = 3  # Count SOS and EOS and UNK
