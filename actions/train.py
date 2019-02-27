@@ -135,8 +135,8 @@ class Trainer(object):
                 target_tensor = training_pair[1]
                 try:
                     loss = self.train_iter(input_tensor, target_tensor)
-                    if loss > 10:
-                        print("large loss", pairs[step * self.config['minibatch_size'] + iter - 1], "loss", loss)
+                    # if loss > 10:
+                    #     print("large loss", pairs[step * self.config['minibatch_size'] + iter - 1], "loss", loss)
                     step_loss += loss
                     step_loss_count += 1
                 except:
