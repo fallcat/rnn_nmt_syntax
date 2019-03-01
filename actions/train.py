@@ -156,22 +156,22 @@ class Trainer(object):
                 plot_count += 1
 
             # Log to Comet.ml
-            if self.experiment is not None:
-                if step_loss_count != 0:
-                    step_loss_avg = step_loss / step_loss_count
+            if step_loss_count != 0:
+                step_loss_avg = step_loss / step_loss_count
+                if self.experiment is not None:
                     self.experiment.log_metric("loss", step_loss_avg, step=step)
-                    print('%s (%d %d%%) %.4f' % (
-                        time_since(start, step + 1 / (int((len(pairs) - 1) / self.config['minibatch_size']) + 2)),
-                        step + 1, step + 1 / (int((len(pairs) - 1) / self.config['minibatch_size']) + 2) * 100,
-                        step_loss_avg), flush=True)
-                    self.save_checkpoint({
-                        'epoch': epoch,
-                        'step': step,
-                        'encoder_state': self.encoder.state_dict(),
-                        'decoder_state': self.decoder.state_dict(),
-                        'encoder_optimizer': self.encoder_optimizer.state_dict(),
-                        'decoder_optimizer': self.decoder_optimizer.state_dict(),
-                    })
+                print('%s (%d %d%%) %.4f' % (
+                    time_since(start, step + 1 / (int((len(pairs) - 1) / self.config['minibatch_size']) + 2)),
+                    step + 1, step + 1 / (int((len(pairs) - 1) / self.config['minibatch_size']) + 2) * 100,
+                    step_loss_avg), flush=True)
+                self.save_checkpoint({
+                    'epoch': epoch,
+                    'step': step,
+                    'encoder_state': self.encoder.state_dict(),
+                    'decoder_state': self.decoder.state_dict(),
+                    'encoder_optimizer': self.encoder_optimizer.state_dict(),
+                    'decoder_optimizer': self.decoder_optimizer.state_dict(),
+                })
             #
             # if step+1 % self.config['print_every'] == 0:
             #     print_loss_avg = print_loss_total / print_count

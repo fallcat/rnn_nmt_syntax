@@ -38,7 +38,17 @@ def main():
         'num_evaluate': args.num_evaluate
     }
     if args.do_experiment:
-        experiment = Experiment(project_name="rnn-nmt-syntax", workspace="umass-nlp")
+        experiment = Experiment(project_name="rnn-nmt-syntax",
+                                workspace="umass-nlp",
+                                auto_metric_logging=False,
+                                auto_output_logging=None,
+                                auto_param_logging=False,
+                                log_git_metadata=False,
+                                log_git_patch=False,
+                                log_env_details=False,
+                                log_graph=False,
+                                log_code=False,
+                                parse_args=False,)
         hyper_params = {
             'max_length': args.max_length,
             'span_size': args.span_size,
