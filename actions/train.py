@@ -46,8 +46,10 @@ class Trainer(object):
         # input_lengths = [x.size()[0] for x in input_batches]
         batch_size = len(batches)
         input_batches = torch.nn.utils.rnn.pad_sequence(batches[:][0])
-        output_batches = torch.nn.utils.rnn.pad_sequence([[SOS_token] * self.config['span_size'] + output_batch
-                                                          for output_batch in batches[:][0]])
+        output_to_pad = [[SOS_token] * self.config['span_size'] + output_batch for output_batch in batches[:][1]]
+        print("output_to_pad", type(output_to_pad))
+        print("output_to_pad", output_to_pad)
+        output_batches = torch.nn.utils.rnn.pad_sequence(output_to_pad)
 
         # Run words through encoder
         encoder_outputs, encoder_hidden = self.encoder(input_batches, input_lengths)
