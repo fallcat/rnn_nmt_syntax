@@ -43,7 +43,7 @@ class Trainer(object):
         input_list = [x[0] for x in batches]
         output_list = [x[1] for x in batches]
         input_lengths = torch.LongTensor([x.size()[0] for x in input_list], device=torch.device("cpu"))
-        print("input lengths", input_lengths)
+        # print("input lengths", input_lengths)
         # output_lengths = [x.size()[0] for x in batches[:][1]]
         # input_batches = sorted(input_tensors, key=lambda x: x.size()[0], reverse=True)
         # input_lengths = [x.size()[0] for x in input_batches]

@@ -44,6 +44,7 @@ class BatchEncoderRNN(nn.Module):
         hidden = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=DEVICE)
         embedded = self.embedding(input_seqs)
         packed = torch.nn.utils.rnn.pack_padded_sequence(embedded, input_lengths)
+        print("packed", packed)
         output, hidden = self.gru(packed, hidden)
         output, _ = torch.nn.utils.rnn.pad_packed_sequence(output)  # unpack (back to padded)
         return output, hidden
