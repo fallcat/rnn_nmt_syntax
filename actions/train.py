@@ -3,6 +3,7 @@ import torch
 import random
 import time
 import shutil
+import numpy as np
 from torch import nn, optim
 from torch.autograd import Variable
 from rnn_nmt_syntax.model import SOS_token, EOS_token, DEVICE
@@ -39,15 +40,15 @@ class Trainer(object):
         loss = 0  # Added onto for each word
 
         # sort input tensors by length
-        batches = sorted(training_pairs, key=lambda x:x[0].size()[0], reverse=True)
-        input_lengths = [x.size()[0] for x in batches[:][0]]
+        batches = np.array(sorted(training_pairs, key=lambda x:x[0].size()[0], reverse=True))
+        input_lengths = [x.size()[0] for x in batches[:, 0]]
         # output_lengths = [x.size()[0] for x in batches[:][1]]
         # input_batches = sorted(input_tensors, key=lambda x: x.size()[0], reverse=True)
         # input_lengths = [x.size()[0] for x in input_batches]
         batch_size = len(batches)
-        input_batches = torch.nn.utils.rnn.pad_sequence(batches[:][0])
+        input_batches = torch.nn.utils.rnn.pad_sequence(batches[:, 0])
         decoder_input = Variable(torch.tensor([SOS_token] * self.config['span_size']).view(-1,1))
-        output_to_pad = [torch.cat((decoder_input, output_batch), 0) for output_batch in batches[:][1]]
+        output_to_pad = [torch.cat((decoder_input, output_batch), 0) for output_batch in batches[:, 1]]
         print("output_to_pad", type(output_to_pad))
         print("output_to_pad", output_to_pad)
         print("output_to_pad 0", output_to_pad[0].size())
