@@ -42,13 +42,13 @@ class Trainer(object):
         batches = sorted(training_pairs, key=lambda x:x[0].size()[0], reverse=True)
         input_list = [x[0] for x in batches]
         output_list = [x[1] for x in batches]
-        input_lengths = torch.LongTensor([x.size() for x in input_list], device=DEVICE)
+        input_lengths = torch.LongTensor([x.size() for x in input_list], device=torch.device("cpu"))
         # output_lengths = [x.size()[0] for x in batches[:][1]]
         # input_batches = sorted(input_tensors, key=lambda x: x.size()[0], reverse=True)
         # input_lengths = [x.size()[0] for x in input_batches]
         batch_size = len(batches)
         input_batches = torch.nn.utils.rnn.pad_sequence(input_list)
-        decoder_input = Variable(torch.tensor([SOS_token] * self.config['span_size'], device=torch.device("cpu")).view(-1,1))
+        decoder_input = Variable(torch.tensor([SOS_token] * self.config['span_size'], device=DEVICE).view(-1,1))
         output_to_pad = [torch.cat((decoder_input, output_batch), 0) for output_batch in output_list]
         output_batches = torch.nn.utils.rnn.pad_sequence(output_to_pad)
 
