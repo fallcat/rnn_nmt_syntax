@@ -42,7 +42,7 @@ class Trainer(object):
         batches = sorted(training_pairs, key=lambda x:x[0].size()[0], reverse=True)
         input_list = [x[0] for x in batches]
         output_list = [x[1] for x in batches]
-        input_lengths = [x.size() for x in input_list]
+        input_lengths = torch.LongTensor([x.size() for x in input_list], device=DEVICE)
         # output_lengths = [x.size()[0] for x in batches[:][1]]
         # input_batches = sorted(input_tensors, key=lambda x: x.size()[0], reverse=True)
         # input_lengths = [x.size()[0] for x in input_batches]
