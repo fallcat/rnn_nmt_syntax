@@ -10,10 +10,10 @@ class WMTDataset(object):
     Prepare data from WMTDataset
     """
     def __init__(self, max_length, reverse=False):
-        self.word2index = {"UNK": 2}
+        self.word2index = {"PAD": 0, "UNK": 3}
         self.word2count = {}
-        self.index2word = {0: "SOS", 1: "EOS", 2: "UNK"}
-        self.num_words = 3  # Count SOS and EOS and UNK
+        self.index2word = {0: "PAD", 1: "SOS", 2: "EOS", 3: "UNK"}
+        self.num_words = 4  # Count SOS and EOS and UNK
         self.tar_path = "/mnt/nfs/work1/miyyer/datasets/wmt/wmt_en_de.tar.gz"
         self.vocab_file = 'vocab.bpe.32000'
         self.splits = {

@@ -1,8 +1,10 @@
 import torch
 
-SOS_token = 0
-EOS_token = 1
-UNK_token = 2
+PAD_token = 0
+SOS_token = 1
+EOS_token = 2
+UNK_token = 3
+
 
 MAX_LENGTH = 50
 SPAN_SIZE = 3

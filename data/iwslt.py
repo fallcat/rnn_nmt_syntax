@@ -10,10 +10,10 @@ class IWSLTDataset(object):
     Prepare data from WMTDataset
     """
     def __init__(self, max_length, reverse=False):
-        self.word2index = {"UNK": 2}
+        self.word2index = {"PAD": 0, "UNK": 3}
         self.word2count = {}
-        self.index2word = {0: "SOS", 1: "EOS", 2: "UNK"}
-        self.num_words = 3  # Count SOS and EOS and UNK
+        self.index2word = {0: "PAD", 1: "SOS", 2: "EOS", 3: "UNK"}
+        self.num_words = 4  # Count SOS and EOS and UNK
         self.dir_path = "/content/gdrive/My Drive/data/"
         self.vocab_file = 'vocab'
         self.splits = {
@@ -68,8 +68,8 @@ class IWSLTDataset(object):
         print("Counted words:", self.num_words)
 
     def filter_pair(self, p):
-        return len(p[0].split(' ')) < self.max_length and \
-               len(p[1].split(' ')) < self.max_length
+        return len(p[0].split(' ')) < self.max_length - 4 and \
+               len(p[1].split(' ')) < self.max_length - 4
 
     def filter_pairs(self, pairs):
         return [pair for pair in pairs if self.filter_pair(pair)]

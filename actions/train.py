@@ -4,6 +4,7 @@ import random
 import time
 import shutil
 from torch import nn, optim
+from torch.autograd import Variable
 from rnn_nmt_syntax.model import SOS_token, EOS_token, DEVICE
 from rnn_nmt_syntax.model.utils import save_plot, time_since
 
@@ -23,6 +24,48 @@ class Trainer(object):
         self.step = -1
         self.dataset = dataset
         self.experiment = experiment
+
+    def train_batch(self, training_pairs):
+        """
+        train a batch of tensors
+        :param input_tensors: list of tensors
+        :param target_tensors: list of tensors
+        :return:
+        """
+
+        # Zero gradients of both optimizers
+        self.encoder_optimizer.zero_grad()
+        self.decoder_optimizer.zero_grad()
+        loss = 0  # Added onto for each word
+
+        # sort input tensors by length
+        batches = sorted(training_pairs, key=lambda x:x[0].size()[0], reverse=True)
+        input_lengths = [x.size()[0] for x in batches[:][0]]
+        # output_lengths = [x.size()[0] for x in batches[:][1]]
+        # input_batches = sorted(input_tensors, key=lambda x: x.size()[0], reverse=True)
+        # input_lengths = [x.size()[0] for x in input_batches]
+        batch_size = len(batches)
+        input_batches = torch.nn.utils.rnn.pad_sequence(batches[:][0])
+        output_batches = torch.nn.utils.rnn.pad_sequence([[SOS_token] * self.config['span_size'] + output_batch
+                                                          for output_batch in batches[:][0]])
+
+        # Run words through encoder
+        encoder_outputs, encoder_hidden = self.encoder(input_batches, input_lengths)
+        decoder_outputs, decoder_hidden, decoder_attn = self.decoder(output_batches, encoder_hidden, encoder_outputs)
+
+        loss += self.criterion(decoder_outputs, output_batches)
+
+        try:
+            loss.backward()
+            self.encoder_optimizer.step()
+            self.decoder_optimizer.step()
+            return loss.item() / (self.config['max_length'] * batch_size)
+
+        except Exception as ex:
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print(message)
+            return -1
 
     def train_iter(self, input_tensor, target_tensor):
         encoder_hidden = self.encoder.init_hidden()
@@ -99,11 +142,11 @@ class Trainer(object):
         if self.experiment is not None:
             self.experiment.log_current_epoch(epoch)
         start = time.time()
-        plot_losses = []
-        print_loss_total = 0  # Reset every print_every
-        print_count = 0
-        plot_loss_total = 0  # Reset every plot_every
-        plot_count = 0
+        # plot_losses = []
+        # print_loss_total = 0  # Reset every print_every
+        # print_count = 0
+        # plot_loss_total = 0  # Reset every plot_every
+        # plot_count = 0
 
         if train_size is not None:
             pairs = self.dataset.pairs['train'][:train_size]
@@ -129,41 +172,43 @@ class Trainer(object):
             step_loss = 0
             step_loss_count = 0
 
-            for iter in range(1, len_training_pairs + 1):
-                training_pair = training_pairs[iter - 1]
-                input_tensor = training_pair[0]
-                target_tensor = training_pair[1]
-                try:
-                    loss = self.train_iter(input_tensor, target_tensor)
-                    # if loss > 10:
-                    #     print("large loss", pairs[step * self.config['minibatch_size'] + iter - 1], "loss", loss)
-                    step_loss += loss
-                    step_loss_count += 1
-                except:
-                    num_exceptions += 1
-                    print("exception sentences", training_pairs_str[iter - 1])
-                    continue
+            # train batch
+            loss = self.train_batch(training_pairs)
 
-                # prepare information to print
-                # if best_loss > loss:
-                #     best_loss = loss
-                #     is_best = True
-                # else:
-                #     is_best = False
-                print_loss_total += loss
-                print_count += 1
-                plot_loss_total += loss
-                plot_count += 1
+            # for iter in range(1, len_training_pairs + 1):
+            #     training_pair = training_pairs[iter - 1]
+            #     input_tensor = training_pair[0]
+            #     target_tensor = training_pair[1]
+            #     try:
+            #         loss = self.train_iter(input_tensor, target_tensor)
+            #         # if loss > 10:
+            #         #     print("large loss", pairs[step * self.config['minibatch_size'] + iter - 1], "loss", loss)
+            #         step_loss += loss
+            #         step_loss_count += 1
+            #     except:
+            #         num_exceptions += 1
+            #         print("exception sentences", training_pairs_str[iter - 1])
+            #         continue
+            #
+            #     # prepare information to print
+            #     # if best_loss > loss:
+            #     #     best_loss = loss
+            #     #     is_best = True
+            #     # else:
+            #     #     is_best = False
+            #     print_loss_total += loss
+            #     print_count += 1
+            #     plot_loss_total += loss
+            #     plot_count += 1
 
             # Log to Comet.ml
-            if step_loss_count != 0:
-                step_loss_avg = step_loss / step_loss_count
+            if loss != -1:
                 if self.experiment is not None:
-                    self.experiment.log_metric("loss", step_loss_avg, step=step)
+                    self.experiment.log_metric("loss", loss, step=step)
                 print('%s (%d %d%%) %.4f' % (
                     time_since(start, step + 1 / (int((len(pairs) - 1) / self.config['minibatch_size']) + 2)),
                     step + 1, step + 1 / (int((len(pairs) - 1) / self.config['minibatch_size']) + 2) * 100,
-                    step_loss_avg), flush=True)
+                    loss), flush=True)
                 self.save_checkpoint({
                     'epoch': epoch,
                     'step': step,
@@ -172,6 +217,22 @@ class Trainer(object):
                     'encoder_optimizer': self.encoder_optimizer.state_dict(),
                     'decoder_optimizer': self.decoder_optimizer.state_dict(),
                 })
+            # if step_loss_count != 0:
+            #     step_loss_avg = step_loss / step_loss_count
+            #     if self.experiment is not None:
+            #         self.experiment.log_metric("loss", step_loss_avg, step=step)
+            #     print('%s (%d %d%%) %.4f' % (
+            #         time_since(start, step + 1 / (int((len(pairs) - 1) / self.config['minibatch_size']) + 2)),
+            #         step + 1, step + 1 / (int((len(pairs) - 1) / self.config['minibatch_size']) + 2) * 100,
+            #         step_loss_avg), flush=True)
+            #     self.save_checkpoint({
+            #         'epoch': epoch,
+            #         'step': step,
+            #         'encoder_state': self.encoder.state_dict(),
+            #         'decoder_state': self.decoder.state_dict(),
+            #         'encoder_optimizer': self.encoder_optimizer.state_dict(),
+            #         'decoder_optimizer': self.decoder_optimizer.state_dict(),
+            #     })
             #
             # if step+1 % self.config['print_every'] == 0:
             #     print_loss_avg = print_loss_total / print_count

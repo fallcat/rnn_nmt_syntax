@@ -77,7 +77,7 @@ def get_cl_args():
     arg_parser.add_argument('-i', '--num-iters', action='store', type=int, default=50000,
                             help='Specify the number of iterations each epoch to train')
 
-    arg_parser.add_argument('--max-length', action='store', type=int, default=50,
+    arg_parser.add_argument('--max-length', action='store', type=int, default=51,
                             help='Specify the max length of a sentence')
 
     arg_parser.add_argument('--span-size', action='store', type=int, default=3,
