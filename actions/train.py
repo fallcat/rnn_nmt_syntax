@@ -50,7 +50,7 @@ class Trainer(object):
         # input_lengths = [x.size()[0] for x in input_batches]
         batch_size = len(batches)
         input_batches = torch.nn.utils.rnn.pad_sequence(input_list)
-        decoder_input = Variable(torch.tensor([SOS_token] * self.config['span_size'], device=DEVICE).view(-1,1))
+        decoder_input = Variable(torch.tensor([SOS_token] * self.config['span_size'], device=DEVICE))
         output_to_pad = [torch.cat((decoder_input, output_batch), 0) for output_batch in output_list]
         output_batches = torch.nn.utils.rnn.pad_sequence(output_to_pad)
 
