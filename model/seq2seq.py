@@ -40,6 +40,7 @@ class BatchEncoderRNN(nn.Module):
         self.gru = nn.GRU(hidden_size, hidden_size, num_layers, dropout=self.dropout, batch_first=True)
 
     def forward(self, input_seqs, input_lengths, hidden=None):
+        print("inp", input_seqs.size())
         batch_size = input_seqs.size()[0]
         hidden = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=DEVICE)
         embedded = self.embedding(input_seqs)
