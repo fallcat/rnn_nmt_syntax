@@ -9,7 +9,7 @@ class IWSLTDataset(object):
     """
     Prepare data from WMTDataset
     """
-    def __init__(self, max_length, reverse=False):
+    def __init__(self, max_length, span_size, reverse=False):
         self.word2index = {"PAD": 0, "UNK": 3}
         self.word2count = {}
         self.index2word = {0: "PAD", 1: "SOS", 2: "EOS", 3: "UNK"}
@@ -22,6 +22,7 @@ class IWSLTDataset(object):
         }
         self.reverse = reverse
         self.max_length = max_length
+        self.span_size = span_size
 
         self.pairs = {}
         self.prepare_data()
@@ -68,8 +69,8 @@ class IWSLTDataset(object):
         print("Counted words:", self.num_words)
 
     def filter_pair(self, p):
-        return len(p[0].split(' ')) < self.max_length - 4 and \
-               len(p[1].split(' ')) < self.max_length - 4
+        return len(p[0].split(' ')) < self.max_length - (self.span_size + 1) and \
+               len(p[1].split(' ')) < self.max_length - (self.span_size + 1)
 
     def filter_pairs(self, pairs):
         return [pair for pair in pairs if self.filter_pair(pair)]

@@ -16,7 +16,7 @@ from model import DEVICE
 def main():
     args = get_cl_args()
     print(args)
-    dataset = WMTDataset(max_length=args.max_length)
+    dataset = WMTDataset(max_length=args.max_length, span_size=args.span_size)
     encoder1 = BatchEncoderRNN(dataset.num_words, args.hidden_size, num_layers=args.num_layers).to(DEVICE)
     attn_decoder1 = BatchAttnKspanDecoderRNN(args.hidden_size, dataset.num_words, num_layers=args.num_layers,
                                         dropout_p=args.dropout).to(DEVICE)
