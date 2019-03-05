@@ -37,7 +37,7 @@ class BatchEncoderRNN(nn.Module):
         self.dropout = dropout
 
         self.embedding = nn.Embedding(input_size, hidden_size)
-        self.gru = nn.GRU(hidden_size, hidden_size, num_layers, dropout=self.dropout)
+        self.gru = nn.GRU(hidden_size, hidden_size, num_layers, dropout=self.dropout, batch_first=True)
 
     def forward(self, input_seqs, input_lengths, hidden=None):
         batch_size = input_seqs.size()[0]
