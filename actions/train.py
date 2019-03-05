@@ -41,7 +41,7 @@ class Trainer(object):
         # sort input tensors by length
         batches = sorted(training_pairs, key=lambda x:x[0].size()[0], reverse=True)
         input_list = [x[0] for x in batches]
-        print("inp [0]", input_list[0])
+        # print("inp [0]", input_list[0])
         output_list = [x[1] for x in batches]
         input_lengths = torch.LongTensor([x.size()[0] for x in input_list], device=torch.device("cpu"))
         # print("input lengths", input_lengths)
@@ -56,6 +56,8 @@ class Trainer(object):
 
         # Run words through encoder
         encoder_outputs, encoder_hidden = self.encoder(input_batches, input_lengths)
+        print("encoder_outputs", encoder_outputs.size())
+        print("encoder_hidden", encoder_hidden.size())
         decoder_outputs, decoder_hidden, decoder_attn = self.decoder(output_batches, encoder_hidden, encoder_outputs)
 
         loss += self.criterion(decoder_outputs, output_batches)
