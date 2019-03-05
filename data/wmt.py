@@ -85,7 +85,7 @@ class WMTDataset(object):
     def tensor_from_sentence(self, sentence):
         indexes = self.indexes_from_sentence(sentence)
         indexes.append(EOS_token)
-        return torch.tensor(indexes, dtype=torch.long, device=DEVICE).view(-1, 1)
+        return torch.tensor(indexes, dtype=torch.long, device=DEVICE) #.view(-1, 1)
 
     def tensors_from_pair(self, pair):
         input_tensor = self.tensor_from_sentence(pair[0])
