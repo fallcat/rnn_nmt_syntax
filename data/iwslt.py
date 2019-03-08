@@ -15,7 +15,7 @@ class IWSLTDataset(object):
         self.index2word = {0: "PAD", 1: "SOS", 2: "EOS", 3: "UNK"}
         self.num_words = 4  # Count SOS and EOS and UNK
         self.dir_path = "/content/gdrive/My Drive/data/"
-        self.vocab_file = 'vocab'
+        self.vocab_file = 'vocab.bpe.37000'
         self.splits = {
             'valid': 'dev.tok.bpe.37000',
             'train': 'train.tok.bpe.37000'
