@@ -17,8 +17,8 @@ class IWSLTDataset(object):
         self.dir_path = "/content/gdrive/My Drive/data/"
         self.vocab_file = 'vocab'
         self.splits = {
-            'valid': 'dev.tok',
-            'train': 'train.tok'
+            'valid': 'dev.tok.bpe.37000',
+            'train': 'train.tok.bpe.37000'
         }
         self.reverse = reverse
         self.max_length = max_length

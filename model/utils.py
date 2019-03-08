@@ -86,6 +86,9 @@ def get_cl_args():
     arg_parser.add_argument('--learning-rate', action='store', type=float, default=0.01,
                             help='Specify the learning rate')
 
+    arg_parser.add_argument('--weight-decay', action='store', type=float, default=1e-5,
+                            help='Specify the weight decay')
+
     arg_parser.add_argument('--print-every', action='store', type=int, default=40,
                             help='Specify the number of batches to report loss')
 
