@@ -405,8 +405,8 @@ class BatchAttnKspanDecoderRNN2(nn.Module):
             # hiddens[l] = hidden
         # for i, gru in enumerate(self.grus):
         #     output, hiddens[i] = gru(output, hiddens[i])
-        output = self.out(output).view(bsz, -1)
-        output = F.log_softmax(output, dim=1)
+        output = self.out(output).view(bsz, self.span_size, -1)
+        output = F.log_softmax(output, dim=2)
         # print("decodre outputs", outputs.size())
         # output = torch.split(output, self.output_size, dim=1)
 
