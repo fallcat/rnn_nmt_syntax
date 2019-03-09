@@ -22,8 +22,21 @@ class Evaluator(object):
             encoder_outputs2 = torch.zeros((batch_size, self.config['max_length'], self.config['hidden_size']),
                                            dtype=torch.float, device=DEVICE)
             encoder_outputs2[:, :encoder_outputs.size()[1]] += encoder_outputs
-            decoder_outputs, decoder_hidden, decoder_attn = self.decoder(output_batches, encoder_hidden,
-                                                                         encoder_outputs2)
+            span_seq_len =  int(self.config['max_length']/self.config['span_size'])
+
+            decoder_input = torch.tensor([SOS_token] * self.config['span_size'], device=DEVICE)
+            decoder_outputs = torch.zeros((batch_size, self.config['max_length']), dtype=torch.long, device=DEVICE)
+
+            for l in range(span_seq_len):
+                decoder_output, decoder_hidden, decoder_attn = self.decoder(decoder_input, encoder_hidden,
+                                                                            encoder_outputs2)
+                topv, topi = decoder_output.topk(1, dim=2)
+                print("topi", topi.size())
+                decoder_input = topi
+                decoder_outputs[:, l:l+self.config['span_size']] = topi
+            decoded_words = [[self.dataset.index2word(w.item()) for w in tensor_sentence] for tensor_sentence in decoder_outputs]
+            return decoded_words
+
 
     def translate(self, sentence):
         with torch.no_grad():
@@ -72,14 +85,23 @@ class Evaluator(object):
             return decoded_words, decoder_attentions[:di + 1]
 
     def evaluate_randomly(self, dataset_split='valid'):
+        pairs = random.choice(self.dataset.pairs[dataset_split], self.config['num_evaluate'])
+        output_words = self.translate_batch([pair[0] for pair in pairs])
         for i in range(self.config['num_evaluate']):
-            pair = random.choice(self.dataset.pairs[dataset_split])
-            print('>', pair[0])
-            print('=', pair[1])
-            output_words, attentions = self.translate(pair[0])
-            output_sentence = ' '.join(output_words)
+            print('>', pairs[i][0])
+            print('=', pairs[i][1])
+            output_sentence = ' '.join(output_words[i])
             print('<', output_sentence)
             print('')
+
+        # for i in range(self.config['num_evaluate']):
+        #     pair = random.choice(self.dataset.pairs[dataset_split])
+        #     print('>', pair[0])
+        #     print('=', pair[1])
+        #     output_words, attentions = self.translate(pair[0])
+        #     output_sentence = ' '.join(output_words)
+        #     print('<', output_sentence)
+        #     print('')
 
     def evaluate(self, dataset_split='val'):
         for pair in self.dataset.pairs[dataset_split]:
