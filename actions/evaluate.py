@@ -1,5 +1,5 @@
 import torch
-from numpy import random
+import random
 from rnn_nmt_syntax.model import DEVICE, SOS_token, EOS_token
 
 # config: max_length, span_size, hidden_size
@@ -85,7 +85,7 @@ class Evaluator(object):
             return decoded_words, decoder_attentions[:di + 1]
 
     def evaluate_randomly(self, dataset_split='valid'):
-        pairs = random.choice(self.dataset.pairs[dataset_split], self.config['num_evaluate'])
+        pairs = random.sample(self.dataset.pairs[dataset_split], self.config['num_evaluate'])
         output_words = self.translate_batch([pair[0] for pair in pairs])
         for i in range(self.config['num_evaluate']):
             print('>', pairs[i][0])
