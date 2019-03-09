@@ -25,7 +25,6 @@ class IWSLTDataset(object):
         self.span_size = span_size
 
         self.pairs = {}
-        self.prepare_data()
         self.eng_prefixes = (
             "i am ", "i m ",
             "he is", "he s ",
@@ -40,6 +39,7 @@ class IWSLTDataset(object):
             "We are", "We &apos;re ",
             "They are", "They &apos;re "
         )
+        self.prepare_data()
 
     def read_vocab(self):
         vocab = open(self.dir_path+self.vocab_file, 'r').read().strip().split('\n')
