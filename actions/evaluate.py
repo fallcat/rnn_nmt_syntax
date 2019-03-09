@@ -56,7 +56,6 @@ class Evaluator(object):
             decoded_words = [decoded_sentences_sorted[i] for i in input_lengths_np_order_order]
             return decoded_words
 
-
     def translate(self, sentence):
         with torch.no_grad():
             input_tensor = self.dataset.tensor_from_sentence(sentence)
