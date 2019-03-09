@@ -48,7 +48,7 @@ class Evaluator(object):
                 print("decoder_outputs", decoder_outputs.size())
                 print("decoder_outputs[:, l:l+self.config['span_size']]", decoder_outputs[:, l:l+self.config['span_size']].size())
                 print("topi", topi.size())
-                decoder_outputs[:, l:l+self.config['span_size']] = topi
+                decoder_outputs[:, l:l+self.config['span_size']] = topi.squeeze()
             decoded_words = [[[self.dataset.index2word(w.item()) for w in tensor_sentence]
                              for tensor_sentence in decoder_outputs][i] for i in input_lengths_np_order_order]
             return decoded_words
