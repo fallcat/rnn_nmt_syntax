@@ -297,9 +297,10 @@ class BatchAttnKspanDecoderRNN(nn.Module):
 
         # inputs = [(len(inp) % self.span_size + self.span_size) for inp in inputs]
         bsz, seq_len = inputs.size()
-        encoder_seq_len = encoder_outputs.size()[1]
+        print("seq_len", seq_len)
         span_seq_len = int(seq_len/self.span_size)
         embeddeds = self.embedding(inputs)
+        print("embedds", embeddeds.size())
         embeddeds = embeddeds.view(bsz, span_seq_len, -1)
         # embeddeds = tuple([self.embedding(input_i).view(1, 1, -1)[0] for input_i in input])
         # embeddeds = torch.cat(embeddeds, 1)
@@ -309,25 +310,25 @@ class BatchAttnKspanDecoderRNN(nn.Module):
         attn_weights = torch.zeros(span_seq_len, bsz, self.max_length)
 
         for l in range(seq_len):
-            print("emb", embeddeds[:,l].size())
-            print("hidden", hidden.size())
+            # print("emb", embeddeds[:,l].size())
+            # print("hidden", hidden.size())
             attn_weight = F.softmax(self.attn(torch.cat((embeddeds[:, l].contiguous(), hidden[-1]), 1)), dim=1)
-            print("attn_weight", attn_weight.size())
-            print("encoder_outputs", encoder_outputs.size())
+            # print("attn_weight", attn_weight.size())
+            # print("encoder_outputs", encoder_outputs.size())
             attn_weights[l] = attn_weight
-            print("attn_weight.unsqueeze(1)", attn_weight.unsqueeze(1).size())
-            print("encoder_outputs", encoder_outputs.size())
+            # print("attn_weight.unsqueeze(1)", attn_weight.unsqueeze(1).size())
+            # print("encoder_outputs", encoder_outputs.size())
             attn_applied = torch.bmm(attn_weight.unsqueeze(1), encoder_outputs)
 
-            print("embeddeds", embeddeds[:, l].size())
-            print("attn_applied", attn_applied.size())
+            # print("embeddeds", embeddeds[:, l].size())
+            # print("attn_applied", attn_applied.size())
             output = torch.cat((embeddeds[:, l].unsqueeze(1), attn_applied), 2)
-            print("output", output.size())
+            # print("output", output.size())
             output = self.attn_combine(output)
 
             output = F.relu(output)
-            print("output", output.size())
-            print("hidden", hidden.size())
+            # print("output", output.size())
+            # print("hidden", hidden.size())
             output, hidden = self.gru(output, hidden)
             outputs[:, l:l + 1] = output
             #             outputs.append(output)
