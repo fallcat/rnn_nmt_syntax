@@ -95,7 +95,7 @@ class Evaluator(object):
     def evaluate_randomly(self, dataset_split='valid'):
         pairs = random.sample(self.dataset.pairs[dataset_split], self.config['num_evaluate'])
 
-        output_words = self.translate_batch(pairs)
+        output_words = self.translate_batch([pair[0] for pair in pairs])
         for i in range(self.config['num_evaluate']):
             print('>', pairs[i][0])
             print('=', pairs[i][1])
