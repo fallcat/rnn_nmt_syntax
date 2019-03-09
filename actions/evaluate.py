@@ -36,7 +36,7 @@ class Evaluator(object):
             encoder_outputs2[:, :encoder_outputs.size()[1]] += encoder_outputs
             span_seq_len =  int(self.config['max_length']/self.config['span_size'])
 
-            decoder_input = torch.tensor([SOS_token] * self.config['span_size'], device=DEVICE)
+            decoder_input = torch.tensor([SOS_token] * self.config['span_size'] * batch_size, device=DEVICE).view(batch_size, -1)
             decoder_outputs = torch.zeros((batch_size, self.config['max_length']), dtype=torch.long, device=DEVICE)
 
             for l in range(span_seq_len):
