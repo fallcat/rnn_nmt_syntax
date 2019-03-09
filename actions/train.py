@@ -261,7 +261,7 @@ class Trainer(object):
             step_loss_count = 0
 
             # train batch
-            loss = self.train_batch(training_pairs)
+            loss = self.train_batch2(training_pairs)
 
             # for iter in range(1, len_training_pairs + 1):
             #     training_pair = training_pairs[iter - 1]
