@@ -297,10 +297,10 @@ class BatchAttnKspanDecoderRNN(nn.Module):
 
         # inputs = [(len(inp) % self.span_size + self.span_size) for inp in inputs]
         bsz, seq_len = inputs.size()
-        print("seq_len", seq_len)
+        # print("seq_len", seq_len)
         span_seq_len = int(seq_len/self.span_size)
         embeddeds = self.embedding(inputs)
-        print("embedds", embeddeds.size())
+        # print("embedds", embeddeds.size())
         embeddeds = embeddeds.view(bsz, span_seq_len, -1)
         # embeddeds = tuple([self.embedding(input_i).view(1, 1, -1)[0] for input_i in input])
         # embeddeds = torch.cat(embeddeds, 1)
@@ -337,7 +337,7 @@ class BatchAttnKspanDecoderRNN(nn.Module):
         #     output, hiddens[i] = gru(output, hiddens[i])
         outputs = self.out(outputs).view(bsz, seq_len, -1)
         outputs = F.log_softmax(outputs, dim=2)
-        print("decodre outputs", outputs.size())
+        # print("decodre outputs", outputs.size())
         # output = torch.split(output, self.output_size, dim=1)
 
         # output = tuple([F.log_softmax(output_i, dim=1) for output_i in output])
