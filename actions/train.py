@@ -72,7 +72,7 @@ class Trainer(object):
         print("decoder_outputs", decoder_outputs.size())
         print("output_batches", output_batches.size())
 
-        loss += self.criterion(decoder_outputs, output_batches)
+        loss += self.criterion(decoder_outputs.view(-1, self.dataset.num_words), output_batches.view(-1))
 
         try:
             loss.backward()
