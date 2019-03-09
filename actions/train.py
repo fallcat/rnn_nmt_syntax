@@ -63,7 +63,7 @@ class Trainer(object):
 
         # Run words through encoder
         encoder_outputs, encoder_hidden = self.encoder(input_batches, input_lengths)
-        encoder_outputs2 = torch.zeros((batch_size, self.config['max_length'], self.config['hidden_size']), dtype=torch.long, device=DEVICE)
+        encoder_outputs2 = torch.zeros((batch_size, self.config['max_length'], self.config['hidden_size']), dtype=torch.float, device=DEVICE)
         encoder_outputs2[:, :encoder_outputs.size()[1]] += encoder_outputs
         print("encoder_outputs2", encoder_outputs2.size())
         print("encoder_hidden", encoder_hidden.size())
