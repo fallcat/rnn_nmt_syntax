@@ -365,15 +365,19 @@ class Trainer(object):
                 self.train_epoch(epoch, train_size)
 
     def train_and_evaluate(self, train_size=None):
+        models = {
+            'encoder': self.encoder,
+            'decoder': self.decoder
+        }
         if self.step > -1:
             for epoch in range(self.epoch, self.config['num_epochs']):
                 self.train_epoch(epoch, train_size)
-                evaluator = Evaluator(config=self.config, models=self.models, dataset=self.dataset, experiment=self.experiment)
+                evaluator = Evaluator(config=self.config, models=models, dataset=self.dataset, experiment=self.experiment)
                 evaluator.evaluate_randomly()
         else:
             for epoch in range(self.epoch + 1, self.config['num_epochs']):
                 self.train_epoch(epoch, train_size)
-                evaluator = Evaluator(config=self.config, models=self.models, dataset=self.dataset,
+                evaluator = Evaluator(config=self.config, models=models, dataset=self.dataset,
                                       experiment=self.experiment)
                 evaluator.evaluate_randomly()
 
