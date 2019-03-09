@@ -7,6 +7,7 @@ from torch import nn, optim
 from torch.autograd import Variable
 from rnn_nmt_syntax.model import SOS_token, EOS_token, DEVICE
 from rnn_nmt_syntax.model.utils import save_plot, time_since
+from rnn_nmt_syntax.actions.evaluate import Evaluator
 
 # config: max_length, span_size, teacher_forcing_ratio, learning_rate, num_iters, print_every, plot_every, save_path,
 #         restore_path, best_save_path, plot_path, minibatch_size
@@ -360,6 +361,19 @@ class Trainer(object):
         else:
             for epoch in range(self.epoch + 1, self.config['num_epochs']):
                 self.train_epoch(epoch, train_size)
+
+    def train_and_evaluate(self, train_size=None):
+        if self.step > -1:
+            for epoch in range(self.epoch, self.config['num_epochs']):
+                self.train_epoch(epoch, train_size)
+                evaluator = Evaluator(config=self.config, models=self.models, dataset=self.dataset, experiment=self.experiment)
+                evaluator.evaluate_randomly()
+        else:
+            for epoch in range(self.epoch + 1, self.config['num_epochs']):
+                self.train_epoch(epoch, train_size)
+                evaluator = Evaluator(config=self.config, models=self.models, dataset=self.dataset,
+                                      experiment=self.experiment)
+                evaluator.evaluate_randomly()
 
     # def prepare_dataloader(self, train_size):
     #     if train_size is not None:
