@@ -36,7 +36,8 @@ def main():
         'plot_path': args.plot,
         'minibatch_size': args.minibatch_size,
         'num_epochs': args.num_epochs,
-        'num_evaluate': args.num_evaluate
+        'num_evaluate': args.num_evaluate,
+        'hidden_size': args.hidden_size
     }
     if args.do_experiment:
         experiment = Experiment(project_name="rnn-nmt-syntax",
@@ -63,7 +64,8 @@ def main():
             'plot_path': args.plot,
             'minibatch_size': args.minibatch_size,
             'num_epochs': args.num_epochs,
-            'train_size': args.train_size
+            'train_size': args.train_size,
+            'hidden_size': args.hidden_size
         }
         experiment.log_parameters(hyper_params)
     else:
