@@ -52,25 +52,25 @@ class Trainer(object):
 
         input_batches = torch.nn.utils.rnn.pad_sequence(input_list, batch_first=True)
 
-        print("input_batches size", input_batches.size())
+        # print("input_batches size", input_batches.size())
         decoder_input = torch.tensor([SOS_token] * self.config['span_size'], device=DEVICE)
         output_to_pad = [torch.cat((decoder_input, output_batch), 0) for output_batch in output_list]
         output_batches = torch.zeros((batch_size, self.config['max_length']), dtype=torch.long, device=DEVICE)
         output_batches2 = torch.nn.utils.rnn.pad_sequence(output_to_pad, batch_first=True)
-        print("output_batches size", output_batches.size())
-        print("output_batches2 size", output_batches2.size())
+        # print("output_batches size", output_batches.size())
+        # print("output_batches2 size", output_batches2.size())
         output_batches[:, :output_batches2.size()[1]] += output_batches2
 
         # Run words through encoder
         encoder_outputs, encoder_hidden = self.encoder(input_batches, input_lengths)
         encoder_outputs2 = torch.zeros((batch_size, self.config['max_length'], self.config['hidden_size']), dtype=torch.float, device=DEVICE)
         encoder_outputs2[:, :encoder_outputs.size()[1]] += encoder_outputs
-        print("encoder_outputs2", encoder_outputs2.size())
-        print("encoder_hidden", encoder_hidden.size())
+        # print("encoder_outputs2", encoder_outputs2.size())
+        # print("encoder_hidden", encoder_hidden.size())
         decoder_outputs, decoder_hidden, decoder_attn = self.decoder(output_batches, encoder_hidden, encoder_outputs2)
-        print("outside")
-        print("decoder_outputs", decoder_outputs.size())
-        print("output_batches", output_batches.size())
+        # print("outside")
+        # print("decoder_outputs", decoder_outputs.size())
+        # print("output_batches", output_batches.size())
 
         loss += self.criterion(decoder_outputs.view(-1, self.dataset.num_words), output_batches.view(-1))
 
