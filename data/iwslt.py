@@ -26,6 +26,14 @@ class IWSLTDataset(object):
 
         self.pairs = {}
         self.prepare_data()
+        self.eng_prefixes = (
+            "i am ", "i m ",
+            "he is", "he s ",
+            "she is", "she s ",
+            "you are", "you re ",
+            "we are", "we re ",
+            "they are", "they re "
+        )
 
     def read_vocab(self):
         vocab = open(self.dir_path+self.vocab_file, 'r').read().strip().split('\n')
@@ -70,7 +78,8 @@ class IWSLTDataset(object):
 
     def filter_pair(self, p):
         return len(p[0].split(' ')) < self.max_length - (self.span_size + 1) and \
-               len(p[1].split(' ')) < self.max_length - (self.span_size + 1)
+               len(p[1].split(' ')) < self.max_length - (self.span_size + 1) and \
+               p[1].startswith(self.eng_prefixes)
 
     def filter_pairs(self, pairs):
         return [pair for pair in pairs if self.filter_pair(pair)]
