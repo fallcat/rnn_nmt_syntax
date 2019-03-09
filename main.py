@@ -74,9 +74,9 @@ def main():
     trainer = Trainer(config=config, models=models, dataset=dataset, experiment=experiment)
     if args.restore is not None:
         trainer.restore_checkpoint(args.restore)
-    trainer.train(args.train_size)
-    evaluator = Evaluator(config=config, models=models, dataset=dataset, experiment=experiment)
-    evaluator.evaluate_randomly()
+    trainer.train_and_evaluate(args.train_size)
+    # evaluator = Evaluator(config=config, models=models, dataset=dataset, experiment=experiment)
+    # evaluator.evaluate_randomly()
     # for epoch in range(args.num_epochs):
     #     trainer.train_epoch(epoch, args.train_size)
 
