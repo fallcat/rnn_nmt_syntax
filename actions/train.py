@@ -17,8 +17,8 @@ class Trainer(object):
         self.config = config
         self.encoder = models['encoder']
         self.decoder = models['decoder']
-        self.encoder_optimizer = optim.SGD(self.encoder.parameters(), lr=self.config['learning_rate'])
-        self.decoder_optimizer = optim.SGD(self.decoder.parameters(), lr=self.config['learning_rate'])
+        self.encoder_optimizer = optim.SGD(self.encoder.parameters(), lr=self.config['learning_rate'], weight_decay=self.config['weight_decay'])
+        self.decoder_optimizer = optim.SGD(self.decoder.parameters(), lr=self.config['learning_rate'], weight_decay=self.config['weight_decay'])
         self.criterion = nn.NLLLoss()
         self.epoch = -1
         self.step = -1
@@ -49,9 +49,9 @@ class Trainer(object):
         # input_batches = sorted(input_tensors, key=lambda x: x.size()[0], reverse=True)
         # input_lengths = [x.size()[0] for x in input_batches]
         batch_size = len(batches)
-        input_batches = torch.zeros((batch_size, self.config['max_length']), dtype=torch.long, device=DEVICE)
-        input_batches2 = torch.nn.utils.rnn.pad_sequence(input_list, batch_first=True)
-        input_batches[:, :input_batches2.size()[1]] += input_batches2
+
+        input_batches = torch.nn.utils.rnn.pad_sequence(input_list, batch_first=True)
+
         print("input_batches size", input_batches.size())
         decoder_input = Variable(torch.tensor([SOS_token] * self.config['span_size'], device=DEVICE))
         output_to_pad = [torch.cat((decoder_input, output_batch), 0) for output_batch in output_list]
@@ -63,9 +63,11 @@ class Trainer(object):
 
         # Run words through encoder
         encoder_outputs, encoder_hidden = self.encoder(input_batches, input_lengths)
+        encoder_outputs2 = torch.zeros((batch_size, self.config['max_length'], self.config['hidden_size']), dtype=torch.long, device=DEVICE)
+        encoder_outputs2[:, :encoder_outputs.size()[1]] += encoder_outputs
         print("encoder_outputs", encoder_outputs.size())
         print("encoder_hidden", encoder_hidden.size())
-        decoder_outputs, decoder_hidden, decoder_attn = self.decoder(output_batches, encoder_hidden, encoder_outputs)
+        decoder_outputs, decoder_hidden, decoder_attn = self.decoder(output_batches, encoder_hidden, encoder_outputs2)
 
         loss += self.criterion(decoder_outputs, output_batches)
 
