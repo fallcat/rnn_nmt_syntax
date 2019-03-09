@@ -72,9 +72,9 @@ class Trainer(object):
         decoder_hidden = encoder_hidden
         decoder_outputs = torch.zeros((batch_size, self.config['max_length'], self.dataset.num_words), dtype=torch.long, device=DEVICE)
         for i in range(span_seq_len):
-            decoder_output, decoder_hidden, decoder_attn = self.decoder(output_batches[i:i+self.config['span_size']],
+            decoder_output, decoder_hidden, decoder_attn = self.decoder(output_batches[:, i:i+self.config['span_size']],
                                                                         decoder_hidden, encoder_outputs2)
-            decoder_outputs[i:i+self.config['span_size']] = decoder_output
+            decoder_outputs[:, i:i+self.config['span_size']] = decoder_output
         # print("outside")
         # print("decoder_outputs", decoder_outputs.size())
         # print("output_batches", output_batches.size())
