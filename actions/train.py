@@ -65,7 +65,7 @@ class Trainer(object):
         encoder_outputs, encoder_hidden = self.encoder(input_batches, input_lengths)
         encoder_outputs2 = torch.zeros((batch_size, self.config['max_length'], self.config['hidden_size']), dtype=torch.long, device=DEVICE)
         encoder_outputs2[:, :encoder_outputs.size()[1]] += encoder_outputs
-        print("encoder_outputs", encoder_outputs.size())
+        print("encoder_outputs2", encoder_outputs2.size())
         print("encoder_hidden", encoder_hidden.size())
         decoder_outputs, decoder_hidden, decoder_attn = self.decoder(output_batches, encoder_hidden, encoder_outputs2)
 
