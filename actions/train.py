@@ -80,10 +80,10 @@ class Trainer(object):
         # print("decoder_outputs", decoder_outputs.size())
         # print("output_batches", output_batches.size())
 
-        print("decoder_outputs[:, :-self.config['span_size']]", decoder_outputs[:, :-self.config['span_size']].size())
-        print("output_batches[:, self.config['span_size']:]", output_batches[:, self.config['span_size']:].size())
+        # print("decoder_outputs[:, :-self.config['span_size']]", decoder_outputs[:, :-self.config['span_size']].size())
+        # print("output_batches[:, self.config['span_size']:]", output_batches[:, self.config['span_size']:].size())
         loss += self.criterion(decoder_outputs[:, :-self.config['span_size']].contiguous().view(-1, self.dataset.num_words),
-                               output_batches[:, self.config['span_size']:].view(-1))
+                               output_batches[:, self.config['span_size']:].contiguous().view(-1))
 
         try:
             loss.backward()
