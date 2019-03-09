@@ -328,7 +328,7 @@ class BatchAttnKspanDecoderRNN(nn.Module):
             output = F.relu(output)
             print("output", output.size())
             print("hidden", hidden.size())
-            output, hidden = self.gru(output.transpose(0, 1), hidden)
+            output, hidden = self.gru(output, hidden)
             outputs[:, l:l + 1] = output
             #             outputs.append(output)
             # hiddens[l] = hidden
