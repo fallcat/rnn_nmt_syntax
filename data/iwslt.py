@@ -30,7 +30,7 @@ class IWSLTDataset(object):
     def read_vocab(self):
         vocab = open(self.dir_path+self.vocab_file, 'r').read().strip().split('\n')
         for v in vocab:
-            self.add_word(v)
+            self.add_word(v.split()[0])
 
     def add_word(self, word):
         if word not in self.word2index:
