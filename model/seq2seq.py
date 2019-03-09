@@ -321,7 +321,7 @@ class BatchAttnKspanDecoderRNN(nn.Module):
 
             print("embeddeds", embeddeds[:, l].size())
             print("attn_applied", attn_applied.size())
-            output = torch.cat((embeddeds[:, l], attn_applied), 2)
+            output = torch.cat((embeddeds[:, l], attn_applied.squeeze(1)), 1)
             print("output", output.size())
             output = self.attn_combine(output)
 
