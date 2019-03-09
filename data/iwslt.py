@@ -32,7 +32,13 @@ class IWSLTDataset(object):
             "she is", "she s ",
             "you are", "you re ",
             "we are", "we re ",
-            "they are", "they re "
+            "they are", "they re ",
+            "I am ", "I &apos;m ",
+            "He is", "He &apos;s ",
+            "She is", "She &apos;s ",
+            "You are", "You &apos;re ",
+            "We are", "We &apos;re ",
+            "They are", "They &apos;re "
         )
 
     def read_vocab(self):
