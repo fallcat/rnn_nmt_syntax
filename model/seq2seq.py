@@ -369,16 +369,15 @@ class BatchAttnKspanDecoderRNN2(nn.Module):
         # inputs = [(len(inp) % self.span_size + self.span_size) for inp in inputs]
         bsz = inputs.size()[0]
         # print("seq_len", seq_len)
-        span_seq_len = 1
         embeddeds = self.embedding(inputs)
         # print("embedds", embeddeds.size())
-        embeddeds = embeddeds.view(bsz, span_seq_len, -1)
+        embeddeds = embeddeds.view(bsz, -1)
         # embeddeds = tuple([self.embedding(input_i).view(1, 1, -1)[0] for input_i in input])
         # embeddeds = torch.cat(embeddeds, 1)
         embeddeds = self.dropout(embeddeds)
         # hiddens = torch.zeros(span_seq_len, bsz, self.hidden_size, device=DEVICE)
         # outputs = torch.zeros(bsz, span_seq_len, self.hidden_size, device=DEVICE)
-        attn_weights = torch.zeros(span_seq_len, bsz, self.max_length)
+        attn_weights = torch.zeros(1, bsz, self.max_length)
 
         # for l in range(span_seq_len):
         print("emb", embeddeds.size())
