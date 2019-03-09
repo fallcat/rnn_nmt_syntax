@@ -19,11 +19,80 @@ class Trainer(object):
         self.decoder = models['decoder']
         self.encoder_optimizer = optim.SGD(self.encoder.parameters(), lr=self.config['learning_rate'], weight_decay=self.config['weight_decay'])
         self.decoder_optimizer = optim.SGD(self.decoder.parameters(), lr=self.config['learning_rate'], weight_decay=self.config['weight_decay'])
-        self.criterion = nn.NLLLoss()
+        self.criterion = nn.NLLLoss(ignore_index=0)
         self.epoch = -1
         self.step = -1
         self.dataset = dataset
         self.experiment = experiment
+
+    def train_batch2(self, training_pairs):
+        """
+        train a batch of tensors
+        :param input_tensors: list of tensors
+        :param target_tensors: list of tensors
+        :return:
+        """
+
+        # Zero gradients of both optimizers
+        self.encoder_optimizer.zero_grad()
+        self.decoder_optimizer.zero_grad()
+        loss = 0  # Added onto for each word
+
+        # sort input tensors by length
+        batches = sorted(training_pairs, key=lambda x: x[0].size()[0], reverse=True)
+        input_list = [x[0] for x in batches]
+        # print("inp [0]", input_list[0])
+        output_list = [x[1] for x in batches]
+        input_lengths = torch.LongTensor([x.size()[0] for x in input_list], device=torch.device("cpu"))
+        # print("input lengths", input_lengths)
+        # output_lengths = [x.size()[0] for x in batches[:][1]]
+        # input_batches = sorted(input_tensors, key=lambda x: x.size()[0], reverse=True)
+        # input_lengths = [x.size()[0] for x in input_batches]
+        batch_size = len(batches)
+
+        input_batches = torch.nn.utils.rnn.pad_sequence(input_list, batch_first=True)
+
+        # print("input_batches size", input_batches.size())
+        decoder_input = torch.tensor([SOS_token] * self.config['span_size'], device=DEVICE)
+        output_to_pad = [torch.cat((decoder_input, output_batch), 0) for output_batch in output_list]
+        output_batches = torch.zeros((batch_size, self.config['max_length']), dtype=torch.long, device=DEVICE)
+        output_batches2 = torch.nn.utils.rnn.pad_sequence(output_to_pad, batch_first=True)
+        # print("output_batches size", output_batches.size())
+        # print("output_batches2 size", output_batches2.size())
+        output_batches[:, :output_batches2.size()[1]] += output_batches2
+
+        # Run words through encoder
+        encoder_outputs, encoder_hidden = self.encoder(input_batches, input_lengths)
+        encoder_outputs2 = torch.zeros((batch_size, self.config['max_length'], self.config['hidden_size']),
+                                       dtype=torch.float, device=DEVICE)
+        encoder_outputs2[:, :encoder_outputs.size()[1]] += encoder_outputs
+        # print("encoder_outputs2", encoder_outputs2.size())
+        # print("encoder_hidden", encoder_hidden.size())
+        span_seq_len = int(self.config['max_length']/self.config['span_size'])
+        decoder_hidden = encoder_hidden
+        decoder_outputs = torch.zeros((batch_size, self.config['max_length'], self.dataset.num_words), dtype=torch.long, device=DEVICE)
+        for i in range(span_seq_len):
+            decoder_output, decoder_hidden, decoder_attn = self.decoder(output_batches[i:i+self.config['span_size']],
+                                                                        decoder_hidden, encoder_outputs2)
+            decoder_outputs[i:i+self.config['span_size']] = decoder_output
+        # print("outside")
+        # print("decoder_outputs", decoder_outputs.size())
+        # print("output_batches", output_batches.size())
+
+        loss += self.criterion(decoder_outputs[self.config['span_size']:].view(-1, self.dataset.num_words),
+                               output_batches[:-self.config['span_size']].view(-1))
+
+        try:
+            loss.backward()
+            self.encoder_optimizer.step()
+            self.decoder_optimizer.step()
+            return loss.item() / (self.config['max_length'] * batch_size)
+
+        except Exception as ex:
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print(message)
+            return -1
 
     def train_batch(self, training_pairs):
         """

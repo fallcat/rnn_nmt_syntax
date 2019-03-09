@@ -14,6 +14,7 @@ from model import DEVICE
 #         restore_path, best_save_path, plot_path
 
 def main():
+    # max_length needs to be multiples of span_size
     args = get_cl_args()
     print(args)
     dataset = WMTDataset(max_length=args.max_length, span_size=args.span_size)

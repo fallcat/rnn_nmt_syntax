@@ -2,7 +2,7 @@ import torch
 import random
 from rnn_nmt_syntax.model import DEVICE, SOS_token, EOS_token
 
-# config: max_length, span_size
+# config: max_length, span_size, hidden_size
 
 class Evaluator(object):
     def __init__(self, config, models, dataset, experiment=None):
@@ -11,6 +11,19 @@ class Evaluator(object):
         self.decoder = models['decoder']
         self.dataset = dataset
         self.experiment = experiment
+
+    def translate_batch(self, batch):
+        with torch.no_grad():
+            batch_size = len(batch)
+            input_tensors =[self.dataset.tensor_from_sentence(sentence) for sentence in batch]
+            input_lengths = torch.LongTensor([x.size()[0] for x in input_tensors], device=torch.device("cpu"))
+            input_batches = torch.nn.utils.rnn.pad_sequence(input_tensors, batch_first=True)
+            encoder_outputs, encoder_hidden = self.encoder(input_batches, input_lengths)
+            encoder_outputs2 = torch.zeros((batch_size, self.config['max_length'], self.config['hidden_size']),
+                                           dtype=torch.float, device=DEVICE)
+            encoder_outputs2[:, :encoder_outputs.size()[1]] += encoder_outputs
+            decoder_outputs, decoder_hidden, decoder_attn = self.decoder(output_batches, encoder_hidden,
+                                                                         encoder_outputs2)
 
     def translate(self, sentence):
         with torch.no_grad():
