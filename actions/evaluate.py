@@ -103,8 +103,12 @@ class Evaluator(object):
 
             return decoded_words, decoder_attentions[:di + 1]
 
-    def evaluate_randomly(self, dataset_split='valid'):
-        pairs = random.sample(self.dataset.pairs[dataset_split], self.config['num_evaluate'])
+    def evaluate_randomly(self, dataset_split='valid', evaluate_size=None):
+        if evaluate_size is not None:
+            evaluating_pairs = self.dataset.pairs[dataset_split][:evaluate_size]
+        else:
+            evaluating_pairs = self.dataset.pairs[dataset_split]
+        pairs = random.sample(evaluating_pairs, self.config['num_evaluate'])
         print("pairs", pairs)
 
         output_words = self.translate_batch([pair[0] for pair in pairs])

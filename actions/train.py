@@ -373,13 +373,13 @@ class Trainer(object):
             for epoch in range(self.epoch, self.config['num_epochs']):
                 self.train_epoch(epoch, train_size)
                 evaluator = Evaluator(config=self.config, models=models, dataset=self.dataset, experiment=self.experiment)
-                evaluator.evaluate_randomly()
+                evaluator.evaluate_randomly(dataset_split='train', evaluate_size=train_size)
         else:
             for epoch in range(self.epoch + 1, self.config['num_epochs']):
                 self.train_epoch(epoch, train_size)
                 evaluator = Evaluator(config=self.config, models=models, dataset=self.dataset,
                                       experiment=self.experiment)
-                evaluator.evaluate_randomly()
+                evaluator.evaluate_randomly(dataset_split='train', evaluate_size=train_size)
 
     # def prepare_dataloader(self, train_size):
     #     if train_size is not None:
