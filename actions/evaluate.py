@@ -17,7 +17,7 @@ class Evaluator(object):
         with torch.no_grad():
             batch_size = len(batch)
             input_tensors =[self.dataset.tensor_from_sentence(sentence) for sentence in batch]
-            input_tensors = sorted(input_tensors, key=lambda x: x[0].size()[0], reverse=True)
+            input_tensors = sorted(input_tensors, key=lambda x: x.size()[0], reverse=True)
             input_lengths_list = [x.size()[0] for x in input_tensors]
             input_lengths_np = np.array(input_lengths_list)
             input_lengths_np_order = np.argsort(input_lengths_np)
