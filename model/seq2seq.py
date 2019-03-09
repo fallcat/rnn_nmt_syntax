@@ -297,6 +297,7 @@ class BatchAttnKspanDecoderRNN(nn.Module):
 
         # inputs = [(len(inp) % self.span_size + self.span_size) for inp in inputs]
         bsz, seq_len = inputs.size()
+        encoder_seq_len = encoder_outputs.size()[1]
         span_seq_len = int(seq_len/self.span_size)
         embeddeds = self.embedding(inputs)
         embeddeds = embeddeds.view(bsz, span_seq_len, -1)
@@ -316,11 +317,11 @@ class BatchAttnKspanDecoderRNN(nn.Module):
             attn_weights[l] = attn_weight
             # print("attn_weight.unsqueeze(0).repeat(encoder_outputs.size()[0], 1, 1)", attn_weight.unsqueeze(0).repeat(encoder_outputs.size()[1], 1, 1).size())
             # print("encoder_outputs.transpose(0,1).contiguous()", encoder_outputs.transpose(0,1).contiguous().size())
-            attn_applied = torch.bmm(attn_weight.unsqueeze(0).repeat(encoder_outputs.size()[1], 1, 1), encoder_outputs.transpose(0,1).contiguous())
+            attn_applied = torch.bmm(attn_weight.unsqueeze(0).repeat(encoder_seq_len, 1, 1), encoder_outputs.transpose(0,1).contiguous())
 
-            print("embeddeds", embeddeds.size())
+            print("embeddeds", embeddeds[:, l].unsqueeze(0).repeat(encoder_seq_len, 1, 1).size())
             print("attn_applied", attn_applied.size())
-            output = torch.cat((embeddeds, attn_applied[0]), 1)
+            output = torch.cat((embeddeds[:, l].unsqueeze(0).repeat(encoder_seq_len, 1, 1), attn_applied), 1)
             output = self.attn_combine(output).unsqueeze(0)
 
             output = F.relu(output)
