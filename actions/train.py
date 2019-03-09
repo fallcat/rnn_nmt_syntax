@@ -68,6 +68,9 @@ class Trainer(object):
         print("encoder_outputs2", encoder_outputs2.size())
         print("encoder_hidden", encoder_hidden.size())
         decoder_outputs, decoder_hidden, decoder_attn = self.decoder(output_batches, encoder_hidden, encoder_outputs2)
+        print("outside")
+        print("decoder_outputs", decoder_outputs.size())
+        print("output_batches", output_batches.size())
 
         loss += self.criterion(decoder_outputs, output_batches)
 
