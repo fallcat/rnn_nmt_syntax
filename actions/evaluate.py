@@ -25,6 +25,7 @@ class Evaluator(object):
             print("input_tensors", input_tensors)
             print(input_lengths_np_order)
             print(type(input_lengths_np_order))
+            print("i", [i for i in input_lengths_np_order])
             input_lengths = torch.LongTensor([input_tensors[i] for i in input_lengths_np_order], device=torch.device("cpu"))
 
             input_batches = torch.nn.utils.rnn.pad_sequence(input_tensors, batch_first=True)
