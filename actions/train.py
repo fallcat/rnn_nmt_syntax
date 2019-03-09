@@ -70,7 +70,7 @@ class Trainer(object):
         # print("encoder_hidden", encoder_hidden.size())
         span_seq_len = int(self.config['max_length']/self.config['span_size'])
         decoder_hidden = encoder_hidden
-        decoder_outputs = torch.zeros((batch_size, self.config['max_length'], self.dataset.num_words), dtype=torch.long, device=DEVICE)
+        decoder_outputs = torch.zeros((batch_size, self.config['max_length'], self.dataset.num_words), dtype=torch.float, device=DEVICE)
         for i in range(span_seq_len):
             decoder_output, decoder_hidden, decoder_attn = self.decoder(output_batches[:, i:i+self.config['span_size']],
                                                                         decoder_hidden, encoder_outputs2)
