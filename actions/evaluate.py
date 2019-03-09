@@ -25,11 +25,11 @@ class Evaluator(object):
             print("input_tensors", input_tensors)
             print(input_lengths_np_order)
             print(type(input_lengths_np_order))
-            print(input_lengths_list[input_lengths_np_order])
+            print([input_lengths_list[i] for i in input_lengths_np_order])
             print("i", [input_tensors[i] for i in input_lengths_np_order])
-            input_lengths = torch.LongTensor(input_lengths_list[input_lengths_np_order], device=torch.device("cpu"))
+            input_lengths = torch.LongTensor([input_lengths_list[i] for i in input_lengths_np_order], device=torch.device("cpu"))
 
-            input_batches = torch.nn.utils.rnn.pad_sequence([input_tensors[input_lengths_np_order]], batch_first=True)
+            input_batches = torch.nn.utils.rnn.pad_sequence([input_tensors[i] for i in input_lengths_np_order], batch_first=True)
             encoder_outputs, encoder_hidden = self.encoder(input_batches, input_lengths)
             encoder_outputs2 = torch.zeros((batch_size, self.config['max_length'], self.config['hidden_size']),
                                            dtype=torch.float, device=DEVICE)
