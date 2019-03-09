@@ -45,6 +45,9 @@ class Evaluator(object):
                 topv, topi = decoder_output.topk(1, dim=2)
                 print("topi", topi.size())
                 decoder_input = topi
+                print("decoder_outputs", decoder_outputs.size())
+                print("decoder_outputs[:, l:l+self.config['span_size']]", decoder_outputs[:, l:l+self.config['span_size']].size())
+                print("topi", topi.size())
                 decoder_outputs[:, l:l+self.config['span_size']] = topi
             decoded_words = [[[self.dataset.index2word(w.item()) for w in tensor_sentence]
                              for tensor_sentence in decoder_outputs][i] for i in input_lengths_np_order_order]
