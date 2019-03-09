@@ -314,7 +314,7 @@ class BatchAttnKspanDecoderRNN(nn.Module):
             print("attn_weight", attn_weight.size())
             print("encoder_outputs", encoder_outputs.size())
             attn_weights[l] = attn_weight
-            print("attn_weight.unsqueeze(0).repeat(encoder_outputs.size()[0], 1, 1)", attn_weight.unsqueeze(0).repeat(encoder_outputs.size()[0], 1, 1).size())
+            print("attn_weight.unsqueeze(0).repeat(encoder_outputs.size()[0], 1, 1)", attn_weight.unsqueeze(0).repeat(encoder_outputs.size()[1], 1, 1).size())
             print("encoder_outputs.transpose(0,1).contiguous()", encoder_outputs.transpose(0,1).contiguous().size())
             attn_applied = torch.bmm(attn_weight.unsqueeze(0).repeat(encoder_outputs.size()[0], 1, 1), encoder_outputs.transpose(0,1).contiguous())
 
