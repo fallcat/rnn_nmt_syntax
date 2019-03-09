@@ -1,5 +1,6 @@
 import torch
 import random
+import numpy as np
 from rnn_nmt_syntax.model import DEVICE, SOS_token, EOS_token
 
 # config: max_length, span_size, hidden_size
@@ -16,7 +17,13 @@ class Evaluator(object):
         with torch.no_grad():
             batch_size = len(batch)
             input_tensors =[self.dataset.tensor_from_sentence(sentence) for sentence in batch]
-            input_lengths = torch.LongTensor([x.size()[0] for x in input_tensors], device=torch.device("cpu"))
+            input_tensors = sorted(input_tensors, key=lambda x: x[0].size()[0], reverse=True)
+            input_lengths_list = [x.size()[0] for x in input_tensors]
+            input_lengths_np = np.array(input_lengths_list)
+            input_lengths_np_order = np.argsort(input_lengths_np)
+            input_lengths_np_order_order = np.argsort(input_lengths_np_order)
+            input_lengths = torch.LongTensor(input_lengths_list[input_lengths_np_order], device=torch.device("cpu"))
+
             input_batches = torch.nn.utils.rnn.pad_sequence(input_tensors, batch_first=True)
             encoder_outputs, encoder_hidden = self.encoder(input_batches, input_lengths)
             encoder_outputs2 = torch.zeros((batch_size, self.config['max_length'], self.config['hidden_size']),
@@ -34,7 +41,8 @@ class Evaluator(object):
                 print("topi", topi.size())
                 decoder_input = topi
                 decoder_outputs[:, l:l+self.config['span_size']] = topi
-            decoded_words = [[self.dataset.index2word(w.item()) for w in tensor_sentence] for tensor_sentence in decoder_outputs]
+            decoded_words = [[self.dataset.index2word(w.item()) for w in tensor_sentence]
+                             for tensor_sentence in decoder_outputs][input_lengths_np_order_order]
             return decoded_words
 
 
@@ -86,8 +94,8 @@ class Evaluator(object):
 
     def evaluate_randomly(self, dataset_split='valid'):
         pairs = random.sample(self.dataset.pairs[dataset_split], self.config['num_evaluate'])
-        pairs = sorted(pairs, key=lambda x: x[0].size()[0], reverse=True)
-        output_words = self.translate_batch([pair[0] for pair in pairs])
+
+        output_words = self.translate_batch(pairs)
         for i in range(self.config['num_evaluate']):
             print('>', pairs[i][0])
             print('=', pairs[i][1])
