@@ -52,6 +52,7 @@ class Trainer(object):
         input_batches = torch.zeros((batch_size, self.config['max_length']), dtype=torch.long, device=DEVICE)
         input_batches2 = torch.nn.utils.rnn.pad_sequence(input_list, batch_first=True)
         input_batches[:, :input_batches2.size()[1]] += input_batches2
+        print("input_batches size", input_batches.size())
         decoder_input = Variable(torch.tensor([SOS_token] * self.config['span_size'], device=DEVICE))
         output_to_pad = [torch.cat((decoder_input, output_batch), 0) for output_batch in output_list]
         output_batches = torch.zeros((batch_size, self.config['max_length']), dtype=torch.long, device=DEVICE)
