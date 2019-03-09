@@ -22,6 +22,7 @@ class Evaluator(object):
             input_lengths_np = np.array(input_lengths_list)
             input_lengths_np_order = np.argsort(input_lengths_np)[::-1]
             input_lengths_np_order_order = np.argsort(input_lengths_np_order)
+            print("input_tensors", input_tensors)
             print(input_lengths_np_order)
             print(type(input_lengths_np_order))
             input_lengths = torch.LongTensor([input_tensors[i] for i in input_lengths_np_order], device=torch.device("cpu"))
