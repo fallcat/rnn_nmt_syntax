@@ -377,12 +377,7 @@ class Trainer(object):
         if self.step > -1:
             for epoch in range(self.epoch, self.config['num_epochs']):
                 self.train_epoch(epoch, train_size)
-                print("epoch + 1", epoch+1)
-                print("self.config['evaluate_every']", self.config['evaluate_every'])
-                print("epoch + 1", type(epoch + 1))
-                print("self.config['evaluate_every']", type(self.config['evaluate_every']))
-                print(self.config['evaluate_every'] % epoch + 1)
-                if self.config['evaluate_every'] % epoch + 1 == 0:
+                if (epoch + 1) % self.config['evaluate_every']  == 0:
                     models = {
                         'encoder': self.encoder,
                         'decoder': self.decoder
@@ -392,12 +387,7 @@ class Trainer(object):
         else:
             for epoch in range(self.epoch + 1, self.config['num_epochs']):
                 self.train_epoch(epoch, train_size)
-                print("epoch + 1", epoch + 1)
-                print("self.config['evaluate_every']", self.config['evaluate_every']
-                print("epoch + 1", type(epoch + 1))
-                print("self.config['evaluate_every']", type(self.config['evaluate_every']))
-                print(self.config['evaluate_every'] % epoch + 1)
-                if self.config['evaluate_every'] % epoch + 1 == 0:
+                if (epoch + 1) % self.config['evaluate_every'] == 0:
                     models = {
                         'encoder': self.encoder,
                         'decoder': self.decoder
