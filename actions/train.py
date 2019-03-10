@@ -66,14 +66,14 @@ class Trainer(object):
         encoder_outputs, encoder_hidden = self.encoder(input_batches, input_lengths)
         encoder_outputs2 = torch.zeros((batch_size, self.config['max_length'], self.config['hidden_size']),
                                        dtype=torch.float, device=DEVICE)
-        print("encoder_outputs2.get_device()", encoder_outputs2.get_device())
+        # print("encoder_outputs2.get_device()", encoder_outputs2.get_device())
         encoder_outputs2[:, :encoder_outputs.size()[1]] += encoder_outputs
         # print("encoder_outputs2", encoder_outputs2.size())
         # print("encoder_hidden", encoder_hidden.size())
         span_seq_len = int(self.config['max_length']/self.config['span_size'])
         decoder_hidden = encoder_hidden
         decoder_outputs = torch.zeros((batch_size, self.config['max_length'], self.dataset.num_words), dtype=torch.float, device=DEVICE)
-        print("decoder_outputs.get_device()", decoder_outputs.get_device())
+        # print("decoder_outputs.get_device()", decoder_outputs.get_device())
         for i in range(span_seq_len):
             decoder_output, decoder_hidden, decoder_attn = self.decoder(output_batches[:, i:i+self.config['span_size']],
                                                                         decoder_hidden, encoder_outputs2)
@@ -379,6 +379,7 @@ class Trainer(object):
                 self.train_epoch(epoch, train_size)
                 print("epoch + 1", epoch+1)
                 print("self.config['evaluate_every']", self.config['evaluate_every'])
+                print(epoch + 1 % self.config['evaluate_every'] == 0)
                 if epoch + 1 % self.config['evaluate_every'] == 0:
                     models = {
                         'encoder': self.encoder,
@@ -391,6 +392,7 @@ class Trainer(object):
                 self.train_epoch(epoch, train_size)
                 print("epoch + 1", epoch + 1)
                 print("self.config['evaluate_every']", self.config['evaluate_every'])
+                print(epoch + 1 % self.config['evaluate_every'] == 0)
                 if epoch + 1 % self.config['evaluate_every'] == 0:
                     models = {
                         'encoder': self.encoder,
