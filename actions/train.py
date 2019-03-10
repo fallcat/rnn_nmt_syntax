@@ -296,7 +296,7 @@ class Trainer(object):
             if loss != -1:
                 if self.experiment is not None:
                     self.experiment.log_metric("loss", loss, step=step)
-                print('%s (%d %d%%) %.4f' % (
+                print('%s (%d %d%%) %.10f' % (
                     time_since(start, step + 1 / (int((len(pairs) - 1) / self.config['minibatch_size']) + 2)),
                     step + 1, step + 1 / (int((len(pairs) - 1) / self.config['minibatch_size']) + 2) * 100,
                     loss), flush=True)
