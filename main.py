@@ -20,7 +20,8 @@ def main():
     dataset = WMTDataset(max_length=args.max_length, span_size=args.span_size)
     encoder1 = BatchEncoderRNN(dataset.num_words, args.hidden_size, num_layers=args.num_layers).to(DEVICE)
     attn_decoder1 = BatchAttnKspanDecoderRNN2(args.hidden_size, dataset.num_words, num_layers=args.num_layers,
-                                        dropout_p=args.dropout, max_length=args.max_length, span_size=args.span_size).to(DEVICE)
+                                              dropout_p=args.dropout, max_length=args.max_length,
+                                              span_size=args.span_size).to(DEVICE)
     models = {'encoder': encoder1, 'decoder': attn_decoder1}
     config = {
         'max_length': args.max_length,
@@ -38,7 +39,8 @@ def main():
         'minibatch_size': args.minibatch_size,
         'num_epochs': args.num_epochs,
         'num_evaluate': args.num_evaluate,
-        'hidden_size': args.hidden_size
+        'hidden_size': args.hidden_size,
+        'evaluate_every': args.evaluate_every
     }
     if args.do_experiment:
         experiment = Experiment(project_name="rnn-nmt-syntax",

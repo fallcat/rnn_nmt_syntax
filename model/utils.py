@@ -113,6 +113,9 @@ def get_cl_args():
     arg_parser.add_argument('--num-evaluate', action='store', type=int, default=10,
                             help='Record this run in experiment')
 
+    arg_parser.add_argument('--evaluate-every', action='store', type=int, default=10,
+                            help='Evaluate every x epochs')
+
     return arg_parser.parse_args()
 
 
