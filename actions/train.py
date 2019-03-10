@@ -233,6 +233,7 @@ class Trainer(object):
         if self.experiment is not None:
             self.experiment.log_current_epoch(epoch)
         start = time.time()
+        epoch_loss = 0
         # plot_losses = []
         # print_loss_total = 0  # Reset every print_every
         # print_count = 0
@@ -265,6 +266,7 @@ class Trainer(object):
 
             # train batch
             loss = self.train_batch2(training_pairs)
+            epoch_loss += loss
 
             # for iter in range(1, len_training_pairs + 1):
             #     training_pair = training_pairs[iter - 1]
@@ -296,10 +298,10 @@ class Trainer(object):
             if loss != -1:
                 if self.experiment is not None:
                     self.experiment.log_metric("loss", loss, step=step)
-                print('%s (%d %d%%) %.10f' % (
-                    time_since(start, step + 1 / (int((len(pairs) - 1) / self.config['minibatch_size']) + 2)),
-                    step + 1, step + 1 / (int((len(pairs) - 1) / self.config['minibatch_size']) + 2) * 100,
-                    loss), flush=True)
+                # print('%s (%d %d%%) %.10f' % (
+                #     time_since(start, step + 1 / (int((len(pairs) - 1) / self.config['minibatch_size']) + 2)),
+                #     step + 1, step + 1 / (int((len(pairs) - 1) / self.config['minibatch_size']) + 2) * 100,
+                #     loss), flush=True)
                 self.save_checkpoint({
                     'epoch': epoch,
                     'step': step,
@@ -353,6 +355,10 @@ class Trainer(object):
 
             if num_exceptions > 0:
                 print("Step %s, Number of exceptions: %s" % (step, num_exceptions), flush=True)
+        print('%s (%d %d%%) %.10f' % (
+            time_since(start, epoch + 1 / self.config['num_epochs']),
+            epoch + 1, epoch + 1 / self.config['num_epochs'] * 100,
+            epoch_loss), flush=True)
         self.step = -1
 
     def train(self, train_size=None):
