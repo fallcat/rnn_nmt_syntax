@@ -18,8 +18,8 @@ class Trainer(object):
         self.config = config
         self.encoder = models['encoder']
         self.decoder = models['decoder']
-        self.encoder_optimizer = optim.SGD(self.encoder.parameters(), lr=self.config['learning_rate'], weight_decay=self.config['weight_decay'])
-        self.decoder_optimizer = optim.SGD(self.decoder.parameters(), lr=self.config['learning_rate'], weight_decay=self.config['weight_decay'])
+        self.encoder_optimizer = optim.Adam(self.encoder.parameters(), lr=self.config['learning_rate'], weight_decay=self.config['weight_decay'])
+        self.decoder_optimizer = optim.Adam(self.decoder.parameters(), lr=self.config['learning_rate'], weight_decay=self.config['weight_decay'])
         self.criterion = nn.NLLLoss(ignore_index=0)
         self.epoch = -1
         self.step = -1
@@ -99,148 +99,12 @@ class Trainer(object):
             print(message)
             return -1
 
-    def train_batch(self, training_pairs):
-        """
-        train a batch of tensors
-        :param input_tensors: list of tensors
-        :param target_tensors: list of tensors
-        :return:
-        """
-
-        # Zero gradients of both optimizers
-        self.encoder_optimizer.zero_grad()
-        self.decoder_optimizer.zero_grad()
-        loss = 0  # Added onto for each word
-
-        # sort input tensors by length
-        batches = sorted(training_pairs, key=lambda x:x[0].size()[0], reverse=True)
-        input_list = [x[0] for x in batches]
-        # print("inp [0]", input_list[0])
-        output_list = [x[1] for x in batches]
-        input_lengths = torch.LongTensor([x.size()[0] for x in input_list], device=torch.device("cpu"))
-        # print("input lengths", input_lengths)
-        # output_lengths = [x.size()[0] for x in batches[:][1]]
-        # input_batches = sorted(input_tensors, key=lambda x: x.size()[0], reverse=True)
-        # input_lengths = [x.size()[0] for x in input_batches]
-        batch_size = len(batches)
-
-        input_batches = torch.nn.utils.rnn.pad_sequence(input_list, batch_first=True)
-
-        # print("input_batches size", input_batches.size())
-        decoder_input = torch.tensor([SOS_token] * self.config['span_size'], device=DEVICE)
-        output_to_pad = [torch.cat((decoder_input, output_batch), 0) for output_batch in output_list]
-        output_batches = torch.zeros((batch_size, self.config['max_length']), dtype=torch.long, device=DEVICE)
-        output_batches2 = torch.nn.utils.rnn.pad_sequence(output_to_pad, batch_first=True)
-        # print("output_batches size", output_batches.size())
-        # print("output_batches2 size", output_batches2.size())
-        output_batches[:, :output_batches2.size()[1]] += output_batches2
-
-        # Run words through encoder
-        encoder_outputs, encoder_hidden = self.encoder(input_batches, input_lengths)
-        encoder_outputs2 = torch.zeros((batch_size, self.config['max_length'], self.config['hidden_size']), dtype=torch.float, device=DEVICE)
-        encoder_outputs2[:, :encoder_outputs.size()[1]] += encoder_outputs
-        # print("encoder_outputs2", encoder_outputs2.size())
-        # print("encoder_hidden", encoder_hidden.size())
-        decoder_outputs, decoder_hidden, decoder_attn = self.decoder(output_batches, encoder_hidden, encoder_outputs2)
-        # print("outside")
-        # print("decoder_outputs", decoder_outputs.size())
-        # print("output_batches", output_batches.size())
-
-        loss += self.criterion(decoder_outputs.view(-1, self.dataset.num_words), output_batches.view(-1))
-
-        try:
-            loss.backward()
-            self.encoder_optimizer.step()
-            self.decoder_optimizer.step()
-            return loss.item() / (self.config['max_length'] * batch_size)
-
-        except Exception as ex:
-            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            print(message)
-            return -1
-
-    def train_iter(self, input_tensor, target_tensor):
-        encoder_hidden = self.encoder.init_hidden()
-
-        self.encoder_optimizer.zero_grad()
-        self.decoder_optimizer.zero_grad()
-
-        input_length = input_tensor.size(0)
-        target_length = target_tensor.size(0)
-
-        encoder_outputs = torch.zeros(self.config['max_length'], self.encoder.hidden_size, device=DEVICE)
-
-        loss = 0
-
-        for ei in range(input_length):
-            encoder_output, encoder_hidden = self.encoder(
-                input_tensor[ei], encoder_hidden)
-            encoder_outputs[ei] = encoder_output[0, 0]
-
-        decoder_input = tuple([torch.tensor([[SOS_token]], device=DEVICE) for i in range(self.config['span_size'])])
-
-        decoder_hidden = encoder_hidden
-
-        use_teacher_forcing = True if random.random() < self.config['teacher_forcing_ratio'] else False
-
-        if use_teacher_forcing:
-            # Teacher forcing: Feed the target as the next input
-            break_out = False
-            for di in range(int((target_length + 1) / self.config['span_size'])):
-                decoder_output, decoder_hidden, decoder_attention = self.decoder(
-                    decoder_input, decoder_hidden, encoder_outputs)
-                decoder_input = []
-                for si in range(self.config['span_size']):
-                    if di * self.config['span_size'] + si < target_length:
-                        loss += self.criterion(decoder_output[si], target_tensor[di * self.config['span_size'] + si])
-                        decoder_input.append(target_tensor[di * self.config['span_size'] + si])
-                    else:
-                        break_out = True
-                        break
-                if break_out:
-                    break
-                decoder_input = tuple(decoder_input)
-
-        else:
-            # Without teacher forcing: use its own predictions as the next input
-            break_out = False
-            for di in range(int((target_length + 1) / 2)):
-                decoder_output, decoder_hidden, decoder_attention = self.decoder(
-                    decoder_input, decoder_hidden, encoder_outputs)
-                topi = [EOS_token] * self.config['span_size']
-                for si in range(self.config['span_size']):
-                    topv, topi[si] = decoder_output[si].topk(1)
-                decoder_input = tuple(
-                    [topi[si].squeeze().detach() for si in range(self.config['span_size'])])  # detach from history as input
-
-                for si in range(self.config['span_size']):
-                    if di * self.config['span_size'] + si < target_length and decoder_input[si].item() != EOS_token:
-                        loss += self.criterion(decoder_output[si], target_tensor[di * self.config['span_size'] + si])
-                    else:
-                        break_out = True
-                        break
-                if break_out:
-                    break
-
-        loss.backward()
-
-        self.encoder_optimizer.step()
-        self.decoder_optimizer.step()
-
-        return loss.item() / target_length
-
     def train_epoch(self, epoch, train_size=None):
         print("===== epoch " + str(epoch) + " =====")
         if self.experiment is not None:
             self.experiment.log_current_epoch(epoch)
         start = time.time()
         epoch_loss = 0
-        # plot_losses = []
-        # print_loss_total = 0  # Reset every print_every
-        # print_count = 0
-        # plot_loss_total = 0  # Reset every plot_every
-        # plot_count = 0
 
         if train_size is not None:
             pairs = self.dataset.pairs['train'][:train_size]
@@ -249,9 +113,6 @@ class Trainer(object):
         random.shuffle(pairs)
 
         for step in range(self.step + 1, int((len(pairs)-1)/self.config['minibatch_size'])+1):
-            # training_pairs = [self.dataset.tensors_from_pair(pair)
-            #                   for pair in pairs[step * self.config['minibatch_size']:
-            #                                     (step + 1) * self.config['minibatch_size']]]
 
             training_pairs_str = [pair for pair in pairs[step * self.config['minibatch_size']:
                                                          (step + 1) * self.config['minibatch_size']]]
@@ -270,40 +131,10 @@ class Trainer(object):
             loss = self.train_batch2(training_pairs)
             epoch_loss += loss
 
-            # for iter in range(1, len_training_pairs + 1):
-            #     training_pair = training_pairs[iter - 1]
-            #     input_tensor = training_pair[0]
-            #     target_tensor = training_pair[1]
-            #     try:
-            #         loss = self.train_iter(input_tensor, target_tensor)
-            #         # if loss > 10:
-            #         #     print("large loss", pairs[step * self.config['minibatch_size'] + iter - 1], "loss", loss)
-            #         step_loss += loss
-            #         step_loss_count += 1
-            #     except:
-            #         num_exceptions += 1
-            #         print("exception sentences", training_pairs_str[iter - 1])
-            #         continue
-            #
-            #     # prepare information to print
-            #     # if best_loss > loss:
-            #     #     best_loss = loss
-            #     #     is_best = True
-            #     # else:
-            #     #     is_best = False
-            #     print_loss_total += loss
-            #     print_count += 1
-            #     plot_loss_total += loss
-            #     plot_count += 1
-
             # Log to Comet.ml
             if loss != -1:
                 if self.experiment is not None:
                     self.experiment.log_metric("loss", loss, step=step)
-                # print('%s (%d %d%%) %.10f' % (
-                #     time_since(start, step + 1 / (int((len(pairs) - 1) / self.config['minibatch_size']) + 2)),
-                #     step + 1, step + 1 / (int((len(pairs) - 1) / self.config['minibatch_size']) + 2) * 100,
-                #     loss), flush=True)
                 self.save_checkpoint({
                     'epoch': epoch,
                     'step': step,
@@ -312,48 +143,7 @@ class Trainer(object):
                     'encoder_optimizer': self.encoder_optimizer.state_dict(),
                     'decoder_optimizer': self.decoder_optimizer.state_dict(),
                 })
-            # if step_loss_count != 0:
-            #     step_loss_avg = step_loss / step_loss_count
-            #     if self.experiment is not None:
-            #         self.experiment.log_metric("loss", step_loss_avg, step=step)
-            #     print('%s (%d %d%%) %.4f' % (
-            #         time_since(start, step + 1 / (int((len(pairs) - 1) / self.config['minibatch_size']) + 2)),
-            #         step + 1, step + 1 / (int((len(pairs) - 1) / self.config['minibatch_size']) + 2) * 100,
-            #         step_loss_avg), flush=True)
-            #     self.save_checkpoint({
-            #         'epoch': epoch,
-            #         'step': step,
-            #         'encoder_state': self.encoder.state_dict(),
-            #         'decoder_state': self.decoder.state_dict(),
-            #         'encoder_optimizer': self.encoder_optimizer.state_dict(),
-            #         'decoder_optimizer': self.decoder_optimizer.state_dict(),
-            #     })
-            #
-            # if step+1 % self.config['print_every'] == 0:
-            #     print_loss_avg = print_loss_total / print_count
-            #     print_loss_total = 0
-            #     print_count = 0
-            #     try:
-            #         print('%s (%d %d%%) %.4f' % (time_since(start, step+1 / (int((len(pairs)-1)/self.config['minibatch_size'])+2)),
-            #               step+1, step+1 / (int((len(pairs)-1)/self.config['minibatch_size'])+2) * 100, print_loss_avg))
-            #         self.save_checkpoint({
-            #             'epoch': epoch,
-            #             'encoder_state': self.encoder.state_dict(),
-            #             'decoder_state': self.decoder.state_dict(),
-            #             'encoder_optimizer': self.encoder_optimizer.state_dict(),
-            #             'decoder_optimizer': self.decoder_optimizer.state_dict(),
-            #         })
-            #     except ZeroDivisionError:
-            #         print("divide by zero when printing loss")
-            #
-            # try:
-            #     if step+1 % self.config['plot_every'] == 0:
-            #         plot_loss_avg = plot_loss_total / plot_count
-            #         plot_losses.append(plot_loss_avg)
-            #         plot_loss_total = 0
-            #         plot_count = 0
-            # except ZeroDivisionError:
-            #     print("divide by zero when plotting loss")
+
 
             if num_exceptions > 0:
                 print("Step %s, Number of exceptions: %s" % (step, num_exceptions), flush=True)
@@ -395,22 +185,6 @@ class Trainer(object):
                     evaluator = Evaluator(config=self.config, models=models, dataset=self.dataset,
                                           experiment=self.experiment)
                     evaluator.evaluate_randomly(dataset_split='train', evaluate_size=train_size)
-
-    # def prepare_dataloader(self, train_size):
-    #     if train_size is not None:
-    #         pairs = self.dataset.pairs[:train_size]
-    #     else:
-    #         pairs = self.dataset.pairs
-    #     pairs = torch.cat([self.dataset.tensors_from_pair(pair) for pair in pairs])
-    #     print(pairs)
-    #     torch_dataset = Data.TensorDataset(pairs)
-    #     loader = Data.DataLoader(
-    #         dataset=torch_dataset,
-    #         batch_size=self.config['minibatch_size'],
-    #         shuffle=True,
-    #         num_workers=2
-    #     )
-    #     return loader
 
     def restore_checkpoint(self, restore_path):
         if restore_path is not None:

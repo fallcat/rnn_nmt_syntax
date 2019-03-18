@@ -14,7 +14,8 @@ class IWSLTDataset(object):
         self.word2count = {}
         self.index2word = {0: "PAD", 1: "SOS", 2: "EOS", 3: "UNK"}
         self.num_words = 4  # Count SOS and EOS and UNK
-        self.dir_path = "/content/gdrive/My Drive/data/"
+        # self.dir_path = "/content/gdrive/My Drive/data/"
+        self.dir_path = "/mnt/nfs/work1/miyyer/wyou/iwslt16_en_de"
         self.vocab_file = 'vocab.bpe.37000'
         self.splits = {
             'valid': 'dev.tok.bpe.37000',
@@ -84,8 +85,8 @@ class IWSLTDataset(object):
 
     def filter_pair(self, p):
         return len(p[0].split(' ')) < self.max_length - (self.span_size + 1) and \
-               len(p[1].split(' ')) < self.max_length - (self.span_size + 1) and \
-               p[1].startswith(self.eng_prefixes)
+               len(p[1].split(' ')) < self.max_length - (self.span_size + 1) # and \
+               # p[1].startswith(self.eng_prefixes)
 
     def filter_pairs(self, pairs):
         return [pair for pair in pairs if self.filter_pair(pair)]
