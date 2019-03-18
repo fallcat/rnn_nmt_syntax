@@ -1,7 +1,7 @@
 import torch
 import torch.utils.data as Data
 # from model import EOS_token, DEVICE, UNK_token
-from rnn_nmt_syntax.model import EOS_token, DEVICE, UNK_token
+from model import EOS_token, DEVICE, UNK_token
 
 
 

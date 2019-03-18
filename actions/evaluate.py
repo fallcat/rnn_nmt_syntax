@@ -1,7 +1,7 @@
 import torch
 import random
 import numpy as np
-from rnn_nmt_syntax.model import DEVICE, SOS_token, EOS_token
+from model import DEVICE, SOS_token, EOS_token
 
 # config: max_length, span_size, hidden_size
 

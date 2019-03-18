@@ -5,9 +5,9 @@ import time
 import shutil
 from torch import nn, optim
 from torch.autograd import Variable
-from rnn_nmt_syntax.model import SOS_token, EOS_token, DEVICE
-from rnn_nmt_syntax.model.utils import save_plot, time_since
-from rnn_nmt_syntax.actions.evaluate import Evaluator
+from model import SOS_token, EOS_token, DEVICE
+from model.utils import save_plot, time_since
+from actions.evaluate import Evaluator
 
 # config: max_length, span_size, teacher_forcing_ratio, learning_rate, num_iters, print_every, plot_every, save_path,
 #         restore_path, best_save_path, plot_path, minibatch_size
