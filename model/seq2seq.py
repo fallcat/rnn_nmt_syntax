@@ -425,6 +425,7 @@ class BatchAttnKspanDecoderRNN3(nn.Module):
         self.span_size = span_size
 
         self.embedding = nn.Embedding(self.output_size, self.hidden_size)
+        self.cat_embeddings = nn.Linear(self.hidden_size * self.span_size, self.hidden_size)
         self.attn = nn.Linear(self.hidden_size * 2, self.max_length)
         self.attn_combine = nn.Linear(self.hidden_size * 2, self.hidden_size * self.span_size)
         self.dropout = nn.Dropout(self.dropout_p)
@@ -441,7 +442,7 @@ class BatchAttnKspanDecoderRNN3(nn.Module):
         # print("seq_len", seq_len)
         embeddeds = self.embedding(inputs)  # B x S -> B x S x H
         # print("embedds", embeddeds.size())
-        # embeddeds = embeddeds.view(bsz, -1)  # B x (S x H)
+        embeddeds = embeddeds.view(bsz, -1)  # B x (S x H)
         # embeddeds = tuple([self.embedding(input_i).view(1, 1, -1)[0] for input_i in input])
         # embeddeds = torch.cat(embeddeds, 1)
         embeddeds = self.dropout(embeddeds)  # B x (S x H)
@@ -449,7 +450,9 @@ class BatchAttnKspanDecoderRNN3(nn.Module):
         # outputs = torch.zeros(bsz, span_seq_len, self.hidden_size, device=DEVICE)
         # attn_weights = torch.zeros(1, bsz, self.max_length)
 
-        # embeddeds = self.cat_embeddings(embeddeds)
+        embeddeds = self.cat_embeddings(embeddeds)
+        print("embeddeds", embeddeds.size())
+        print("hidden", hidden.size())
 
         rnn_output, hidden = self.gru(embeddeds, hidden)
 
