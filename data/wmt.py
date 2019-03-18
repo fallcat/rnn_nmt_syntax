@@ -21,6 +21,7 @@ class WMTDataset(object):
             'test': 'newstest2014.tok',
             'train': 'train.tok.clean'
         }
+        self.span_size = span_size
         self.reverse = reverse
         self.max_length = max_length
 
