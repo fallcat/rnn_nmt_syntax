@@ -450,7 +450,7 @@ class BatchAttnKspanDecoderRNN3(nn.Module):
         # outputs = torch.zeros(bsz, span_seq_len, self.hidden_size, device=DEVICE)
         # attn_weights = torch.zeros(1, bsz, self.max_length)
 
-        embeddeds = self.cat_embeddings(embeddeds)
+        embeddeds = self.cat_embeddings(embeddeds).unsqueeze(1)
         print("embeddeds", embeddeds.size())
         print("hidden", hidden.size())
 
