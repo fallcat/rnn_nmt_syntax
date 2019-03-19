@@ -428,7 +428,7 @@ class BatchAttnKspanDecoderRNN3(nn.Module):
         self.cat_embeddings = nn.Linear(self.hidden_size * self.span_size, self.hidden_size)
         self.attn = nn.Linear(self.hidden_size * 2, self.hidden_size)
         self.v = nn.Linear(self.hidden_size, 1)
-        self.attn_combine = nn.Linear(self.hidden_size * 2, self.hidden_size * self.span_size)
+        self.attn_combine = nn.Linear(self.hidden_size * 2, self.hidden_size)
         self.dropout = nn.Dropout(self.dropout_p)
         self.gru = nn.GRU(self.hidden_size, self.hidden_size, self.num_layers, dropout=self.dropout_p, batch_first=True)
         # self.grus = nn.ModuleList([nn.GRU(self.hidden_size, self.hidden_size) for _ in range(num_layers)])
