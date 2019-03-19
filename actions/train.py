@@ -6,7 +6,7 @@ import shutil
 from torch import nn, optim
 from torch.autograd import Variable
 from model import SOS_token, EOS_token, DEVICE
-from model.utils import save_plot, time_since
+from model.utils import save_plot, time_since, debug_memory
 from actions.evaluate import Evaluator
 
 # config: max_length, span_size, teacher_forcing_ratio, learning_rate, num_iters, print_every, plot_every, save_path,
@@ -38,6 +38,7 @@ class Trainer(object):
         self.encoder_optimizer.zero_grad()
         self.decoder_optimizer.zero_grad()
         loss = 0  # Added onto for each word
+        debug_memory()
 
         # sort input tensors by length
         batches = sorted(training_pairs, key=lambda x: x[0].size()[0], reverse=True)
@@ -78,6 +79,7 @@ class Trainer(object):
             decoder_output, decoder_hidden, decoder_attn = self.decoder(output_batches[:, i:i+self.config['span_size']],
                                                                         decoder_hidden, encoder_outputs2)
             decoder_outputs[:, i:i+self.config['span_size']] = decoder_output
+        debug_memory()
         # print("outside")
         # print("decoder_outputs", decoder_outputs.size())
         # print("output_batches", output_batches.size())

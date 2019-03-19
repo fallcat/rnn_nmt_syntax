@@ -4,6 +4,7 @@ import math
 import torch
 import argparse
 import shutil
+import collections, gc, torch
 
 import matplotlib.pyplot as plt
 plt.switch_backend('agg')
@@ -136,3 +137,11 @@ def save_plot(points, plot_path):
     ax.yaxis.set_major_locator(loc)
     plt.plot(points)
     plt.savefig(plot_path)
+
+
+def debug_memory():
+    tensors = collections.Counter((str(o.device), o.dtype, tuple(o.shape))
+                                  for o in gc.get_objects()
+                                  if torch.is_tensor(o))
+    for line in sorted(tensors.items()):
+        print('{}\t{}'.format(*line))
