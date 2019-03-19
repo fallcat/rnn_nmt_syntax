@@ -64,7 +64,7 @@ class Trainer(object):
         output_to_pad = [torch.cat((decoder_input, output_batch), 0) for output_batch in output_list]
         print(max(output_to_pad, key=lambda x: x.size()))
         print(type(max(output_to_pad, key=lambda x: x.size())))
-        span_seq_len = int((max(output_to_pad, key=lambda x: x.size()) - 1)/ self.config['span_size']) + 1
+        span_seq_len = int((max(output_to_pad, key=lambda x: x.size()).size() - 1)/ self.config['span_size']) + 1
         output_batches = Variable(torch.zeros((batch_size, span_seq_len * self.config['span_size']), dtype=torch.long, device=DEVICE))
         output_batches2 = torch.nn.utils.rnn.pad_sequence(output_to_pad, batch_first=True)
         # print("output_batches size", output_batches.size())
