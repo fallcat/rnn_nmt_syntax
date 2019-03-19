@@ -427,6 +427,7 @@ class BatchAttnKspanDecoderRNN3(nn.Module):
         self.embedding = nn.Embedding(self.output_size, self.hidden_size)
         self.cat_embeddings = nn.Linear(self.hidden_size * self.span_size, self.hidden_size)
         self.attn = nn.Linear(self.hidden_size * 2, self.hidden_size)
+        self.v = nn.Linear(self.hidden_size, 1)
         self.attn_combine = nn.Linear(self.hidden_size * 2, self.hidden_size * self.span_size)
         self.dropout = nn.Dropout(self.dropout_p)
         self.gru = nn.GRU(self.hidden_size, self.hidden_size, self.num_layers, dropout=self.dropout_p, batch_first=True)
@@ -460,18 +461,18 @@ class BatchAttnKspanDecoderRNN3(nn.Module):
         print("rnn_output", rnn_output.size())
         print("encoder_outputs", encoder_outputs.size())
         print(torch.cat((rnn_output, encoder_outputs), 1).size())
-        attn_weight = F.softmax(self.attn(torch.cat((rnn_output.repeat((1, self.max_length, 1)), encoder_outputs), 2)), dim=1)
-        # attn_weight B x S x H
+        attn_weight = F.softmax(self.v(self.attn(torch.cat((rnn_output.repeat((1, self.max_length, 1)), encoder_outputs), 2))), dim=1)
+        # attn_weight B x S x 1
         print("attn_weight", attn_weight.size())
         print("encoder_outputs", encoder_outputs.size())
         # attn_weights[l] = attn_weight
         # print("attn_weight.unsqueeze(1)", attn_weight.unsqueeze(1).size())
         # print("encoder_outputs", encoder_outputs.size())
-        attn_applied = torch.bmm(attn_weight, encoder_outputs)
+        attn_applied = torch.bmm(attn_weight.transpose(1, 2), encoder_outputs) # B x 1 x H
 
         # print("embeddeds", embeddeds[:, l].size())
         # print("attn_applied", attn_applied.size())
-        output = torch.cat((rnn_output.unsqueeze(1), attn_applied), 2)
+        output = torch.cat((rnn_output, attn_applied), 2)
         # print("output", output.size())
         output = self.attn_combine(output)
 
