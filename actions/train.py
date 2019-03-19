@@ -51,6 +51,7 @@ class Trainer(object):
         # print("inp [0]", input_list[0])
         output_list = [x[1] for x in batches]
         input_lengths = torch.LongTensor([x.size()[0] for x in input_list], device=torch.device("cpu"))
+        total_length = sum([len(x[0]) + len(x[1]) for x in batches])
         # print("input lengths", input_lengths)
         # output_lengths = [x.size()[0] for x in batches[:][1]]
         # input_batches = sorted(input_tensors, key=lambda x: x.size()[0], reverse=True)
@@ -107,7 +108,7 @@ class Trainer(object):
             loss.backward()
             self.encoder_optimizer.step()
             self.decoder_optimizer.step()
-            return loss.item() / (self.config['max_length'] * batch_size)
+            return loss.item() / total_length
 
         except Exception as ex:
             template = "An exception of type {0} occurred. Arguments:\n{1!r}"
