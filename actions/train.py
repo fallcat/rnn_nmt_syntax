@@ -54,12 +54,13 @@ class Trainer(object):
         # input_lengths = [x.size()[0] for x in input_batches]
         batch_size = len(batches)
 
-        input_batches = torch.nn.utils.rnn.pad_sequence(input_list, batch_first=True)
+        input_batches = Variable(torch.nn.utils.rnn.pad_sequence(input_list, batch_first=True))
 
         # print("input_batches size", input_batches.size())
         decoder_input = torch.tensor([SOS_token] * self.config['span_size'], device=DEVICE)
         output_to_pad = [torch.cat((decoder_input, output_batch), 0) for output_batch in output_list]
-        output_batches = torch.zeros((batch_size, self.config['max_length']), dtype=torch.long, device=DEVICE)
+        span_seq_len = int((max(output_to_pad, key=lambda x: x.size()) - 1)/ self.config['span_size']) + 1
+        output_batches = Variable(torch.zeros((batch_size, span_seq_len * self.config['span_size']), dtype=torch.long, device=DEVICE))
         output_batches2 = torch.nn.utils.rnn.pad_sequence(output_to_pad, batch_first=True)
         # print("output_batches size", output_batches.size())
         # print("output_batches2 size", output_batches2.size())
@@ -73,9 +74,9 @@ class Trainer(object):
         encoder_outputs2[:, :encoder_outputs.size()[1]] += encoder_outputs
         # print("encoder_outputs2", encoder_outputs2.size())
         # print("encoder_hidden", encoder_hidden.size())
-        span_seq_len = int(self.config['max_length']/self.config['span_size'])
+        # span_seq_len = int(self.config['max_length']/self.config['span_size'])
         decoder_hidden = encoder_hidden
-        decoder_outputs = torch.zeros((batch_size, self.config['max_length'], self.dataset.num_words), dtype=torch.float, device=DEVICE)
+        decoder_outputs = torch.zeros((batch_size, span_seq_len * self.config['span_size'], self.dataset.num_words), dtype=torch.float, device=DEVICE)
         # print("decoder_outputs.get_device()", decoder_outputs.get_device())
         for i in range(span_seq_len):
             decoder_output, decoder_hidden, decoder_attn = self.decoder(output_batches[:, i:i+self.config['span_size']],
@@ -84,6 +85,7 @@ class Trainer(object):
         debug_memory()
         print("memory allocated", torch.cuda.memory_allocated())
         print("memory cached", torch.cuda.memory_cached())
+
         # print("outside")
         # print("decoder_outputs", decoder_outputs.size())
         # print("output_batches", output_batches.size())
