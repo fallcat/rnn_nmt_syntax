@@ -145,3 +145,4 @@ def debug_memory():
                                   if torch.is_tensor(o))
     for line in tensors.items():
         print('{}\t{}'.format(*line))
+    print("--------")

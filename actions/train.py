@@ -39,6 +39,8 @@ class Trainer(object):
         self.decoder_optimizer.zero_grad()
         loss = 0  # Added onto for each word
         debug_memory()
+        print("memory allocated", torch.cuda.memory_allocated())
+        print("memory cached", torch.cuda.memory_cached())
 
         # sort input tensors by length
         batches = sorted(training_pairs, key=lambda x: x[0].size()[0], reverse=True)
@@ -80,6 +82,8 @@ class Trainer(object):
                                                                         decoder_hidden, encoder_outputs2)
             decoder_outputs[:, i:i+self.config['span_size']] = decoder_output
         debug_memory()
+        print("memory allocated", torch.cuda.memory_allocated())
+        print("memory cached", torch.cuda.memory_cached())
         # print("outside")
         # print("decoder_outputs", decoder_outputs.size())
         # print("output_batches", output_batches.size())
