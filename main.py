@@ -5,6 +5,7 @@ Main entrance of the program
 from comet_ml import Experiment
 from model.utils import get_cl_args
 from data.wmt import WMTDataset
+from data.iwslt import IWSLTDataset
 from actions.train import Trainer
 from actions.evaluate import Evaluator
 from model.seq2seq import EncoderRNN, AttnKspanDecoderRNN, BatchEncoderRNN, BatchAttnKspanDecoderRNN2
@@ -17,7 +18,8 @@ def main():
     # max_length needs to be multiples of span_size
     args = get_cl_args()
     print(args)
-    dataset = WMTDataset(max_length=args.max_length, span_size=args.span_size)
+    datasets = {"WMT": WMTDataset, "IWSLT": IWSLTDataset}
+    dataset = datasets[args.dataset](max_length=args.max_length, span_size=args.span_size)
     encoder1 = BatchEncoderRNN(dataset.num_words, args.hidden_size, num_layers=args.num_layers).to(DEVICE)
     attn_decoder1 = BatchAttnKspanDecoderRNN2(args.hidden_size, dataset.num_words, num_layers=args.num_layers,
                                               dropout_p=args.dropout, max_length=args.max_length,

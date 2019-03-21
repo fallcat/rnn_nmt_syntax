@@ -118,7 +118,10 @@ def get_cl_args():
                             help='Evaluate every x epochs')
 
     arg_parser.add_argument('--optimizer', action='store', type=str, default="SGD",
-                            help='Evaluate every x epochs')
+                            help='Specify which optimizer to use')
+
+    arg_parser.add_argument('--dataset', action='store', type=str, default="WMT",
+                            help='Specify which data to use')
 
     return arg_parser.parse_args()
 
