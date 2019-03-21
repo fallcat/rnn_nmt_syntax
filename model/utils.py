@@ -117,6 +117,9 @@ def get_cl_args():
     arg_parser.add_argument('--evaluate-every', action='store', type=int, default=10,
                             help='Evaluate every x epochs')
 
+    arg_parser.add_argument('--optimizer', action='store', type=str, default="SGD",
+                            help='Evaluate every x epochs')
+
     return arg_parser.parse_args()
 
 

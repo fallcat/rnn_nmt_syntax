@@ -10,7 +10,7 @@ from model.utils import save_plot, time_since, debug_memory
 from actions.evaluate import Evaluator
 
 # config: max_length, span_size, teacher_forcing_ratio, learning_rate, num_iters, print_every, plot_every, save_path,
-#         restore_path, best_save_path, plot_path, minibatch_size
+#         restore_path, best_save_path, plot_path, minibatch_size, optimizer
 
 
 class Trainer(object):
@@ -18,8 +18,9 @@ class Trainer(object):
         self.config = config
         self.encoder = models['encoder']
         self.decoder = models['decoder']
-        self.encoder_optimizer = optim.Adam(self.encoder.parameters(), lr=self.config['learning_rate'], weight_decay=self.config['weight_decay'])
-        self.decoder_optimizer = optim.Adam(self.decoder.parameters(), lr=self.config['learning_rate'], weight_decay=self.config['weight_decay'])
+        optimizers = {"SGD": optim.SGD, "Adadelta": optim.Adadelta, "Adagrad": optim.Adagrad, "RMSprop": optim.RMSprop}
+        self.encoder_optimizer = optimizers[self.config["optimizer"]](self.encoder.parameters(), lr=self.config['learning_rate'], weight_decay=self.config['weight_decay'])
+        self.decoder_optimizer = optimizers[self.config["optimizer"]](self.decoder.parameters(), lr=self.config['learning_rate'], weight_decay=self.config['weight_decay'])
         self.criterion = nn.NLLLoss(ignore_index=0)
         self.epoch = -1
         self.step = -1

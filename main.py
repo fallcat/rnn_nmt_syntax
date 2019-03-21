@@ -40,7 +40,8 @@ def main():
         'num_epochs': args.num_epochs,
         'num_evaluate': args.num_evaluate,
         'hidden_size': args.hidden_size,
-        'evaluate_every': args.evaluate_every
+        'evaluate_every': args.evaluate_every,
+        'optimizer': args.optimizer
     }
     if args.do_experiment:
         experiment = Experiment(project_name="rnn-nmt-syntax",
@@ -68,7 +69,8 @@ def main():
             'minibatch_size': args.minibatch_size,
             'num_epochs': args.num_epochs,
             'train_size': args.train_size,
-            'hidden_size': args.hidden_size
+            'hidden_size': args.hidden_size,
+            'optimizer': args.optimizer
         }
         experiment.log_parameters(hyper_params)
     else:
