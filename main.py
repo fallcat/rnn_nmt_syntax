@@ -77,14 +77,16 @@ def main():
         experiment.log_parameters(hyper_params)
     else:
         experiment = None
+
     trainer = Trainer(config=config, models=models, dataset=dataset, experiment=experiment)
     if args.restore is not None:
         trainer.restore_checkpoint(args.restore)
-    trainer.train_and_evaluate(args.train_size)
-    # evaluator = Evaluator(config=config, models=models, dataset=dataset, experiment=experiment)
-    # evaluator.evaluate_randomly()
-    # for epoch in range(args.num_epochs):
-    #     trainer.train_epoch(epoch, args.train_size)
+    if args.mode == "train":
+        trainer.train_and_evaluate(args.train_size)
+    elif args.mode == "evaluate":
+        models = {'encoder': trainer.encoder, 'decoder': trainer.decoder}
+        evaluator = Evaluator(config=config, models=models, dataset=dataset, experiment=experiment)
+        evaluator.evaluate()
 
 
 if __name__ == "__main__":

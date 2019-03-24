@@ -1,5 +1,6 @@
 import torch
 import random
+import time
 import numpy as np
 from model import DEVICE, SOS_token, EOS_token
 
@@ -15,6 +16,8 @@ class Evaluator(object):
 
     def translate_batch(self, batch):
         with torch.no_grad():
+            self.encoder.eval()
+            self.decoder.eval()
             batch_size = len(batch)
             input_tensors =[self.dataset.tensor_from_sentence(sentence) for sentence in batch]
             # input_tensors = sorted(input_tensors, key=lambda x: x.size()[0], reverse=True)
@@ -55,7 +58,10 @@ class Evaluator(object):
                                         for tensor_sentence in decoder_outputs]
             print(decoded_sentences_sorted)
             decoded_words = [decoded_sentences_sorted[i] for i in input_lengths_np_order_order]
+            self.encoder.train()
+            self.decoder.train()
             return decoded_words
+
 
     def translate(self, sentence):
         with torch.no_grad():
@@ -129,6 +135,6 @@ class Evaluator(object):
         #     print('')
 
     def evaluate(self, dataset_split='val'):
-        for pair in self.dataset.pairs[dataset_split]:
-            pass
+        pairs = self.dataset.pairs[dataset_split]
+        start = time.time()
 

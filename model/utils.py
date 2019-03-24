@@ -123,6 +123,9 @@ def get_cl_args():
     arg_parser.add_argument('--dataset', action='store', type=str, default="WMT",
                             help='Specify which data to use')
 
+    arg_parser.add_argument('--mode', action='store', type=str, default="train",
+                            help='Specify train or evaluate, if evaluate, need to load a model')
+
     return arg_parser.parse_args()
 
 
