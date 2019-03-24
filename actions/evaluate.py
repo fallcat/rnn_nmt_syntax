@@ -31,9 +31,9 @@ class Evaluator(object):
 
             input_batches = torch.nn.utils.rnn.pad_sequence([input_tensors[i] for i in input_lengths_np_order], batch_first=True)
             encoder_outputs, encoder_hidden = self.encoder(input_batches, input_lengths)
-            encoder_outputs2 = torch.zeros((batch_size, self.config['max_length'], self.config['hidden_size']),
-                                           dtype=torch.float, device=DEVICE)
-            encoder_outputs2[:, :encoder_outputs.size()[1]] += encoder_outputs
+            # encoder_outputs2 = torch.zeros((batch_size, self.config['max_length'], self.config['hidden_size']),
+            #                                dtype=torch.float, device=DEVICE)
+            # encoder_outputs2[:, :encoder_outputs.size()[1]] += encoder_outputs
             span_seq_len =  int(self.config['max_length']/self.config['span_size'])
 
             decoder_input = torch.tensor([SOS_token] * self.config['span_size'] * batch_size, device=DEVICE).view(batch_size, -1)
@@ -42,7 +42,7 @@ class Evaluator(object):
             decoder_hidden = encoder_hidden
             for l in range(span_seq_len):
                 decoder_output, decoder_hidden, decoder_attn = self.decoder(decoder_input, decoder_hidden,
-                                                                            encoder_outputs2)
+                                                                            encoder_outputs)
                 topv, topi = decoder_output.topk(1, dim=2)
                 # print("topi", topi.size())
                 decoder_input = topi
