@@ -8,7 +8,7 @@ from data.wmt import WMTDataset
 from data.iwslt import IWSLTDataset
 from actions.train import Trainer
 from actions.evaluate import Evaluator
-from model.seq2seq import EncoderRNN, AttnKspanDecoderRNN, BatchEncoderRNN, BatchAttnKspanDecoderRNN2
+from model.seq2seq import EncoderRNN, AttnKspanDecoderRNN, BatchEncoderRNN, BatchAttnKspanDecoderRNN3
 from model import DEVICE
 
 # config: max_length, span_size, teacher_forcing_ratio, learning_rate, num_iters, print_every, plot_every, save_path,
@@ -21,7 +21,7 @@ def main():
     datasets = {"WMT": WMTDataset, "IWSLT": IWSLTDataset}
     dataset = datasets[args.dataset](max_length=args.max_length, span_size=args.span_size)
     encoder1 = BatchEncoderRNN(dataset.num_words, args.hidden_size, num_layers=args.num_layers).to(DEVICE)
-    attn_decoder1 = BatchAttnKspanDecoderRNN2(args.hidden_size, dataset.num_words, num_layers=args.num_layers,
+    attn_decoder1 = BatchAttnKspanDecoderRNN3(args.hidden_size, dataset.num_words, num_layers=args.num_layers,
                                               dropout_p=args.dropout, max_length=args.max_length,
                                               span_size=args.span_size).to(DEVICE)
     models = {'encoder': encoder1, 'decoder': attn_decoder1}
