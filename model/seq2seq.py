@@ -439,7 +439,7 @@ class BatchAttnKspanDecoderRNN3(nn.Module):
         # ==========================================================================
 
         # inputs = [(len(inp) % self.span_size + self.span_size) for inp in inputs]
-        bsz, seq_len = inputs.size()
+        bsz = inputs.size()[0]
         encoder_seq_len = encoder_outputs.size()[1]
         # print("seq_len", seq_len)
         embeddeds = self.embedding(inputs)  # B x S -> B x S x H
