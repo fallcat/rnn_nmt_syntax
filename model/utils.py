@@ -165,3 +165,5 @@ def save_predictions(preds, evaluate_path):
         for pred in preds:
             if 'EOS' in pred:
                 f.write(' '.join(pred[:pred.index('EOS')]) + '\n')
+            else:
+                f.write(' '.join(pred) + '\n')
