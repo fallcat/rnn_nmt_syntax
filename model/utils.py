@@ -167,3 +167,68 @@ def save_predictions(preds, evaluate_path):
                 f.write(' '.join(pred[:pred.index('EOS')]) + '\n')
             else:
                 f.write(' '.join(pred) + '\n')
+
+# Beam search utils
+
+# Recursively split or chunk the given data structure. split_or_chunk is based on
+# torch.nn.parallel.scatter_gather.gather
+def cat(outputs, dim=0):
+    r"""
+    Concatenates tensors recursively in collections.
+    """
+    def cat_map(outputs):
+        out = outputs[0]
+        if isinstance(out, torch.Tensor):
+            return torch.cat(outputs, dim=dim)
+        if out is None:
+            return None
+        if isinstance(out, dict):
+            if not all((len(out) == len(d) for d in outputs)):
+                raise ValueError('All dicts must have the same number of keys')
+            return type(out)(((k, cat_map([d[k] for d in outputs]))
+                              for k in out))
+        return type(out)(map(cat_map, zip(*outputs)))
+
+    # Recursive function calls like this create reference cycles.
+    # Setting the function to None clears the refcycle.
+    try:
+        return cat_map(outputs)
+    finally:
+        cat_map = None
+
+
+# Recursively split or chunk the given data structure. split_or_chunk is based on
+# torch.nn.parallel.scatter_gather.scatter
+def split_or_chunk(inputs, num_chunks_or_sections, dim=0):
+    r"""
+    Splits tensors into approximately equal chunks or specified chunk sizes (based on the
+    'num_chunks_or_sections'). Duplicates references to objects that are not tensors.
+    """
+    def split_map(obj):
+        if isinstance(obj, torch.Tensor):
+            if isinstance(num_chunks_or_sections, int):
+                return torch.chunk(obj, num_chunks_or_sections, dim=dim)
+            else:
+                return torch.split(obj, num_chunks_or_sections, dim=dim)
+        if isinstance(obj, tuple) and obj:
+            return list(zip(*map(split_map, obj)))
+        if isinstance(obj, list) and obj:
+            return list(map(list, zip(*map(split_map, obj))))
+        if isinstance(obj, dict) and obj:
+            return list(map(type(obj), zip(*map(split_map, obj.items()))))
+        if isinstance(num_chunks_or_sections, int):
+            return [obj for chunk in range(num_chunks_or_sections)]
+        else:
+            return [obj for chunk in num_chunks_or_sections]
+
+    # After split_map is called, a split_map cell will exist. This cell
+    # has a reference to the actual function split_map, which has references
+    # to a closure that has a reference to the split_map cell (because the
+    # fn is recursive). To avoid this reference cycle, we set the function to
+    # None, clearing the cell
+    try:
+        return split_map(inputs)
+    finally:
+        split_map = None
+
+# beam search utils end
