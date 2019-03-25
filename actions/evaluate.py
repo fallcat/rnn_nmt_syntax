@@ -134,7 +134,7 @@ class Evaluator(object):
         #     print('<', output_sentence)
         #     print('')
 
-    def evaluate(self, dataset_split='val'):
+    def evaluate(self, dataset_split='valid'):
         pairs = self.dataset.pairs[dataset_split]
         start = time.time()
         preds = self.translate_batch(pairs)
