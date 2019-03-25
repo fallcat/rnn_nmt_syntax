@@ -126,6 +126,9 @@ def get_cl_args():
     arg_parser.add_argument('--mode', action='store', type=str, default="train",
                             help='Specify train or evaluate, if evaluate, need to load a model')
 
+    arg_parser.add_argument('--evaluate-path', action='store', type=str, default="experiments/exptest/translated.txt",
+                            help='Specify a path to store the evaluated sentences')
+
     return arg_parser.parse_args()
 
 
@@ -155,3 +158,10 @@ def debug_memory():
     for line in tensors.items():
         print('{}\t{}'.format(*line))
     print("--------")
+
+
+def save_predictions(preds, evaluate_path):
+    with open(evaluate_path, 'w') as f:
+        for pred in preds:
+            if 'EOS' in pred:
+                f.write(' '.join(pred[:pred.index('EOS')]) + '\n')

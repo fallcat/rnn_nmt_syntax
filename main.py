@@ -3,7 +3,7 @@ Main entrance of the program
 """
 
 from comet_ml import Experiment
-from model.utils import get_cl_args
+from model.utils import get_cl_args, save_predictions
 from data.wmt import WMTDataset
 from data.iwslt import IWSLTDataset
 from actions.train import Trainer
@@ -86,7 +86,8 @@ def main():
     elif args.mode == "evaluate":
         models = {'encoder': trainer.encoder, 'decoder': trainer.decoder}
         evaluator = Evaluator(config=config, models=models, dataset=dataset, experiment=experiment)
-        evaluator.evaluate()
+        preds = evaluator.evaluate()
+        save_predictions(preds, args.evaluate_path)
 
 
 if __name__ == "__main__":
