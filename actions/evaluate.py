@@ -62,6 +62,54 @@ class Evaluator(object):
             self.decoder.train()
             return decoded_words
 
+    def translate_batch2(self, batch):
+        with torch.no_grad():
+            self.encoder.eval()
+            self.decoder.eval()
+            batch_size = len(batch)
+            input_tensors =[self.dataset.tensor_from_sentence(sentence) for sentence in batch]
+            # input_tensors = sorted(input_tensors, key=lambda x: x.size()[0], reverse=True)
+            input_lengths_list = [x.size()[0] for x in input_tensors]
+            input_lengths_np = np.array(input_lengths_list)
+            input_lengths_np_order = np.argsort(input_lengths_np)[::-1]
+            input_lengths_np_order_order = np.argsort(input_lengths_np_order)
+            # print("input_tensors", input_tensors)
+            # print(input_lengths_np_order)
+            # print(type(input_lengths_np_order))
+            # print([input_lengths_list[i] for i in input_lengths_np_order])
+            # print("i", [input_tensors[i] for i in input_lengths_np_order])
+            input_lengths = torch.LongTensor([input_lengths_list[i] for i in input_lengths_np_order], device=torch.device("cpu"))
+
+            input_batches = torch.nn.utils.rnn.pad_sequence([input_tensors[i] for i in input_lengths_np_order], batch_first=True)
+            encoder_outputs, encoder_hidden = self.encoder(input_batches, input_lengths)
+            encoder_outputs2 = torch.zeros((batch_size, self.config['max_length'], self.config['hidden_size']),
+                                           dtype=torch.float, device=DEVICE)
+            encoder_outputs2[:, :encoder_outputs.size()[1]] += encoder_outputs
+            span_seq_len =  int(self.config['max_length']/self.config['span_size'])
+
+            decoder_input = torch.tensor([SOS_token] * self.config['span_size'] * batch_size, device=DEVICE).view(batch_size, -1)
+            decoder_outputs = torch.zeros((batch_size, self.config['max_length']), dtype=torch.long, device=DEVICE)
+
+            decoder_hidden = encoder_hidden
+            for l in range(span_seq_len):
+                decoder_output, decoder_hidden, decoder_attn = self.decoder(decoder_input, decoder_hidden,
+                                                                            encoder_outputs2)
+                topv, topi = decoder_output.topk(1, dim=2)
+                # print("topi", topi.size())
+                decoder_input = topi
+                # print("decoder_outputs", decoder_outputs.size())
+                # print("decoder_outputs[:, l:l+self.config['span_size']]", decoder_outputs[:, l:l+self.config['span_size']].size())
+                # print("topi", topi.size())
+                decoder_outputs[:, l:l+self.config['span_size']] = topi.squeeze(2)
+            # print("decoder_outputs", decoder_outputs.size())
+            decoded_sentences_sorted = [[self.dataset.index2word[w.item()] for w in tensor_sentence]
+                                        for tensor_sentence in decoder_outputs]
+            print(decoded_sentences_sorted)
+            decoded_words = [decoded_sentences_sorted[i] for i in input_lengths_np_order_order]
+            self.encoder.train()
+            self.decoder.train()
+            return decoded_words
+
 
     def translate(self, sentence):
         with torch.no_grad():
@@ -138,6 +186,6 @@ class Evaluator(object):
         pairs = self.dataset.pairs[dataset_split]
         sources = [pair[0] for pair in pairs]
         start = time.time()
-        preds = self.translate_batch(sources)
+        preds = self.translate_batch2(sources)
         print("Evaluation time for {} sentences is {}".format(len(pairs), time.time() - start))
         return preds
