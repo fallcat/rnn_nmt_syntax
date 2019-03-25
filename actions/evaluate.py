@@ -104,7 +104,7 @@ class Evaluator(object):
             # print("decoder_outputs", decoder_outputs.size())
             decoded_sentences_sorted = [[self.dataset.index2word[w.item()] for w in tensor_sentence]
                                         for tensor_sentence in decoder_outputs]
-            print(decoded_sentences_sorted)
+            # print(decoded_sentences_sorted)
             decoded_words = [decoded_sentences_sorted[i] for i in input_lengths_np_order_order]
             self.encoder.train()
             self.decoder.train()
