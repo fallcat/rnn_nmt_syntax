@@ -189,10 +189,10 @@ class Evaluator(object):
         preds = []
         for step in range(int((len(pairs)-1)/self.config['minibatch_size'])+1):
 
-            testing_pairs_str = [pair for pair in pairs[step * self.config['minibatch_size']:
-                                                         (step + 1) * self.config['minibatch_size']]]
-            testing_pairs = [self.dataset.tensors_from_pair(pair) for pair in testing_pairs_str]
-            sources = [pair[0] for pair in testing_pairs]
+            # testing_pairs_str = [pair for pair in pairs[step * self.config['minibatch_size']:
+            #                                              (step + 1) * self.config['minibatch_size']]]
+            # testing_pairs = [self.dataset.tensors_from_pair(pair) for pair in testing_pairs_str]
+            sources = [pair[0] for pair in pairs[step * self.config['minibatch_size']:(step + 1) * self.config['minibatch_size']]]
             pred = self.translate_batch2(sources)
             preds.extend(pred)
         print("Evaluation time for {} sentences is {}".format(len(pairs), time.time() - start))
