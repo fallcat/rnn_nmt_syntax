@@ -136,7 +136,8 @@ class Evaluator(object):
 
     def evaluate(self, dataset_split='valid'):
         pairs = self.dataset.pairs[dataset_split]
+        sources = [pair[0] for pair in pairs]
         start = time.time()
-        preds = self.translate_batch(pairs)
+        preds = self.translate_batch(sources)
         print("Evaluation time for {} sentences is {}".format(len(pairs), time.time() - start))
         return preds
