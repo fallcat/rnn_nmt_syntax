@@ -37,7 +37,12 @@ def main():
         'num_evaluate': args.num_evaluate,
         'hidden_size': args.hidden_size,
         'evaluate_every': args.evaluate_every,
-        'optimizer': args.optimizer
+        'optimizer': args.optimizer,
+        'dataset': args.dataset,
+        'mode': args.mode,
+        'evaluate_path': args.evaluate_path,
+        'seed': args.seed,
+        'shuffle': args.shuffle
     }
 
     datasets = {"WMT": WMTDataset, "IWSLT": IWSLTDataset}
@@ -73,24 +78,8 @@ def main():
                                 log_graph=False,
                                 log_code=False,
                                 parse_args=False,)
-        hyper_params = {
-            'max_length': args.max_length,
-            'span_size': args.span_size,
-            'teacher_forcing_ratio': args.teacher_forcing_ratio,
-            'learning_rate': args.learning_rate,
-            'weight_decay': args.weight_decay,
-            'num_iters': args.num_iters,
-            'save_path': args.save,
-            'restore_path': args.restore,
-            'best_save_path': args.best_model,
-            'plot_path': args.plot,
-            'minibatch_size': args.minibatch_size,
-            'num_epochs': args.num_epochs,
-            'train_size': args.train_size,
-            'hidden_size': args.hidden_size,
-            'optimizer': args.optimizer
-        }
-        experiment.log_parameters(hyper_params)
+
+        experiment.log_parameters(config)
     else:
         experiment = None
 
