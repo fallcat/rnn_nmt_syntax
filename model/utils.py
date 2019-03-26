@@ -1,10 +1,16 @@
+import io
 import os
 import time
 import math
+import tqdm
 import torch
 import argparse
+import contextlib
+import sys
 import shutil
+import random
 import collections, gc, torch
+import numpy as np
 
 import matplotlib.pyplot as plt
 plt.switch_backend('agg')
@@ -129,6 +135,12 @@ def get_cl_args():
     arg_parser.add_argument('--evaluate-path', action='store', type=str, default="experiments/exptest/translated.txt",
                             help='Specify a path to store the evaluated sentences')
 
+    arg_parser.add_argument('--seed', action='store', type=int, default=None,
+                            help='Set seed for random scheduler')
+
+    arg_parser.add_argument('--shuffle', action='store', type=bool, default=True,
+                            help='Shuffle the dataloader')
+
     return arg_parser.parse_args()
 
 
@@ -232,3 +244,37 @@ def split_or_chunk(inputs, num_chunks_or_sections, dim=0):
         split_map = None
 
 # beam search utils end
+
+
+def get_random_seed_fn(seed, cuda=True):
+    ''' Return a function that sets a random seed '''
+    def set_random_seed(worker_id=0): # pylint:disable=unused-argument
+        random.seed(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        if cuda and torch.cuda.is_available():
+            torch.cuda.manual_seed(seed)
+
+    return set_random_seed
+
+
+@contextlib.contextmanager
+def tqdm_wrap_stdout():
+    ''' Wrap a sys.stdout and funnel it to tqdm.write '''
+    saved = sys.stdout
+    sys.stdout = TQDMStreamWrapper(sys.stdout)
+    yield
+    sys.stdout = saved
+
+
+class TQDMStreamWrapper(io.IOBase):
+    ''' A wrapper around an existing IO stream to funnel to tqdm '''
+    def __init__(self, stream):
+        ''' Initialize the stream wrapper '''
+        super(TQDMStreamWrapper, self).__init__()
+        self.stream = stream
+
+    def write(self, line):
+        ''' Potentially write to the stream '''
+        if line.rstrip(): # avoid printing empty lines (only whitespace)
+            tqdm.write(line, file=self.stream)

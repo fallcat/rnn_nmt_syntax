@@ -1,12 +1,14 @@
 import os
+import sys
 import torch
 import random
 import time
+import tqdm
 import shutil
 from torch import nn, optim
 from torch.autograd import Variable
 from model import SOS_token, EOS_token, DEVICE
-from model.utils import save_plot, time_since, debug_memory
+from model.utils import save_plot, time_since, debug_memory, tqdm_wrap_stdout
 from actions.evaluate import Evaluator
 
 # config: max_length, span_size, teacher_forcing_ratio, learning_rate, num_iters, print_every, plot_every, save_path,
@@ -14,7 +16,7 @@ from actions.evaluate import Evaluator
 
 
 class Trainer(object):
-    def __init__(self, config, models, dataset, experiment=None):
+    def __init__(self, config, models, dataloader, experiment=None):
         self.config = config
         self.encoder = models['encoder']
         self.decoder = models['decoder']
@@ -24,14 +26,15 @@ class Trainer(object):
         self.criterion = nn.NLLLoss(ignore_index=0)
         self.epoch = -1
         self.step = -1
-        self.dataset = dataset
+        self.dataloader = dataloader
+        self.dataset = dataloader.dataset
         self.experiment = experiment
+        self.metric_store = {'oom': 0}
 
-    def train_batch2(self, training_pairs):
+    def train_batch(self, training_pairs):
         """
         train a batch of tensors
-        :param input_tensors: list of tensors
-        :param target_tensors: list of tensors
+        :param training_pairs: list of tensors
         :return:
         """
 
@@ -117,12 +120,88 @@ class Trainer(object):
             print(message)
             return -1
 
+    def train_batch3(self, batch):
+        """
+        train a batch of tensors
+        :param batch: batch of sentences
+        :return:
+        """
+
+        # Zero gradients of both optimizers
+        self.encoder_optimizer.zero_grad()
+        self.decoder_optimizer.zero_grad()
+        loss = 0  # Added onto for each word
+        total_length = sum(batch['input_lens']).item() + sum(batch['target_lens']).item()
+        # debug_memory()
+        # try:
+        #     print("memory allocated", torch.cuda.memory_allocated())
+        #     print("memory cached", torch.cuda.memory_cached())
+        # except:
+        #     pass
+
+        # inputs
+        # 'inputs': inputs,
+        # 'input_lens': input_lens,
+        # 'targets': targets2,
+        # 'target_lens': target_lens,
+        # 'example_ids': example_ids
+
+        # sort input tensors by length
+
+
+
+        # Run words through encoder
+        encoder_outputs, encoder_hidden = self.encoder(batch['inputs'], batch['input_lens'])
+        # encoder_outputs2 = torch.zeros((batch_size, self.config['max_length'], self.config['hidden_size']),
+        #                                dtype=torch.float, device=DEVICE)
+        # print("encoder_outputs2.get_device()", encoder_outputs2.get_device())
+        # encoder_outputs2[:, :encoder_outputs.size()[1]] += encoder_outputs
+        # print("encoder_outputs2", encoder_outputs2.size())
+        # print("encoder_hidden", encoder_hidden.size())
+        # span_seq_len = int(self.config['max_length']/self.config['span_size'])
+        decoder_hidden = encoder_hidden
+        decoder_outputs = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size'],
+                                       self.dataset.num_words), dtype=torch.float, device=DEVICE)
+        # print("decoder_outputs.get_device()", decoder_outputs.get_device())
+        for i in range(batch['span_seq_len']):
+            decoder_output, decoder_hidden, decoder_attn = self.decoder(batch['target'][:, i:i+self.config['span_size']],
+                                                                        decoder_hidden, encoder_outputs)
+            decoder_outputs[:, i:i+self.config['span_size']] = decoder_output
+        # debug_memory()
+        # try:
+        #     print("memory allocated", torch.cuda.memory_allocated())
+        #     print("memory cached", torch.cuda.memory_cached())
+        # except:
+        #     pass
+
+        # print("outside")
+        # print("decoder_outputs", decoder_outputs.size())
+        # print("output_batches", output_batches.size())
+
+        # print("decoder_outputs[:, :-self.config['span_size']]", decoder_outputs[:, :-self.config['span_size']].size())
+        # print("output_batches[:, self.config['span_size']:]", output_batches[:, self.config['span_size']:].size())
+        loss += self.criterion(decoder_outputs[:, :-self.config['span_size']].contiguous().view(-1, self.dataset.num_words),
+                               batch['target'][:, self.config['span_size']:].contiguous().view(-1))
+
+        try:
+            loss.backward()
+            self.encoder_optimizer.step()
+            self.decoder_optimizer.step()
+            return loss.item() / total_length
+
+        except Exception as ex:
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print(message)
+            return -1
+
     def train_epoch(self, epoch, train_size=None):
         print("===== epoch " + str(epoch) + " =====")
         if self.experiment is not None:
             self.experiment.log_current_epoch(epoch)
         start = time.time()
         epoch_loss = 0
+        oom = self.metric_store['oom']
 
         if train_size is not None:
             pairs = self.dataset.pairs['train'][:train_size]
@@ -130,41 +209,86 @@ class Trainer(object):
             pairs = self.dataset.pairs['train']
         random.shuffle(pairs)
 
-        for step in range(self.step + 1, int((len(pairs)-1)/self.config['minibatch_size'])+1):
+        def get_description():
+            description = f'Train #{epoch}'
+            # if verbose > 0:
+            #     description += f' {self.metric_store}'
+            # if verbose > 1:
+            #     description += f' [{profile.mem_stat_string(["allocated"])}]'
+            return description
 
-            training_pairs_str = [pair for pair in pairs[step * self.config['minibatch_size']:
-                                                         (step + 1) * self.config['minibatch_size']]]
-            training_pairs = [self.dataset.tensors_from_pair(pair) for pair in training_pairs_str]
+        batches = tqdm.tqdm(
+            self.dataloader,
+            unit='batch',
+            dynamic_ncols=True,
+            desc=get_description(),
+            file=sys.stdout  # needed to make tqdm_wrap_stdout work
+        )
 
-            # best_loss = float("inf")
+        with tqdm_wrap_stdout():
+            for i, batch in enumerate(batches, 1):
+                experiment.set_step(experiment.curr_step + 1)
+                try:
+                    loss = self.train_batch3(batch)
+                    epoch_loss += loss
 
-            num_exceptions = 0
+                    if loss != -1:
+                        if self.experiment is not None:
+                            self.experiment.log_metric("loss", loss, step=step)
+                        self.save_checkpoint({
+                            'epoch': epoch,
+                            'step': i,
+                            'encoder_state': self.encoder.state_dict(),
+                            'decoder_state': self.decoder.state_dict(),
+                            'encoder_optimizer': self.encoder_optimizer.state_dict(),
+                            'decoder_optimizer': self.decoder_optimizer.state_dict(),
+                        })
 
-            len_training_pairs = len(training_pairs)
-
-            step_loss = 0
-            step_loss_count = 0
-
-            # train batch
-            loss = self.train_batch2(training_pairs)
-            epoch_loss += loss
-
-            # Log to Comet.ml
-            if loss != -1:
-                if self.experiment is not None:
-                    self.experiment.log_metric("loss", loss, step=step)
-                self.save_checkpoint({
-                    'epoch': epoch,
-                    'step': step,
-                    'encoder_state': self.encoder.state_dict(),
-                    'decoder_state': self.decoder.state_dict(),
-                    'encoder_optimizer': self.encoder_optimizer.state_dict(),
-                    'decoder_optimizer': self.decoder_optimizer.state_dict(),
-                })
+                except RuntimeError as rte:
+                    if 'out of memory' in str(rte):
+                        torch.cuda.empty_cache()
+                        oom += 1
+                        experiment.log_metric('oom', oom)
+                    else:
+                        batches.close()
+                        raise rte
 
 
-            if num_exceptions > 0:
-                print("Step %s, Number of exceptions: %s" % (step, num_exceptions), flush=True)
+        # for step in range(self.step + 1, int((len(pairs)-1)/self.config['minibatch_size'])+1):
+        #
+        #     training_pairs_str = [pair for pair in pairs[step * self.config['minibatch_size']:
+        #                                                  (step + 1) * self.config['minibatch_size']]]
+        #     training_pairs = [self.dataset.tensors_from_pair(pair) for pair in training_pairs_str]
+        #
+        #     # best_loss = float("inf")
+        #
+        #     num_exceptions = 0
+        #
+        #     len_training_pairs = len(training_pairs)
+        #
+        #     step_loss = 0
+        #     step_loss_count = 0
+        #
+        #     # train batch
+        #     loss = self.train_batch(training_pairs)
+        #     epoch_loss += loss
+        #
+        #     # Log to Comet.ml
+        #     if loss != -1:
+        #         if self.experiment is not None:
+        #             self.experiment.log_metric("loss", loss, step=step)
+        #         self.save_checkpoint({
+        #             'epoch': epoch,
+        #             'step': step,
+        #             'encoder_state': self.encoder.state_dict(),
+        #             'decoder_state': self.decoder.state_dict(),
+        #             'encoder_optimizer': self.encoder_optimizer.state_dict(),
+        #             'decoder_optimizer': self.decoder_optimizer.state_dict(),
+        #         })
+        #
+        #
+        #     if num_exceptions > 0:
+        #         print("Step %s, Number of exceptions: %s" % (step, num_exceptions), flush=True)
         print('%s (%d %d%%) %.10f' % (
             time_since(start, epoch + 1 / self.config['num_epochs']),
             epoch + 1, epoch + 1 / self.config['num_epochs'] * 100,
