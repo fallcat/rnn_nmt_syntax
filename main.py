@@ -60,8 +60,8 @@ def main():
         dataset_train, config, "train", args.seed_fn, pin_memory,
         NUM_DEVICES, shuffle=args.shuffle
     )
-    encoder1 = BatchEncoderRNN(dataset_train.num_words, args.hidden_size, num_layers=args.num_layers).to(DEVICE)
-    attn_decoder1 = BatchAttnKspanDecoderRNN3(args.hidden_size, dataset_train.num_words, num_layers=args.num_layers,
+    encoder1 = BatchEncoderRNN(dataloader_train.dataset.num_words, args.hidden_size, num_layers=args.num_layers).to(DEVICE)
+    attn_decoder1 = BatchAttnKspanDecoderRNN3(args.hidden_size, dataloader_train.dataset.num_words, num_layers=args.num_layers,
                                               dropout_p=args.dropout, max_length=args.max_length,
                                               span_size=args.span_size).to(DEVICE)
     models = {'encoder': encoder1, 'decoder': attn_decoder1}
@@ -83,7 +83,7 @@ def main():
     else:
         experiment = None
 
-    trainer = Trainer(config=config, models=models, dataset=dataloader_train, experiment=experiment)
+    trainer = Trainer(config=config, models=models, dataloader=dataloader_train, experiment=experiment)
     if args.restore is not None:
         trainer.restore_checkpoint(args.restore)
     if args.mode == "train":

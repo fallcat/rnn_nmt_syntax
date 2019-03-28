@@ -16,7 +16,7 @@ class IWSLTDataset(TextDataset):
     }
 
     """
-    Prepare data from WMTDataset
+    Prepare data from IWSLTDataset
     """
     def __init__(self, max_length, span_size, split="train", reverse=False):
         super(IWSLTDataset, self).__init__(max_length, span_size, split, reverse)
