@@ -46,7 +46,7 @@ def main():
     }
 
     datasets = {"WMT": WMTDataset, "IWSLT": IWSLTDataset}
-    dataset_train = datasets[args.dataset](max_length=args.max_length, span_size=args.span_size, split="train")
+    dataset_train = datasets[args.dataset]
     profile_cuda_memory = args.profile_cuda_memory
     pin_memory = 'cuda' in DEVICE.type and not profile_cuda_memory
 
