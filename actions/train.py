@@ -227,7 +227,8 @@ class Trainer(object):
 
         with tqdm_wrap_stdout():
             for i, batch in enumerate(batches, 1):
-                self.experiment.set_step(self.experiment.curr_step + 1)
+                if self.experiment is not None:
+                    self.experiment.set_step(self.experiment.curr_step + 1)
                 try:
                     loss = self.train_batch3(batch)
                     epoch_loss += loss
