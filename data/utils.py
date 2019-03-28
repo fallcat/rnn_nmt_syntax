@@ -21,7 +21,7 @@ def get_dataloader(dataset, config, split, worker_init_fn=None, pin_memory=True,
     sampler_fn = RandomSampler if shuffle else SequentialSampler
     batch_sampler = BatchSampler(
         sampler_fn(dataset),
-        config.batch_size,
+        config['batch_size'],
         False
     )
     # else:
