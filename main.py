@@ -47,8 +47,8 @@ def main():
 
     datasets = {"WMT": WMTDataset, "IWSLT": IWSLTDataset}
     dataset_train = datasets[args.dataset](max_length=args.max_length, span_size=args.span_size, split="train")
-    profile_cuda_memory = args.config.cuda.profile_cuda_memory
-    pin_memory = 'cuda' in args.device.type and not profile_cuda_memory
+    profile_cuda_memory = args.profile_cuda_memory
+    pin_memory = 'cuda' in DEVICE and not profile_cuda_memory
 
     if args.seed is not None:
         args.seed_fn = get_random_seed_fn(args.seed)

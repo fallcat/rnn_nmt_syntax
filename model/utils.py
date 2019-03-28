@@ -141,6 +141,15 @@ def get_cl_args():
     arg_parser.add_argument('--shuffle', action='store', type=bool, default=True,
                             help='Shuffle the dataloader')
 
+    arg_parser.add_argument(
+        '--profile-cuda-memory',
+        default=False,
+        const='cuda.prof',
+        nargs='?',
+        type=str,
+        help='Whether to profile CUDA memory.'
+    )
+
     return arg_parser.parse_args()
 
 
