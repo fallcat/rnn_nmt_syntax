@@ -164,7 +164,7 @@ class Trainer(object):
                                        self.dataset.num_words), dtype=torch.float, device=DEVICE)
         # print("decoder_outputs.get_device()", decoder_outputs.get_device())
         for i in range(batch['span_seq_len']):
-            decoder_output, decoder_hidden, decoder_attn = self.decoder(batch['target'][:, i:i+self.config['span_size']],
+            decoder_output, decoder_hidden, decoder_attn = self.decoder(batch['targets'][:, i:i+self.config['span_size']],
                                                                         decoder_hidden, encoder_outputs)
             decoder_outputs[:, i:i+self.config['span_size']] = decoder_output
         # debug_memory()
