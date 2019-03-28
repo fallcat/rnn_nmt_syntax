@@ -128,7 +128,7 @@ class TextDataset(Dataset):
                 (len(max(targets, key=lambda x: len(x))) - 1) / self.span_size) + 1
 
             targets2 = torch.zeros((batch_size, span_seq_len * self.span_size),
-                                          dtype=torch.float, device=DEVICE)
+                                          dtype=torch.long, device=DEVICE)
 
             inputs = nn.utils.rnn.pad_sequence(
                 inputs, batch_first=True, padding_value=self.padding_idx)
