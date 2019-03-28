@@ -227,14 +227,14 @@ class Trainer(object):
 
         with tqdm_wrap_stdout():
             for i, batch in enumerate(batches, 1):
-                experiment.set_step(experiment.curr_step + 1)
+                self.experiment.set_step(self.experiment.curr_step + 1)
                 try:
                     loss = self.train_batch3(batch)
                     epoch_loss += loss
 
                     if loss != -1:
                         if self.experiment is not None:
-                            self.experiment.log_metric("loss", loss, step=step)
+                            self.experiment.log_metric("loss", loss)
                         self.save_checkpoint({
                             'epoch': epoch,
                             'step': i,
