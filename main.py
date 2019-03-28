@@ -57,7 +57,7 @@ def main():
         args.seed_fn = None
 
     dataloader_train = get_dataloader(
-        dataset_train, args.seed_fn, pin_memory,
+        dataset_train, config, "train", args.seed_fn, pin_memory,
         NUM_DEVICES, shuffle=args.shuffle
     )
     encoder1 = BatchEncoderRNN(dataset_train.num_words, args.hidden_size, num_layers=args.num_layers).to(DEVICE)
