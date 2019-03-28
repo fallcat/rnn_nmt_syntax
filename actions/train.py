@@ -204,9 +204,9 @@ class Trainer(object):
         oom = self.metric_store['oom']
 
         if train_size is not None:
-            pairs = self.dataset.pairs['train'][:train_size]
+            pairs = self.dataset.pairs[:train_size]
         else:
-            pairs = self.dataset.pairs['train']
+            pairs = self.dataset.pairs
         random.shuffle(pairs)
 
         def get_description():
