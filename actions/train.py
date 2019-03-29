@@ -201,12 +201,14 @@ class Trainer(object):
             self.encoder_optimizer.step()
             self.decoder_optimizer.step()
             return loss.item() / total_length
-
-        except Exception as ex:
-            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            print(message)
-            return -1
+        except RuntimeError as rte:
+            if 'out of memory' in str(rte):
+                torch.cuda.empty_cache()
+            else:
+                template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+                message = template.format(type(ex).__name__, ex.args)
+                print(message)
+                return -1
 
     def train_epoch(self, epoch, train_size=None):
         print("===== epoch " + str(epoch) + " =====")
@@ -230,42 +232,43 @@ class Trainer(object):
             #     description += f' [{profile.mem_stat_string(["allocated"])}]'
             return description
 
-        batches = tqdm.tqdm(
-            self.dataloader,
-            unit='batch',
-            dynamic_ncols=True,
-            desc=get_description(),
-            file=sys.stdout  # needed to make tqdm_wrap_stdout work
-        )
+        # batches = tqdm.tqdm(
+        #     self.dataloader,
+        #     unit='batch',
+        #     dynamic_ncols=True,
+        #     desc=get_description(),
+        #     file=sys.stdout  # needed to make tqdm_wrap_stdout work
+        # )
+        batches = self.dataloader
 
-        with tqdm_wrap_stdout():
-            for i, batch in enumerate(batches, 1):
-                if self.experiment is not None:
-                    self.experiment.set_step(i)
-                try:
-                    loss = self.train_batch3(batch)
-                    epoch_loss += loss
+        # with tqdm_wrap_stdout():
+        for i, batch in enumerate(batches, 1):
+            if self.experiment is not None:
+                self.experiment.set_step(i)
+            try:
+                loss = self.train_batch3(batch)
+                epoch_loss += loss
 
-                    if loss != -1:
-                        if self.experiment is not None:
-                            self.experiment.log_metric("loss", loss)
-                        self.save_checkpoint({
-                            'epoch': epoch,
-                            'step': i,
-                            'encoder_state': self.encoder.state_dict(),
-                            'decoder_state': self.decoder.state_dict(),
-                            'encoder_optimizer': self.encoder_optimizer.state_dict(),
-                            'decoder_optimizer': self.decoder_optimizer.state_dict(),
-                        })
+                if loss != -1:
+                    if self.experiment is not None:
+                        self.experiment.log_metric("loss", loss)
+                    self.save_checkpoint({
+                        'epoch': epoch,
+                        'step': i,
+                        'encoder_state': self.encoder.state_dict(),
+                        'decoder_state': self.decoder.state_dict(),
+                        'encoder_optimizer': self.encoder_optimizer.state_dict(),
+                        'decoder_optimizer': self.decoder_optimizer.state_dict(),
+                    })
 
-                except RuntimeError as rte:
-                    if 'out of memory' in str(rte):
-                        torch.cuda.empty_cache()
-                        oom += 1
-                        experiment.log_metric('oom', oom)
-                    else:
-                        batches.close()
-                        raise rte
+            except RuntimeError as rte:
+                if 'out of memory' in str(rte):
+                    torch.cuda.empty_cache()
+                    oom += 1
+                    self.experiment.log_metric('oom', oom)
+                else:
+                    batches.close()
+                    raise rte
 
 
         # for step in range(self.step + 1, int((len(pairs)-1)/self.config['minibatch_size'])+1):
