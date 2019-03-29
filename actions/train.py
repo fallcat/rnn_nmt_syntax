@@ -160,7 +160,7 @@ class Trainer(object):
         # print("encoder_hidden", encoder_hidden.size())
         # span_seq_len = int(self.config['max_length']/self.config['span_size'])
 
-        targets2 = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.span_size),  dtype=torch.long, device=DEVICE)
+        targets2 = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size']),  dtype=torch.long, device=DEVICE)
         targets2[:, :batch['targets'].size()[1]] = batch['targets']
         decoder_hidden = encoder_hidden
         decoder_outputs = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size'],
