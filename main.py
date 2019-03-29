@@ -2,7 +2,7 @@
 Main entrance of the program
 """
 
-import multiprocessing as mp
+import torch
 from comet_ml import Experiment
 from model.utils import get_cl_args, save_predictions, get_random_seed_fn
 from data.utils import get_dataloader
@@ -22,6 +22,7 @@ def main():
     # mp.set_start_method('spawn')
     args = get_cl_args()
     print(args)
+    print("Number of GPUs:", torch.cuda.device_count())
     config = {
         'max_length': args.max_length,
         'span_size': args.span_size,
