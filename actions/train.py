@@ -39,6 +39,11 @@ class Trainer(object):
         self.experiment = experiment
         self.metric_store = {'oom': 0}
 
+        if 'cuda' in DEVICE.type:
+            self.encoder = nn.DataParallel(self.encoder)
+            self.decoder = nn.DataParallel(self.decoder)
+            self.criterion = nn.DataParallel(self.criterion)
+
     def train_batch(self, training_pairs):
         """
         train a batch of tensors
@@ -206,7 +211,7 @@ class Trainer(object):
                 torch.cuda.empty_cache()
             else:
                 template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-                message = template.format(type(ex).__name__, ex.args)
+                message = template.format(type(rte).__name__, rte.args)
                 print(message)
                 return -1
 
