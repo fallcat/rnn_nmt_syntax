@@ -151,7 +151,7 @@ class Trainer(object):
 
 
         # Run words through encoder
-        encoder_outputs, encoder_hidden = self.encoder(batch['inputs'], batch['input_lens'])
+        encoder_outputs, encoder_hidden = self.encoder(batch['inputs'].to(device=DEVICE), batch['input_lens'])
         # encoder_outputs2 = torch.zeros((batch_size, self.config['max_length'], self.config['hidden_size']),
         #                                dtype=torch.float, device=DEVICE)
         # print("encoder_outputs2.get_device()", encoder_outputs2.get_device())
