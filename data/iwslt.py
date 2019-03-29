@@ -43,5 +43,6 @@ class IWSLTDataset(TextDataset):
 
         pairs = self.filter_pairs(pairs)
         print("Trimmed to %s sentence pairs" % len(pairs))
+        pairs = sorted(pairs, key=lambda x: len(x[1]))
 
         self.pairs = pairs
