@@ -159,12 +159,15 @@ class Trainer(object):
         # print("encoder_outputs2", encoder_outputs2.size())
         # print("encoder_hidden", encoder_hidden.size())
         # span_seq_len = int(self.config['max_length']/self.config['span_size'])
+
+        targets2 = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.span_size),  dtype=torch.long, device=DEVICE)
+        targets2[:, :batch['targets'].size()[1]] = batch['targets']
         decoder_hidden = encoder_hidden
         decoder_outputs = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size'],
                                        self.dataset.num_words), dtype=torch.float, device=DEVICE)
         # print("decoder_outputs.get_device()", decoder_outputs.get_device())
         for i in range(batch['span_seq_len']):
-            decoder_output, decoder_hidden, decoder_attn = self.decoder(batch['targets'][:, i:i+self.config['span_size']],
+            decoder_output, decoder_hidden, decoder_attn = self.decoder(targets2[:, i:i+self.config['span_size']],
                                                                         decoder_hidden, encoder_outputs)
             decoder_outputs[:, i:i+self.config['span_size']] = decoder_output
         # debug_memory()
@@ -181,7 +184,7 @@ class Trainer(object):
         # print("decoder_outputs[:, :-self.config['span_size']]", decoder_outputs[:, :-self.config['span_size']].size())
         # print("output_batches[:, self.config['span_size']:]", output_batches[:, self.config['span_size']:].size())
         loss += self.criterion(decoder_outputs[:, :-self.config['span_size']].contiguous().view(-1, self.dataset.num_words),
-                               batch['targets'][:, self.config['span_size']:].contiguous().view(-1))
+                               targets2[:, self.config['span_size']:].contiguous().view(-1))
 
         try:
             loss.backward()

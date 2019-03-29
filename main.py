@@ -19,7 +19,7 @@ from model import DEVICE, NUM_DEVICES
 
 def main():
     # max_length needs to be multiples of span_size
-    mp.set_start_method('spawn')
+    # mp.set_start_method('spawn')
     args = get_cl_args()
     print(args)
     config = {
