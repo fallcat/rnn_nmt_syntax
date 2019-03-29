@@ -15,7 +15,7 @@ def get_dataloader(dataset, config, split, worker_init_fn=None, pin_memory=True,
         batch_sizes += [config['minibatch_size']] * (num_devices - 1)
         batch_sampler = SequenceLengthSampler(
             batch_sizes,
-            [tuple(len(p) for p in s) for s in dataset.data],
+            [tuple(len(p) for p in s) for s in dataset.pairs],
             shuffle=shuffle
         )
     elif config['batch_method'] == 'example':
