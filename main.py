@@ -2,6 +2,7 @@
 Main entrance of the program
 """
 
+import multiprocessing as mp
 from comet_ml import Experiment
 from model.utils import get_cl_args, save_predictions, get_random_seed_fn
 from data.utils import get_dataloader
@@ -15,8 +16,10 @@ from model import DEVICE, NUM_DEVICES
 # config: max_length, span_size, teacher_forcing_ratio, learning_rate, num_iters, print_every, plot_every, save_path,
 #         restore_path, best_save_path, plot_path
 
+
 def main():
     # max_length needs to be multiples of span_size
+    mp.set_start_method('spawn')
     args = get_cl_args()
     print(args)
     config = {
