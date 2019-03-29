@@ -2,8 +2,9 @@
 Main entrance of the program
 """
 
-import torch
+
 from comet_ml import Experiment
+import torch
 from model.utils import get_cl_args, save_predictions, get_random_seed_fn
 from data.utils import get_dataloader
 from data.wmt import WMTDataset
