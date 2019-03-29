@@ -141,6 +141,9 @@ def get_cl_args():
     arg_parser.add_argument('--shuffle', action='store', type=bool, default=True,
                             help='Shuffle the dataloader')
 
+    arg_parser.add_argument('--lr-decay', action='store', type=float, default=1,
+                            help='Multiplicative factor of learning rate decay.')
+
     arg_parser.add_argument(
         '--profile-cuda-memory',
         default=False,

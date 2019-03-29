@@ -23,6 +23,14 @@ class Trainer(object):
         optimizers = {"SGD": optim.SGD, "Adadelta": optim.Adadelta, "Adagrad": optim.Adagrad, "RMSprop": optim.RMSprop, "Adam": optim.Adam}
         self.encoder_optimizer = optimizers[self.config["optimizer"]](self.encoder.parameters(), lr=self.config['learning_rate'], weight_decay=self.config['weight_decay'])
         self.decoder_optimizer = optimizers[self.config["optimizer"]](self.decoder.parameters(), lr=self.config['learning_rate'], weight_decay=self.config['weight_decay'])
+        self.encoder_lr_scheduler = optim.lr_scheduler.ExponentialLR(
+            self.encoder_optimizer,
+            config['lr_decay']
+        )
+        self.decoder_lr_scheduler = optim.lr_scheduler.ExponentialLR(
+            self.decoder_optimizer,
+            config['lr_decay']
+        )
         self.criterion = nn.NLLLoss(ignore_index=0)
         self.epoch = -1
         self.step = -1
@@ -188,6 +196,8 @@ class Trainer(object):
 
         try:
             loss.backward()
+            self.encoder_lr_scheduler.step()
+            self.decoder_lr_scheduler.step()
             self.encoder_optimizer.step()
             self.decoder_optimizer.step()
             return loss.item() / total_length

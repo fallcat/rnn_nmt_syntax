@@ -47,7 +47,8 @@ def main():
         'seed': args.seed,
         'shuffle': args.shuffle,
         'batch_size_buffer': args.batch_size_buffer,
-        'batch_method': args.batch_method
+        'batch_method': args.batch_method,
+        'lr_decay': args.lr_decay
     }
 
     datasets = {"WMT": WMTDataset, "IWSLT": IWSLTDataset}
