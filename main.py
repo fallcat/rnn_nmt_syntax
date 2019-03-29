@@ -45,7 +45,9 @@ def main():
         'mode': args.mode,
         'evaluate_path': args.evaluate_path,
         'seed': args.seed,
-        'shuffle': args.shuffle
+        'shuffle': args.shuffle,
+        'batch_size_buffer': args.batch_size_buffer,
+        'batch_method': args.batch_method
     }
 
     datasets = {"WMT": WMTDataset, "IWSLT": IWSLTDataset}

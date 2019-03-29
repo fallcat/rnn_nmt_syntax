@@ -150,6 +150,21 @@ def get_cl_args():
         help='Whether to profile CUDA memory.'
     )
 
+    arg_parser.add_argument(
+        '--batch-size-buffer',
+        type=int,
+        default=0,
+        help='By how many tokens to reduce the batch size on the GPU of the optimizer'
+    )
+
+    arg_parser.add_argument(
+        '--batch-method',
+        type=str,
+        default='token',
+        choices=['token', 'example'],
+        help='By which method to sample batches'
+    )
+
     return arg_parser.parse_args()
 
 
