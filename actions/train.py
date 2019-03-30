@@ -183,7 +183,7 @@ class Trainer(object):
                         'encoder': self.encoder,
                         'decoder': self.decoder
                     }
-                    evaluator = Evaluator(config=self.config, models=models, dataset=self.dataset, experiment=self.experiment)
+                    evaluator = Evaluator(config=self.config, models=models, experiment=self.experiment)
                     evaluator.evaluate_randomly(dataset_split='train', evaluate_size=train_size)
         else:
             for epoch in range(self.epoch + 1, self.config['num_epochs']):
@@ -193,8 +193,7 @@ class Trainer(object):
                         'encoder': self.encoder,
                         'decoder': self.decoder
                     }
-                    evaluator = Evaluator(config=self.config, models=models, dataset=self.dataset,
-                                          experiment=self.experiment)
+                    evaluator = Evaluator(config=self.config, models=models,  experiment=self.experiment)
                     evaluator.evaluate_randomly(dataset_split='train', evaluate_size=train_size)
 
     def restore_checkpoint(self, restore_path):

@@ -7,11 +7,11 @@ from model import DEVICE, SOS_token, EOS_token
 # config: max_length, span_size, hidden_size
 
 class Evaluator(object):
-    def __init__(self, config, models, dataset, experiment=None):
+    def __init__(self, config, models, dataloader, experiment=None):
         self.config = config
         self.encoder = models['encoder']
         self.decoder = models['decoder']
-        self.dataset = dataset
+        self.dataloader = dataloader
         self.experiment = experiment
 
     def translate_batch(self, batch):

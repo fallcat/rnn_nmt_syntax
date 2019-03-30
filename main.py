@@ -51,7 +51,7 @@ def main():
     }
 
     datasets = {"WMT": WMTDataset, "IWSLT": IWSLTDataset}
-    dataset_train = datasets[args.dataset]
+    dataset = datasets[args.dataset]
     profile_cuda_memory = args.profile_cuda_memory
     pin_memory = 'cuda' in DEVICE.type and not profile_cuda_memory
 
@@ -62,7 +62,7 @@ def main():
         args.seed_fn = None
 
     dataloader_train = get_dataloader(
-        dataset_train, config, "train", args.seed_fn, pin_memory,
+        dataset, config, "train", args.seed_fn, pin_memory,
         NUM_DEVICES, shuffle=args.shuffle
     )
     encoder1 = BatchEncoderRNN(dataloader_train.dataset.num_words, args.hidden_size, num_layers=args.num_layers).to(DEVICE)
@@ -92,11 +92,14 @@ def main():
     if args.restore is not None:
         trainer.restore_checkpoint(args.restore)
     if args.mode == "train":
-        trainer.train_and_evaluate(args.train_size)
+        trainer.train(args.train_size)
     elif args.mode == "evaluate":
+        dataloader_valid = get_dataloader(
+            dataset, config, "valid", args.seed_fn, pin_memory,
+            NUM_DEVICES, shuffle=args.shuffle
+        )
         models = {'encoder': trainer.encoder, 'decoder': trainer.decoder}
-        dataset_valid = datasets[args.dataset](max_length=args.max_length, span_size=args.span_size, split="valid")
-        evaluator = Evaluator(config=config, models=models, dataset=dataset_valid, experiment=experiment)
+        evaluator = Evaluator(config=config, models=models, dataloader=dataloader_valid, experiment=experiment)
         preds = evaluator.evaluate()
         save_predictions(preds, args.evaluate_path)
 
