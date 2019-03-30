@@ -203,7 +203,8 @@ class Trainer(object):
                                targets2[:, self.config['span_size']:].contiguous().view(-1))
 
         try:
-            loss.sum().backward()
+            loss = loss.sum()
+            loss.backward()
             self.encoder_lr_scheduler.step()
             self.decoder_lr_scheduler.step()
             self.encoder_optimizer.step()
