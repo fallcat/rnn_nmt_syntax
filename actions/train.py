@@ -144,7 +144,6 @@ class Trainer(object):
         # Zero gradients of both optimizers
         self.encoder_optimizer.zero_grad()
         self.decoder_optimizer.zero_grad()
-        loss = 0  # Added onto for each word
         total_length = sum(batch['input_lens']).item() + sum(batch['target_lens']).item()
         # debug_memory()
         # try:
@@ -200,11 +199,11 @@ class Trainer(object):
 
         # print("decoder_outputs[:, :-self.config['span_size']]", decoder_outputs[:, :-self.config['span_size']].size())
         # print("output_batches[:, self.config['span_size']:]", output_batches[:, self.config['span_size']:].size())
-        loss += self.criterion(decoder_outputs[:, :-self.config['span_size']].contiguous().view(-1, self.dataset.num_words),
+        loss = self.criterion(decoder_outputs[:, :-self.config['span_size']].contiguous().view(-1, self.dataset.num_words),
                                targets2[:, self.config['span_size']:].contiguous().view(-1))
 
         try:
-            loss.backward()
+            loss.sum().backward()
             self.encoder_lr_scheduler.step()
             self.decoder_lr_scheduler.step()
             self.encoder_optimizer.step()
