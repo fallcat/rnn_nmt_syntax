@@ -11,6 +11,8 @@ class Evaluator(object):
         self.config = config
         self.encoder = models['encoder']
         self.decoder = models['decoder']
+        self.encoder.eval()
+        self.decoder.eval()
         self.dataloader = dataloader
         self.experiment = experiment
 
@@ -62,52 +64,29 @@ class Evaluator(object):
             self.decoder.train()
             return decoded_words
 
-    def translate_batch2(self, batch):
+    def translate_batch3(self, batch_inputs, batch_input_lens):
         with torch.no_grad():
-            self.encoder.eval()
-            self.decoder.eval()
-            batch_size = len(batch)
-            input_tensors =[self.dataset.tensor_from_sentence(sentence) for sentence in batch]
-            # input_tensors = sorted(input_tensors, key=lambda x: x.size()[0], reverse=True)
-            input_lengths_list = [x.size()[0] for x in input_tensors]
-            input_lengths_np = np.array(input_lengths_list)
-            input_lengths_np_order = np.argsort(input_lengths_np)[::-1]
-            input_lengths_np_order_order = np.argsort(input_lengths_np_order)
-            # print("input_tensors", input_tensors)
-            # print(input_lengths_np_order)
-            # print(type(input_lengths_np_order))
-            # print([input_lengths_list[i] for i in input_lengths_np_order])
-            # print("i", [input_tensors[i] for i in input_lengths_np_order])
-            input_lengths = torch.LongTensor([input_lengths_list[i] for i in input_lengths_np_order], device=torch.device("cpu"))
+            batch_size = len(batch_inputs)
 
-            input_batches = torch.nn.utils.rnn.pad_sequence([input_tensors[i] for i in input_lengths_np_order], batch_first=True)
-            encoder_outputs, encoder_hidden = self.encoder(input_batches, input_lengths)
-            encoder_outputs2 = torch.zeros((batch_size, self.config['max_length'], self.config['hidden_size']),
-                                           dtype=torch.float, device=DEVICE)
-            encoder_outputs2[:, :encoder_outputs.size()[1]] += encoder_outputs
-            span_seq_len =  int(self.config['max_length']/self.config['span_size'])
+            encoder_outputs, encoder_hidden = self.encoder(batch_inputs.to(device=DEVICE), batch_input_lens,
+                                                           batch_inputs.size()[1])
 
-            decoder_input = torch.tensor([SOS_token] * self.config['span_size'] * batch_size, device=DEVICE).view(batch_size, -1)
-            decoder_outputs = torch.zeros((batch_size, self.config['max_length']), dtype=torch.long, device=DEVICE)
+            span_seq_len = int(self.config['max_length'] / self.config['span_size'])
 
             decoder_hidden = encoder_hidden
-            for l in range(span_seq_len):
-                decoder_output, decoder_hidden, decoder_attn = self.decoder(decoder_input, decoder_hidden,
-                                                                            encoder_outputs2)
+            decoder_input = torch.tensor([SOS_token] * self.config['span_size'] * batch_size, device=DEVICE).view(
+                batch_size, -1)
+            decoder_outputs = torch.zeros((batch_size, span_seq_len * self.config['span_size'],
+                                           self.dataloader.dataset.num_words), dtype=torch.float, device=DEVICE)
+            for i in range(span_seq_len):
+                decoder_output, decoder_hidden, decoder_attn = self.decoder(decoder_input,
+                                                                            decoder_hidden, encoder_outputs)
                 topv, topi = decoder_output.topk(1, dim=2)
-                # print("topi", topi.size())
                 decoder_input = topi
-                # print("decoder_outputs", decoder_outputs.size())
-                # print("decoder_outputs[:, l:l+self.config['span_size']]", decoder_outputs[:, l:l+self.config['span_size']].size())
-                # print("topi", topi.size())
-                decoder_outputs[:, l:l+self.config['span_size']] = topi.squeeze(2)
-            # print("decoder_outputs", decoder_outputs.size())
-            decoded_sentences_sorted = [[self.dataset.index2word[w.item()] for w in tensor_sentence]
-                                        for tensor_sentence in decoder_outputs]
-            # print(decoded_sentences_sorted)
-            decoded_words = [decoded_sentences_sorted[i] for i in input_lengths_np_order_order]
-            self.encoder.train()
-            self.decoder.train()
+                decoder_outputs[:, i:i + self.config['span_size']] = topi.squeeze(2)
+
+            decoded_words = [[self.dataloader.dataset.index2word[w.item()] for w in tensor_sentence]
+                                 for tensor_sentence in decoder_outputs]
             return decoded_words
 
 
@@ -182,18 +161,12 @@ class Evaluator(object):
         #     print('<', output_sentence)
         #     print('')
 
-    def evaluate(self, dataset_split='valid'):
-        pairs = self.dataset.pairs[dataset_split]
-        # sources = [pair[0] for pair in pairs]
+    def evaluate(self):
+        batches = self.dataloader
         start = time.time()
         preds = []
-        for step in range(int((len(pairs)-1)/self.config['minibatch_size'])+1):
-
-            # testing_pairs_str = [pair for pair in pairs[step * self.config['minibatch_size']:
-            #                                              (step + 1) * self.config['minibatch_size']]]
-            # testing_pairs = [self.dataset.tensors_from_pair(pair) for pair in testing_pairs_str]
-            sources = [pair[0] for pair in pairs[step * self.config['minibatch_size']:(step + 1) * self.config['minibatch_size']]]
-            pred = self.translate_batch(sources)
+        for i, batch in enumerate(batches, 1):
+            pred = self.translate_batch3(batch['inputs'], batch['input_lens'])
             preds.extend(pred)
-        print("Evaluation time for {} sentences is {}".format(len(pairs), time.time() - start))
+        print("Evaluation time for {} sentences is {}".format(len(self.dataloader.dataset.pairs), time.time() - start))
         return preds
