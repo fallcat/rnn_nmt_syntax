@@ -152,15 +152,6 @@ class Evaluator(object):
             print('<', output_sentence)
             print('')
 
-        # for i in range(self.config['num_evaluate']):
-        #     pair = random.choice(self.dataset.pairs[dataset_split])
-        #     print('>', pair[0])
-        #     print('=', pair[1])
-        #     output_words, attentions = self.translate(pair[0])
-        #     output_sentence = ' '.join(output_words)
-        #     print('<', output_sentence)
-        #     print('')
-
     def evaluate(self):
         batches = self.dataloader
         start = time.time()
