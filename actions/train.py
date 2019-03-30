@@ -135,6 +135,7 @@ class Trainer(object):
                 if loss != -1:
                     if self.experiment is not None:
                         self.experiment.log_metric("loss", loss)
+                        self.experiment.log_metric("learning_rate", self.encoder_optimizer.param_groups['lr'])
                     self.save_checkpoint({
                         'epoch': epoch,
                         'step': i,

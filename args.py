@@ -98,6 +98,7 @@ def add_data_args(parser):
 
     return group
 
+
 def add_cuda_args(parser):
     group = parser.add_argument_group('CUDA')
 
