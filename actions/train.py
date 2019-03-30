@@ -42,6 +42,7 @@ class Trainer(object):
         if 'cuda' in DEVICE.type:
             self.encoder = nn.DataParallel(self.encoder)
             self.decoder = nn.DataParallel(self.decoder)
+            self.criterion.should_unsqueeze = True
             self.criterion = nn.DataParallel(self.criterion)
 
     def train_batch(self, training_pairs):
