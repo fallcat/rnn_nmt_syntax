@@ -1,9 +1,4 @@
-import torch
 from data.text import TextDataset
-import torch.utils.data as Data
-# from model import EOS_token, DEVICE, UNK_token
-from model import EOS_token, DEVICE, UNK_token
-
 
 
 class IWSLTDataset(TextDataset):
