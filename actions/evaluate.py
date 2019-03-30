@@ -76,8 +76,7 @@ class Evaluator(object):
             decoder_hidden = encoder_hidden
             decoder_input = torch.tensor([SOS_token] * self.config['span_size'] * batch_size, device=DEVICE).view(
                 batch_size, -1)
-            decoder_outputs = torch.zeros((batch_size, span_seq_len * self.config['span_size'],
-                                           self.dataloader.dataset.num_words), dtype=torch.float, device=DEVICE)
+            decoder_outputs = torch.zeros((batch_size, self.config['max_length']), dtype=torch.long, device=DEVICE)
             for i in range(span_seq_len):
                 decoder_output, decoder_hidden, decoder_attn = self.decoder(decoder_input,
                                                                             decoder_hidden, encoder_outputs)
