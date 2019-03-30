@@ -5,7 +5,8 @@ Main entrance of the program
 
 from comet_ml import Experiment
 import torch
-from model.utils import get_cl_args, save_predictions, get_random_seed_fn
+from model.utils import save_predictions, get_random_seed_fn
+from args import get_cl_args
 from data.utils import get_dataloader
 from data.wmt import WMTDataset
 from data.iwslt import IWSLTDataset
@@ -27,16 +28,16 @@ def main():
     config = {
         'max_length': args.max_length,
         'span_size': args.span_size,
-        'teacher_forcing_ratio': args.teacher_forcing_ratio,
+        # 'teacher_forcing_ratio': args.teacher_forcing_ratio,
         'learning_rate': args.learning_rate,
         'weight_decay': args.weight_decay,
-        'num_iters': args.num_iters,
+        # 'num_iters': args.num_iters,
         'print_every': args.print_every,
-        'plot_every': args.plot_every,
+        # 'plot_every': args.plot_every,
         'save_path': args.save,
         'restore_path': args.restore,
         'best_save_path': args.best_model,
-        'plot_path': args.plot,
+        # 'plot_path': args.plot,
         'minibatch_size': args.minibatch_size,
         'num_epochs': args.num_epochs,
         'num_evaluate': args.num_evaluate,
@@ -74,7 +75,7 @@ def main():
                                               span_size=args.span_size).to(DEVICE)
     models = {'encoder': encoder1, 'decoder': attn_decoder1}
 
-    if args.do_experiment:
+    if args.track:
         experiment = Experiment(project_name="rnn-nmt-syntax",
                                 workspace="umass-nlp",
                                 auto_metric_logging=False,
