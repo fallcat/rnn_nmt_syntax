@@ -124,7 +124,7 @@ class Trainer(object):
         batches = self.dataloader
 
         # with tqdm_wrap_stdout():
-        for i, batch in enumerate(batches[self.step + 1:], self.step + 1):
+        for i, batch in enumerate(batches, 1):
             self.step = i
             if self.experiment is not None:
                 self.experiment.set_step(i)
