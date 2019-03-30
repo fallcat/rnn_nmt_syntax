@@ -164,6 +164,7 @@ class Trainer(object):
 
 
         # Run words through encoder
+        print("start encoding")
         encoder_outputs, encoder_hidden = self.encoder(batch['inputs'].to(device=DEVICE), batch['input_lens'])
         # encoder_outputs2 = torch.zeros((batch_size, self.config['max_length'], self.config['hidden_size']),
         #                                dtype=torch.float, device=DEVICE)
@@ -172,6 +173,7 @@ class Trainer(object):
         # print("encoder_outputs2", encoder_outputs2.size())
         # print("encoder_hidden", encoder_hidden.size())
         # span_seq_len = int(self.config['max_length']/self.config['span_size'])
+        print("finished encoding")
 
         targets2 = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size']),  dtype=torch.long, device=DEVICE)
         targets2[:, :batch['targets'].size()[1]] = batch['targets']
@@ -180,6 +182,7 @@ class Trainer(object):
                                        self.dataset.num_words), dtype=torch.float, device=DEVICE)
         # print("decoder_outputs.get_device()", decoder_outputs.get_device())
         for i in range(batch['span_seq_len']):
+            print("decoding at ", i)
             decoder_output, decoder_hidden, decoder_attn = self.decoder(targets2[:, i:i+self.config['span_size']],
                                                                         decoder_hidden, encoder_outputs)
             decoder_outputs[:, i:i+self.config['span_size']] = decoder_output
