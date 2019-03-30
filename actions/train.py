@@ -205,10 +205,13 @@ class Trainer(object):
                 self.step = checkpoint['step']
                 self.encoder.load_state_dict(checkpoint['encoder_state'])
                 self.decoder.load_state_dict(checkpoint['decoder_state'])
-                self.encoder_optimizer.load_state_dict(checkpoint['encoder_optimizer'])
-                self.decoder_optimizer.load_state_dict(checkpoint['decoder_optimizer'])
-                self.encoder_lr_scheduler.load_state_dict(checkpoint['encoder_lr_scheduler'])
-                self.decoder_lr_scheduler.load_state_dict(checkpoint['decoder_lr_scheduler'])
+                try:
+                    self.encoder_optimizer.load_state_dict(checkpoint['encoder_optimizer'])
+                    self.decoder_optimizer.load_state_dict(checkpoint['decoder_optimizer'])
+                    self.encoder_lr_scheduler.load_state_dict(checkpoint['encoder_lr_scheduler'])
+                    self.decoder_lr_scheduler.load_state_dict(checkpoint['decoder_lr_scheduler'])
+                except:
+                    print("exception when loading state dict to optimizer and lr scheduler")
                 print("=> loaded checkpoint '{}' (epoch {}, step {})".format(restore_path, checkpoint['epoch'], checkpoint['step']))
             else:
                 print("=> no checkpoint found at '{}'".format(restore_path))
