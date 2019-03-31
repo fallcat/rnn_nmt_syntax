@@ -58,7 +58,14 @@ class Trainer(object):
         total_length = sum(batch['input_lens']).item() + sum(batch['target_lens']).item()
 
         # Run words through encoder
-        encoder_outputs, encoder_hidden = self.encoder(batch['inputs'].to(device=DEVICE), batch['input_lens'], batch['inputs'].size()[1])
+        try:
+            encoder_outputs, encoder_hidden = self.encoder(batch['inputs'].to(device=DEVICE), batch['input_lens'], batch['inputs'].size()[1])
+        except Exception as ex:
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print(message)
+            print("Batch size:", batch['inputs'].size()[0])
+            print("Total length:", batch['inputs'.size()[1]])
 
         targets2 = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size']),  dtype=torch.long, device=DEVICE)
         targets2[:, :batch['targets'].size()[1]] = batch['targets']
@@ -173,28 +180,28 @@ class Trainer(object):
             for epoch in range(self.epoch + 1, self.config['num_epochs']):
                 self.train_epoch(epoch, train_size)
 
-    def train_and_evaluate(self, train_size=None):
-
-        if self.step > -1:
-            for epoch in range(self.epoch, self.config['num_epochs']):
-                self.train_epoch(epoch, train_size)
-                if (epoch + 1) % self.config['evaluate_every']  == 0:
-                    models = {
-                        'encoder': self.encoder,
-                        'decoder': self.decoder
-                    }
-                    evaluator = Evaluator(config=self.config, models=models, experiment=self.experiment)
-                    evaluator.evaluate_randomly(dataset_split='train', evaluate_size=train_size)
-        else:
-            for epoch in range(self.epoch + 1, self.config['num_epochs']):
-                self.train_epoch(epoch, train_size)
-                if (epoch + 1) % self.config['evaluate_every'] == 0:
-                    models = {
-                        'encoder': self.encoder,
-                        'decoder': self.decoder
-                    }
-                    evaluator = Evaluator(config=self.config, models=models,  experiment=self.experiment)
-                    evaluator.evaluate_randomly(dataset_split='train', evaluate_size=train_size)
+    # def train_and_evaluate(self, train_size=None):
+    #
+    #     if self.step > -1:
+    #         for epoch in range(self.epoch, self.config['num_epochs']):
+    #             self.train_epoch(epoch, train_size)
+    #             if (epoch + 1) % self.config['evaluate_every']  == 0:
+    #                 models = {
+    #                     'encoder': self.encoder,
+    #                     'decoder': self.decoder
+    #                 }
+    #                 evaluator = Evaluator(config=self.config, models=models, experiment=self.experiment)
+    #                 evaluator.evaluate_randomly(dataset_split='train', evaluate_size=train_size)
+    #     else:
+    #         for epoch in range(self.epoch + 1, self.config['num_epochs']):
+    #             self.train_epoch(epoch, train_size)
+    #             if (epoch + 1) % self.config['evaluate_every'] == 0:
+    #                 models = {
+    #                     'encoder': self.encoder,
+    #                     'decoder': self.decoder
+    #                 }
+    #                 evaluator = Evaluator(config=self.config, models=models,  experiment=self.experiment)
+    #                 evaluator.evaluate_randomly(dataset_split='train', evaluate_size=train_size)
 
     def restore_checkpoint(self, restore_path):
         if restore_path is not None:
