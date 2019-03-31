@@ -23,7 +23,7 @@ def get_dataloader(dataset, config, split, worker_init_fn=None, pin_memory=True,
         batch_sampler = BatchSampler(
             sampler_fn(dataset),
             config['minibatch_size'],
-            False
+            True
     )
     else:
         raise ValueError('Unknown batch method!')
@@ -34,6 +34,5 @@ def get_dataloader(dataset, config, split, worker_init_fn=None, pin_memory=True,
         collate_fn=partial(dataset.collate, sort=True),
         num_workers=1,
         pin_memory=pin_memory,
-        worker_init_fn=worker_init_fn,
-        drop_last=True
+        worker_init_fn=worker_init_fn
     )
