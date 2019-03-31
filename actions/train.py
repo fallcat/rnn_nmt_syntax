@@ -58,49 +58,49 @@ class Trainer(object):
         total_length = sum(batch['input_lens']).item() + sum(batch['target_lens']).item()
 
         # Run words through encoder
-        # try:
-        print("Batch size:", batch['inputs'].size()[0])
-        print("Total length:", batch['inputs'].size()[1])
-        encoder_outputs, encoder_hidden = self.encoder(batch['inputs'].to(device=DEVICE), batch['input_lens'], batch['inputs'].size()[1])
-        # except Exception as ex:
-        #     template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-        #     message = template.format(type(ex).__name__, ex.args)
-        #     print(message)
-        #     print("Batch size:", batch['inputs'].size()[0])
-        #     print("Total length:", batch['inputs'].size()[1])
-        #     print(batch['inputs'])
+        try:
+            # print("Batch size:", batch['inputs'].size()[0])
+            # print("Total length:", batch['inputs'].size()[1])
+            encoder_outputs, encoder_hidden = self.encoder(batch['inputs'].to(device=DEVICE), batch['input_lens'], batch['inputs'].size()[1])
+            # except Exception as ex:
+            #     template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            #     message = template.format(type(ex).__name__, ex.args)
+            #     print(message)
+            #     print("Batch size:", batch['inputs'].size()[0])
+            #     print("Total length:", batch['inputs'].size()[1])
+            #     print(batch['inputs'])
 
-        targets2 = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size']),  dtype=torch.long, device=DEVICE)
-        targets2[:, :batch['targets'].size()[1]] = batch['targets']
-        decoder_hidden = encoder_hidden
-        decoder_outputs = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size'],
-                                       self.dataset.num_words), dtype=torch.float, device=DEVICE)
-        # print("decoder_outputs.get_device()", decoder_outputs.get_device())
-        for i in range(batch['span_seq_len']):
-            # print("decoding at ", i)
-            decoder_output, decoder_hidden, decoder_attn = self.decoder(targets2[:, i:i+self.config['span_size']],
-                                                                        decoder_hidden, encoder_outputs)
-            decoder_outputs[:, i:i+self.config['span_size']] = decoder_output
+            targets2 = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size']),  dtype=torch.long, device=DEVICE)
+            targets2[:, :batch['targets'].size()[1]] = batch['targets']
+            decoder_hidden = encoder_hidden
+            decoder_outputs = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size'],
+                                           self.dataset.num_words), dtype=torch.float, device=DEVICE)
+            # print("decoder_outputs.get_device()", decoder_outputs.get_device())
+            for i in range(batch['span_seq_len']):
+                # print("decoding at ", i)
+                decoder_output, decoder_hidden, decoder_attn = self.decoder(targets2[:, i:i+self.config['span_size']],
+                                                                            decoder_hidden, encoder_outputs)
+                decoder_outputs[:, i:i+self.config['span_size']] = decoder_output
 
-        loss = self.criterion(decoder_outputs[:, :-self.config['span_size']].contiguous().view(-1, self.dataset.num_words),
-                               targets2[:, self.config['span_size']:].contiguous().view(-1))
+            loss = self.criterion(decoder_outputs[:, :-self.config['span_size']].contiguous().view(-1, self.dataset.num_words),
+                                   targets2[:, self.config['span_size']:].contiguous().view(-1))
 
-        # try:
-        loss = loss.sum()
-        loss.backward()
-        self.encoder_lr_scheduler.step()
-        self.decoder_lr_scheduler.step()
-        self.encoder_optimizer.step()
-        self.decoder_optimizer.step()
-        return loss.item() / total_length
-        # except RuntimeError as rte:
-        #     if 'out of memory' in str(rte):
-        #         torch.cuda.empty_cache()
-        #     else:
-        #         template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-        #         message = template.format(type(rte).__name__, rte.args)
-        #         print(message)
-        #         return -1
+            # try:
+            loss = loss.sum()
+            loss.backward()
+            self.encoder_lr_scheduler.step()
+            self.decoder_lr_scheduler.step()
+            self.encoder_optimizer.step()
+            self.decoder_optimizer.step()
+            return loss.item() / total_length
+        except RuntimeError as rte:
+            if 'out of memory' in str(rte):
+                torch.cuda.empty_cache()
+            else:
+                template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+                message = template.format(type(rte).__name__, rte.args)
+                print(message)
+                return -1
 
     def train_epoch(self, epoch, train_size=None):
         print("===== epoch " + str(epoch) + " =====")
@@ -116,13 +116,13 @@ class Trainer(object):
             pairs = self.dataset.pairs
         random.shuffle(pairs)
 
-        def get_description():
-            description = f'Train #{epoch}'
-            # if verbose > 0:
-            #     description += f' {self.metric_store}'
-            # if verbose > 1:
-            #     description += f' [{profile.mem_stat_string(["allocated"])}]'
-            return description
+        # def get_description():
+        #     description = f'Train #{epoch}'
+        #     # if verbose > 0:
+        #     #     description += f' {self.metric_store}'
+        #     # if verbose > 1:
+        #     #     description += f' [{profile.mem_stat_string(["allocated"])}]'
+        #     return description
 
         # batches = tqdm.tqdm(
         #     self.dataloader,
