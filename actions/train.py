@@ -58,15 +58,17 @@ class Trainer(object):
         total_length = sum(batch['input_lens']).item() + sum(batch['target_lens']).item()
 
         # Run words through encoder
-        try:
-            encoder_outputs, encoder_hidden = self.encoder(batch['inputs'].to(device=DEVICE), batch['input_lens'], batch['inputs'].size()[1])
-        except Exception as ex:
-            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            print(message)
-            print("Batch size:", batch['inputs'].size()[0])
-            print("Total length:", batch['inputs'].size()[1])
-            print(batch['inputs'])
+        # try:
+        print("Batch size:", batch['inputs'].size()[0])
+        print("Total length:", batch['inputs'].size()[1])
+        encoder_outputs, encoder_hidden = self.encoder(batch['inputs'].to(device=DEVICE), batch['input_lens'], batch['inputs'].size()[1])
+        # except Exception as ex:
+        #     template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+        #     message = template.format(type(ex).__name__, ex.args)
+        #     print(message)
+        #     print("Batch size:", batch['inputs'].size()[0])
+        #     print("Total length:", batch['inputs'].size()[1])
+        #     print(batch['inputs'])
 
         targets2 = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size']),  dtype=torch.long, device=DEVICE)
         targets2[:, :batch['targets'].size()[1]] = batch['targets']
