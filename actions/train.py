@@ -138,36 +138,36 @@ class Trainer(object):
             self.step = i
             if self.experiment is not None:
                 self.experiment.set_step(i)
-            loss = self.train_batch3(batch)
-            # try:
-            #     loss = self.train_batch3(batch)
-            #     epoch_loss += loss
-            #
-            #     if loss != -1:
-            #         if self.experiment is not None:
-            #             self.experiment.log_metric("loss", loss)
-            #             self.experiment.log_metric("learning_rate", self.encoder_optimizer.param_groups['lr'])
-            #         self.save_checkpoint({
-            #             'epoch': epoch,
-            #             'step': i,
-            #             'encoder_state': self.encoder.state_dict(),
-            #             'decoder_state': self.decoder.state_dict(),
-            #             'encoder_optimizer': self.encoder_optimizer.state_dict(),
-            #             'decoder_optimizer': self.decoder_optimizer.state_dict(),
-            #             'encoder_lr_scheduler': self.encoder_lr_scheduler.state_dict(),
-            #             'decoder_lr_scheduler': self.decoder_lr_scheduler.state_dict()
-            #         })
-            #
-            # except RuntimeError as rte:
-            #     if 'out of memory' in str(rte):
-            #         torch.cuda.empty_cache()
-            #         oom += 1
-            #         self.experiment.log_metric('oom', oom)
-            #     else:
-            #         template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-            #         message = template.format(type(rte).__name__, rte.args)
-            #         print(message)
-            #         return -1
+            # loss = self.train_batch3(batch)
+            try:
+                loss = self.train_batch3(batch)
+                epoch_loss += loss
+
+                if loss != -1:
+                    if self.experiment is not None:
+                        self.experiment.log_metric("loss", loss)
+                        self.experiment.log_metric("learning_rate", self.encoder_optimizer.param_groups['lr'])
+                    self.save_checkpoint({
+                        'epoch': epoch,
+                        'step': i,
+                        'encoder_state': self.encoder.state_dict(),
+                        'decoder_state': self.decoder.state_dict(),
+                        'encoder_optimizer': self.encoder_optimizer.state_dict(),
+                        'decoder_optimizer': self.decoder_optimizer.state_dict(),
+                        'encoder_lr_scheduler': self.encoder_lr_scheduler.state_dict(),
+                        'decoder_lr_scheduler': self.decoder_lr_scheduler.state_dict()
+                    })
+
+            except RuntimeError as rte:
+                if 'out of memory' in str(rte):
+                    torch.cuda.empty_cache()
+                    oom += 1
+                    self.experiment.log_metric('oom', oom)
+                else:
+                    template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+                    message = template.format(type(rte).__name__, rte.args)
+                    print(message)
+                    return -1
 
         print('%s (%d %d%%) %.10f' % (
             time_since(start, (epoch + 1) / self.config['num_epochs']),
