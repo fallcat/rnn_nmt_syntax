@@ -85,22 +85,22 @@ class Trainer(object):
         loss = self.criterion(decoder_outputs[:, :-self.config['span_size']].contiguous().view(-1, self.dataset.num_words),
                                targets2[:, self.config['span_size']:].contiguous().view(-1))
 
-        try:
-            loss = loss.sum()
-            loss.backward()
-            self.encoder_lr_scheduler.step()
-            self.decoder_lr_scheduler.step()
-            self.encoder_optimizer.step()
-            self.decoder_optimizer.step()
-            return loss.item() / total_length
-        except RuntimeError as rte:
-            if 'out of memory' in str(rte):
-                torch.cuda.empty_cache()
-            else:
-                template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-                message = template.format(type(rte).__name__, rte.args)
-                print(message)
-                return -1
+        # try:
+        loss = loss.sum()
+        loss.backward()
+        self.encoder_lr_scheduler.step()
+        self.decoder_lr_scheduler.step()
+        self.encoder_optimizer.step()
+        self.decoder_optimizer.step()
+        return loss.item() / total_length
+        # except RuntimeError as rte:
+        #     if 'out of memory' in str(rte):
+        #         torch.cuda.empty_cache()
+        #     else:
+        #         template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+        #         message = template.format(type(rte).__name__, rte.args)
+        #         print(message)
+        #         return -1
 
     def train_epoch(self, epoch, train_size=None):
         print("===== epoch " + str(epoch) + " =====")
