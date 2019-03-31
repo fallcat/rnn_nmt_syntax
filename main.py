@@ -47,8 +47,12 @@ def main():
         'shuffle': args.shuffle,
         'batch_size_buffer': args.batch_size_buffer,
         'batch_method': args.batch_method,
-        'lr_decay': args.lr_decay
+        'lr_decay': args.lr_decay,
+        'experiment_path': args.experiment_path,
+        'save_every': args.save_every
     }
+
+    # config dataloader
 
     datasets = {"WMT": WMTDataset, "IWSLT": IWSLTDataset}
     dataset = datasets[args.dataset]
@@ -65,6 +69,9 @@ def main():
         dataset, config, "train", args.seed_fn, pin_memory,
         NUM_DEVICES, shuffle=args.shuffle
     )
+
+    # define the models
+
     encoder1 = BatchEncoderRNN(dataloader_train.dataset.num_words, args.hidden_size, num_layers=args.num_layers).to(DEVICE)
     attn_decoder1 = BatchAttnKspanDecoderRNN3(args.hidden_size, dataloader_train.dataset.num_words, num_layers=args.num_layers,
                                               dropout_p=args.dropout, max_length=args.max_length,
@@ -88,18 +95,19 @@ def main():
     else:
         experiment = None
 
-    trainer = Trainer(config=config, models=models, dataloader=dataloader_train, experiment=experiment)
-    if args.restore is not None:
-        trainer.restore_checkpoint(args.restore)
     if args.mode == "train":
+        trainer = Trainer(config=config, models=models, dataloader=dataloader_train, experiment=experiment)
+        if args.restore is not None:
+            trainer.restore_checkpoint(args.experiment_path + args.restore)
         trainer.train(args.train_size)
     elif args.mode == "evaluate":
         dataloader_valid = get_dataloader(
             dataset, config, "valid", args.seed_fn, pin_memory,
             NUM_DEVICES, shuffle=args.shuffle
         )
-        models = {'encoder': trainer.encoder, 'decoder': trainer.decoder}
         evaluator = Evaluator(config=config, models=models, dataloader=dataloader_valid, experiment=experiment)
+        if args.restore is not None:
+            evaluator.restore_checkpoint(args.experiment_path + args.restore)
         preds = evaluator.evaluate()
         save_predictions(preds, args.evaluate_path)
 

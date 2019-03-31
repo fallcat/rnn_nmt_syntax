@@ -132,6 +132,7 @@ class Trainer(object):
         #     file=sys.stdout  # needed to make tqdm_wrap_stdout work
         # )
         batches = self.dataloader
+        len_batches = len(batches)
 
         # with tqdm_wrap_stdout():
         for i, batch in enumerate(batches, 1):
@@ -143,7 +144,7 @@ class Trainer(object):
                 loss = self.train_batch3(batch)
                 epoch_loss += loss
 
-                if loss != -1:
+                if i % self.config['save_every'] == 0 or i == len_batches:
                     if self.experiment is not None:
                         self.experiment.log_metric("loss", loss)
                         self.experiment.log_metric("learning_rate", self.encoder_optimizer.param_groups['lr'])
@@ -228,6 +229,6 @@ class Trainer(object):
                 print("=> no checkpoint found at '{}'".format(restore_path))
 
     def save_checkpoint(self, state):
-        torch.save(state, self.config['save_path'])
+        torch.save(state, self.config['experiment_path'] + self.config['save_path'])
         # if is_best:
         #     shutil.copyfile(self.config['save_path'], self.config['best_save_path'])

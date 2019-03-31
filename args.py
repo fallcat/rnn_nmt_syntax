@@ -57,7 +57,7 @@ def add_train_args(parser):
 def add_evaluate_args(parser):
     group = parser.add_argument_group('Evaluate')
 
-    group.add_argument('--evaluate-path', action='store', type=str, default="experiments/exptest/translated.txt",
+    group.add_argument('--evaluate-path', action='store', type=str, default="translated.txt",
                             help='Specify a path to store the evaluated sentences')
 
     return group
@@ -118,13 +118,19 @@ def get_cl_args():
     """Get the command line arguments using argparse."""
     arg_parser = argparse.ArgumentParser(prog="RNN-NMT-Syntax", description='Train machine translation model with RNN + Syntax')
 
-    arg_parser.add_argument('-s', '--save', action='store', default='experiments/exp02/checkpoint.pth.tar',
+    arg_parser.add_argument('--experiment-path', action='store', type=str, default='experiments/exptest/',
+                            help='Specify the path to store the experiment')
+
+    arg_parser.add_argument('-s', '--save', action='store', type=str, default='checkpoint.pth.tar',
                             help='Specify the path of checkpoint to save the stored model')
 
-    arg_parser.add_argument('-b', '--best-model', action='store', default='experiments/exp02/model_best.pth.tar',
+    arg_parser.add_argument('--save-every', action='store', type=int, default=10,
+                            help='Save every x steps')
+
+    arg_parser.add_argument('-b', '--best-model', action='store', type=str, default='model_best.pth.tar',
                             help='Specify the path of checkpoint to save the best stored model')
 
-    arg_parser.add_argument('-r', '--restore', action='store', default=None,
+    arg_parser.add_argument('-r', '--restore', action='store', type=str, default=None,
                             help='Specify the path of checkpoint to load the stored model')
 
     arg_parser.add_argument('--track', action='store_true',

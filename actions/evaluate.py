@@ -1,3 +1,4 @@
+import os
 import torch
 import random
 import time
@@ -66,6 +67,9 @@ class Evaluator(object):
 
     def translate_batch3(self, batch_inputs, batch_input_lens):
         with torch.no_grad():
+            self.encoder.eval()
+            self.decoder.eval()
+
             batch_size = len(batch_inputs)
 
             encoder_outputs, encoder_hidden = self.encoder(batch_inputs.to(device=DEVICE), batch_input_lens,
@@ -160,3 +164,14 @@ class Evaluator(object):
             preds.extend(pred)
         print("Evaluation time for {} sentences is {}".format(len(self.dataloader.dataset.pairs), time.time() - start))
         return preds
+
+    def restore_checkpoint(self, restore_path):
+        if restore_path is not None:
+            if os.path.isfile(restore_path):
+                print("=> loading checkpoint '{}'".format(restore_path))
+                checkpoint = torch.load(restore_path)
+                self.encoder.load_state_dict(checkpoint['encoder_state'])
+                self.decoder.load_state_dict(checkpoint['decoder_state'])
+                print("=> loaded checkpoint '{}' (epoch {}, step {})".format(restore_path, checkpoint['epoch'], checkpoint['step']))
+            else:
+                print("=> no checkpoint found at '{}'".format(restore_path))
