@@ -66,6 +66,7 @@ class Trainer(object):
             print(message)
             print("Batch size:", batch['inputs'].size()[0])
             print("Total length:", batch['inputs'].size()[1])
+            print(batch['inputs'])
 
         targets2 = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size']),  dtype=torch.long, device=DEVICE)
         targets2[:, :batch['targets'].size()[1]] = batch['targets']
