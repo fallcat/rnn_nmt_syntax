@@ -73,7 +73,7 @@ class Evaluator(object):
             beams = self.beam_search_decoder.initialize_search(
                 [[self.sos_idx] * self.config['span_size'] for _ in range(len(batch_inputs))],
                 [l + self.config['max_length'] + self.config['span_size'] + 1 for l in length_basis],
-                beam_width=self.config.beam_width
+                beam_width=self.config['beam_width']
             )
 
             return self.beam_search_decoder.decode(encoder_outputs, encoder_hidden, beams)
