@@ -168,6 +168,7 @@ class BeamSearchDecoder(object):
                         # full_logits = self.model(encoded_batch, batch)
                         print("encoder output size", encoded_batch[0].size())
                         print("decoder hidden size", encoded_batch[1].transpose(0, 1).size())
+                        print("decoder input size", batch.to(device=DEVICE).size())
                         full_logits, decoder_hidden, decoder_attn = self.model(batch.to(device=DEVICE),
                                                                                encoded_batch[1].transpose(0, 1),
                                                                                encoded_batch[0])
