@@ -166,8 +166,11 @@ class BeamSearchDecoder(object):
                     try:
                         encoded_batch, batch = chunks.pop()
                         # full_logits = self.model(encoded_batch, batch)
-
-                        full_logits, decoder_hidden, decoder_attn = self.model(batch.to(device=DEVICE), encoded_batch[1].transpose(0, 1), encoded_batch[0])
+                        print("encoder output size", encoded_batch[0].size())
+                        print("decoder hidden size", encoded_batch[1].transpose(0, 1).size())
+                        full_logits, decoder_hidden, decoder_attn = self.model(batch.to(device=DEVICE),
+                                                                               encoded_batch[1].transpose(0, 1),
+                                                                               encoded_batch[0])
 
                         # We only care about the logits for the most recently computed token, since
                         # we keep track of the total log probability of each hypothesis in a beam.
