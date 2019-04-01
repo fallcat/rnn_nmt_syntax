@@ -136,7 +136,7 @@ class BeamSearchDecoder(object):
                 # numpy searchsorted is a faster version of python's bisect.bisect[_left|_right]
                 # that returns insertion points for multiple values
                 new_hypotheses = []
-                hypotheses_indices = np.searchsorted(hypotheses_partition.cpu(), indices, side='right')
+                hypotheses_indices = np.searchsorted(hypotheses_partition, indices.cpu(), side='right')
                 for idx, hypothesis_idx in enumerate(hypotheses_indices):
                     best_idx = indices[idx]
                     new_score = hypotheses_scores[best_idx]
