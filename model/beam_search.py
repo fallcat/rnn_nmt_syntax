@@ -165,7 +165,7 @@ class BeamSearchDecoder(object):
                 while chunks:
                     try:
                         encoded_batch, batch = chunks.pop()
-                        full_logits = self.model(encoded_batch, batch)
+                        # full_logits = self.model(encoded_batch, batch)
 
                         full_logits, decoder_hidden, decoder_attn = self.model(batch, encoded_batch[1].transpose(0, 1), encoded_batch[0])
 
