@@ -1,5 +1,6 @@
 import os
 import torch
+from torch import nn
 import random
 import time
 import numpy as np
@@ -14,6 +15,8 @@ class Evaluator(object):
         self.config = config
         self.encoder = models['encoder']
         self.decoder = models['decoder']
+        self.encoder = nn.DataParallel(self.encoder)
+        self.decoder = nn.DataParallel(self.decoder)
         self.encoder.eval()
         self.decoder.eval()
         self.dataloader = dataloader
