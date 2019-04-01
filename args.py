@@ -60,6 +60,20 @@ def add_evaluate_args(parser):
     group.add_argument('--evaluate-path', action='store', type=str, default="translated.txt",
                             help='Specify a path to store the evaluated sentences')
 
+    group.add_argument(
+        '--length-penalty',
+        type=float,
+        default=0.6,
+        help='Divides the hypothesis log probabilities in beam search by length^<length penalty>.'
+    )
+
+    group.add_argument(
+        '--beam-width',
+        default=4,
+        type=int,
+        help='Default beam width for beam search decoder.'
+    )
+
     return group
 
 
@@ -94,6 +108,15 @@ def add_data_args(parser):
         type=int,
         default=0,
         help='By how many tokens to reduce the batch size on the GPU of the optimizer'
+    )
+
+    group.add_argument(
+        '--drop-last',
+        action='store',
+        type=bool,
+        default=True,
+        help='Whether or not to drop the last minibatch. If it is training, and using multiple GPU, then drop.'
+             'If it is evaluating, and using one GPU, then do not drop.'
     )
 
     return group

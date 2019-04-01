@@ -152,13 +152,13 @@ class BeamSearchDecoder(object):
 
                 beam.hypotheses = new_hypotheses
 
-    def decode(self, encoded, beams):
+    def decode(self, encoded, hidden, beams):
         ''' Decodes the given inputs '''
         self.model.eval()
         with torch.no_grad():
-            encoded = utils.split_or_chunk(encoded, len(beams))
+            encoded_hidden_list = utils.split_or_chunk((encoded, hidden.transpose(0, 1)), len(beams))
             while not self.all_done(beams):
-                encoded_batch, batch, beam_map = self.collate(encoded, beams)
+                encoded_batch, batch, beam_map = self.collate(encoded_hidden_list, beams)
 
                 logits = []
                 chunks = [(encoded_batch, batch)]
@@ -167,9 +167,11 @@ class BeamSearchDecoder(object):
                         encoded_batch, batch = chunks.pop()
                         full_logits = self.model(encoded_batch, batch)
 
+                        full_logits, decoder_hidden, decoder_attn = self.model(batch, encoded_batch[1].transpose(0, 1), encoded_batch[0])
+
                         # We only care about the logits for the most recently computed token, since
                         # we keep track of the total log probability of each hypothesis in a beam.
-                        logits.append(full_logits[:, :, -self.span:])
+                        logits.append(full_logits.transpose(1, 2))
                     except RuntimeError as rte:
                         if 'out of memory' in str(rte):
                             # This is the EAFP (easier to ask forgiveness than permission) approach
@@ -189,7 +191,7 @@ class BeamSearchDecoder(object):
                         else:
                             raise rte
 
-                log_prob = torch.cat(logits).log_softmax(1)
+                log_prob = torch.cat(logits)
                 self.update_beams(log_prob, beam_map)
 
             return beams

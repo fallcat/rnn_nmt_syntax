@@ -49,7 +49,10 @@ def main():
         'batch_method': args.batch_method,
         'lr_decay': args.lr_decay,
         'experiment_path': args.experiment_path,
-        'save_every': args.save_every
+        'save_every': args.save_every,
+        'length_penalty': args.length_penalty,
+        'drop_last': args.drop_last,
+        'beam_width': args.beam_width
     }
 
     # config dataloader
@@ -108,7 +111,7 @@ def main():
         evaluator = Evaluator(config=config, models=models, dataloader=dataloader_valid, experiment=experiment)
         if args.restore is not None:
             evaluator.restore_checkpoint(args.experiment_path + args.restore)
-        preds = evaluator.evaluate()
+        preds = evaluator.evaluate_beam()
         save_predictions(preds, args.evaluate_path)
 
 
