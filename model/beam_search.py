@@ -4,7 +4,7 @@ A module that implements beam search
 import numpy as np
 import torch
 
-from model import utils
+from model import utils, DEVICE
 
 class BeamHypothesis(object):
     ''' A class that represents a particular hypothesis in a beam '''
@@ -167,7 +167,7 @@ class BeamSearchDecoder(object):
                         encoded_batch, batch = chunks.pop()
                         # full_logits = self.model(encoded_batch, batch)
 
-                        full_logits, decoder_hidden, decoder_attn = self.model(batch, encoded_batch[1].transpose(0, 1), encoded_batch[0])
+                        full_logits, decoder_hidden, decoder_attn = self.model(batch.to(device=DEVICE), encoded_batch[1].transpose(0, 1), encoded_batch[0])
 
                         # We only care about the logits for the most recently computed token, since
                         # we keep track of the total log probability of each hypothesis in a beam.
