@@ -34,9 +34,6 @@ def add_train_args(parser):
     group.add_argument('--num-evaluate', action='store', type=int, default=10,
                             help='Number of sentences to evaluate during training')
 
-    group.add_argument('--evaluate-every', action='store', type=int, default=10,
-                            help='Evaluate every x epochs')
-
     group.add_argument('--train-size', action='store', type=int, default=None,
                        help='Specify the size of data to train. If specify a small number,'
                             'can try to make the model converge before training on larger data.')
@@ -71,6 +68,12 @@ def add_evaluate_args(parser):
         '--beam-width',
         default=4,
         type=int,
+        help='Default beam width for beam search decoder.'
+    )
+
+    group.add_argument(
+        '--beam-search-all',
+        action='store_true',
         help='Default beam width for beam search decoder.'
     )
 
@@ -147,8 +150,11 @@ def get_cl_args():
     arg_parser.add_argument('-s', '--save', action='store', type=str, default='checkpoint.pth.tar',
                             help='Specify the path of checkpoint to save the stored model')
 
-    arg_parser.add_argument('--save-every', action='store', type=int, default=10,
-                            help='Save every x steps')
+    arg_parser.add_argument('--save-loss-every', action='store', type=int, default=10,
+                            help='Save loss every x steps')
+
+    arg_parser.add_argument('--save-checkpoint-every', action='store', type=int, default=50,
+                            help='Save checkpoint every x steps')
 
     arg_parser.add_argument('-b', '--best-model', action='store', type=str, default='model_best.pth.tar',
                             help='Specify the path of checkpoint to save the best stored model')

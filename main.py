@@ -38,7 +38,6 @@ def main():
         'num_epochs': args.num_epochs,
         'num_evaluate': args.num_evaluate,
         'hidden_size': args.hidden_size,
-        'evaluate_every': args.evaluate_every,
         'optimizer': args.optimizer,
         'dataset': args.dataset,
         'mode': args.mode,
@@ -49,10 +48,12 @@ def main():
         'batch_method': args.batch_method,
         'lr_decay': args.lr_decay,
         'experiment_path': args.experiment_path,
-        'save_every': args.save_every,
+        'save_loss_every': args.save_loss_every,
+        'save_checkpoint_every': args.save_checkpoint_every,
         'length_penalty': args.length_penalty,
         'drop_last': args.drop_last,
-        'beam_width': args.beam_width
+        'beam_width': args.beam_width,
+        'beam_search_all': args.beam_search_all
     }
 
     # config dataloader

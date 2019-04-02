@@ -134,6 +134,9 @@ class Trainer(object):
         batches = self.dataloader
         len_batches = len(batches)
 
+        accumulated_loss = 0
+        accumulated_loss_n = 0
+
         # with tqdm_wrap_stdout():
         for i, batch in enumerate(batches, 1):
             self.step = i
@@ -143,11 +146,15 @@ class Trainer(object):
             try:
                 loss = self.train_batch3(batch)
                 epoch_loss += loss
+                accumulated_loss += loss
+                accumulated_loss_n += 1
 
-                if i % self.config['save_every'] == 0 or i == len_batches:
-                    if self.experiment is not None:
-                        self.experiment.log_metric("loss", loss)
-                        self.experiment.log_metric("learning_rate", self.encoder_optimizer.param_groups['lr'])
+                if self.experiment is not None and (i % self.config['save_loss_every'] == 0 or i == len_batches):
+                    self.experiment.log_metric("loss", accumulated_loss/accumulated_loss_n)
+                    self.experiment.log_metric("learning_rate", self.encoder_optimizer.param_groups['lr'])
+                    accumulated_loss = 0
+                    accumulated_loss_n = 0
+                if i % self.config['save_checkpoint_every'] == 0 or i == len_batches:
                     self.save_checkpoint({
                         'epoch': epoch,
                         'step': i,
@@ -184,29 +191,6 @@ class Trainer(object):
         else:
             for epoch in range(self.epoch + 1, self.config['num_epochs']):
                 self.train_epoch(epoch, train_size)
-
-    # def train_and_evaluate(self, train_size=None):
-    #
-    #     if self.step > -1:
-    #         for epoch in range(self.epoch, self.config['num_epochs']):
-    #             self.train_epoch(epoch, train_size)
-    #             if (epoch + 1) % self.config['evaluate_every']  == 0:
-    #                 models = {
-    #                     'encoder': self.encoder,
-    #                     'decoder': self.decoder
-    #                 }
-    #                 evaluator = Evaluator(config=self.config, models=models, experiment=self.experiment)
-    #                 evaluator.evaluate_randomly(dataset_split='train', evaluate_size=train_size)
-    #     else:
-    #         for epoch in range(self.epoch + 1, self.config['num_epochs']):
-    #             self.train_epoch(epoch, train_size)
-    #             if (epoch + 1) % self.config['evaluate_every'] == 0:
-    #                 models = {
-    #                     'encoder': self.encoder,
-    #                     'decoder': self.decoder
-    #                 }
-    #                 evaluator = Evaluator(config=self.config, models=models,  experiment=self.experiment)
-    #                 evaluator.evaluate_randomly(dataset_split='train', evaluate_size=train_size)
 
     def restore_checkpoint(self, restore_path):
         if restore_path is not None:
