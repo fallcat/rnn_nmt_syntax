@@ -5,6 +5,7 @@ import random
 import time
 import tqdm
 import shutil
+import GPUtil
 from torch import nn, optim
 from torch.autograd import Variable
 from model import SOS_token, EOS_token, DEVICE
@@ -62,7 +63,10 @@ class Trainer(object):
         # print("Batch size:", batch['inputs'].size()[0])
         # print("Total length:", batch['inputs'].size()[1])
         # print("still fine here 0")
+        print("111")
+        GPUtil.showUtilization()
         encoder_outputs, encoder_hidden = self.encoder(batch['inputs'].to(device=DEVICE), batch['input_lens'], batch['inputs'].size()[1])
+        GPUtil.showUtilization()
         # except Exception as ex:
         #     template = "An exception of type {0} occurred. Arguments:\n{1!r}"
         #     message = template.format(type(ex).__name__, ex.args)
@@ -78,6 +82,8 @@ class Trainer(object):
                                        self.dataset.num_words), dtype=torch.float, device=DEVICE)
         # print("decoder_outputs.get_device()", decoder_outputs.get_device())
         for i in range(batch['span_seq_len']):
+            print("222", i)
+            GPUtil.showUtilization()
             # print("still fine here !", i)
             # print("decoding at ", i)
             decoder_output, decoder_hidden, decoder_attn = self.decoder(targets2[:, i:i+self.config['span_size']],
@@ -151,7 +157,9 @@ class Trainer(object):
             # loss = self.train_batch3(batch)
             # try:
             # start_step = time.time()
+            GPUtil.showUtilization()
             loss = self.train_batch3(batch)
+            GPUtil.showUtilization()
             total_length = sum(batch['input_lens']).item() + sum(batch['target_lens']).item()
             epoch_loss += loss
             accumulated_loss += loss * total_length
