@@ -150,6 +150,7 @@ class Trainer(object):
 
         # with tqdm_wrap_stdout():
         for i, batch in enumerate(batches, 1):
+            print("now in batch", i)
 
             self.step = i
             if self.experiment is not None:
