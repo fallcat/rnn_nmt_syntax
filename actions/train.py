@@ -115,6 +115,7 @@ class Trainer(object):
 
     def train_epoch(self, epoch, train_size=None):
         print("===== epoch " + str(epoch) + " =====")
+        print("hihihi")
         if self.experiment is not None:
             self.experiment.log_current_epoch(epoch)
         print("===== epoch " + str(epoch) + " =====")
