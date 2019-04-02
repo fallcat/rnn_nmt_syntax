@@ -41,7 +41,7 @@ def add_train_args(parser):
     group.add_argument('--minibatch-size', action='store', type=int, default=128,
                        help='Specify the size of minibatch')
 
-    group.add_argument('--optimizer', action='store', type=str, default="SGD",
+    group.add_argument('--optimizer', action='store', type=str, default="Adam",
                             choices=["SGD", "Adadelta", "Adagrad", "RMSprop", "Adam"],
                             help='Specify which optimizer to use')
 

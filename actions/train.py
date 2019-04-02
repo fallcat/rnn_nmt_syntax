@@ -139,11 +139,13 @@ class Trainer(object):
 
         # with tqdm_wrap_stdout():
         for i, batch in enumerate(batches, 1):
+
             self.step = i
             if self.experiment is not None:
                 self.experiment.set_step(i)
             # loss = self.train_batch3(batch)
             try:
+                start_step = time.time()
                 loss = self.train_batch3(batch)
                 epoch_loss += loss
                 accumulated_loss += loss
@@ -165,6 +167,7 @@ class Trainer(object):
                         'encoder_lr_scheduler': self.encoder_lr_scheduler.state_dict(),
                         'decoder_lr_scheduler': self.decoder_lr_scheduler.state_dict()
                     })
+                print("time for batch {} is {}".format(i, time.time()-start_step))
 
             except RuntimeError as rte:
                 if 'out of memory' in str(rte):
