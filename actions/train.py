@@ -149,43 +149,43 @@ class Trainer(object):
             if self.experiment is not None:
                 self.experiment.set_step(i)
             # loss = self.train_batch3(batch)
-            try:
-                # start_step = time.time()
-                loss = self.train_batch3(batch)
-                total_length = sum(batch['input_lens']).item() + sum(batch['target_lens']).item()
-                epoch_loss += loss
-                accumulated_loss += loss * total_length
-                accumulated_loss_n += total_length
+            # try:
+            # start_step = time.time()
+            loss = self.train_batch3(batch)
+            total_length = sum(batch['input_lens']).item() + sum(batch['target_lens']).item()
+            epoch_loss += loss
+            accumulated_loss += loss * total_length
+            accumulated_loss_n += total_length
 
-                if self.experiment is not None and (i % self.config['save_loss_every'] == 0 or i == len_batches):
-                    self.experiment.log_metric("loss", accumulated_loss/accumulated_loss_n)
-                    # self.experiment.log_metric("learning_rate", self.encoder_optimizer.param_groups['lr'])
-                    accumulated_loss = 0
-                    accumulated_loss_n = 0
-                if i % self.config['save_checkpoint_every'] == 0 or i == len_batches:
-                    self.save_checkpoint({
-                        'epoch': epoch,
-                        'step': i,
-                        'encoder_state': self.encoder.state_dict(),
-                        'decoder_state': self.decoder.state_dict(),
-                        'encoder_optimizer': self.encoder_optimizer.state_dict(),
-                        'decoder_optimizer': self.decoder_optimizer.state_dict(),
-                        'encoder_lr_scheduler': self.encoder_lr_scheduler.state_dict(),
-                        'decoder_lr_scheduler': self.decoder_lr_scheduler.state_dict()
-                    })
+            if self.experiment is not None and (i % self.config['save_loss_every'] == 0 or i == len_batches):
+                self.experiment.log_metric("loss", accumulated_loss/accumulated_loss_n)
+                # self.experiment.log_metric("learning_rate", self.encoder_optimizer.param_groups['lr'])
+                accumulated_loss = 0
+                accumulated_loss_n = 0
+            if i % self.config['save_checkpoint_every'] == 0 or i == len_batches:
+                self.save_checkpoint({
+                    'epoch': epoch,
+                    'step': i,
+                    'encoder_state': self.encoder.state_dict(),
+                    'decoder_state': self.decoder.state_dict(),
+                    'encoder_optimizer': self.encoder_optimizer.state_dict(),
+                    'decoder_optimizer': self.decoder_optimizer.state_dict(),
+                    'encoder_lr_scheduler': self.encoder_lr_scheduler.state_dict(),
+                    'decoder_lr_scheduler': self.decoder_lr_scheduler.state_dict()
+                })
                 # print("time for batch {} is {}".format(i, time.time()-start_step))
 
-            except RuntimeError as rte:
-                if 'out of memory' in str(rte):
-                    torch.cuda.empty_cache()
-                    oom += 1
-                    self.experiment.log_metric('oom', oom)
-                    print("Out of memory")
-                else:
-                    template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-                    message = template.format(type(rte).__name__, rte.args)
-                    print(message)
-                    return -1
+            # except RuntimeError as rte:
+            #     if 'out of memory' in str(rte):
+            #         torch.cuda.empty_cache()
+            #         oom += 1
+            #         self.experiment.log_metric('oom', oom)
+            #         print("Out of memory")
+            #     else:
+            #         template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            #         message = template.format(type(rte).__name__, rte.args)
+            #         print(message)
+            #         return -1
 
         print('%s (%d %d%%) %.10f' % (
             time_since(start, (epoch + 1) / self.config['num_epochs']),
