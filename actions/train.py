@@ -61,7 +61,7 @@ class Trainer(object):
         # try:
         # print("Batch size:", batch['inputs'].size()[0])
         # print("Total length:", batch['inputs'].size()[1])
-        print("still fine here 0")
+        # print("still fine here 0")
         encoder_outputs, encoder_hidden = self.encoder(batch['inputs'].to(device=DEVICE), batch['input_lens'], batch['inputs'].size()[1])
         # except Exception as ex:
         #     template = "An exception of type {0} occurred. Arguments:\n{1!r}"
@@ -70,7 +70,7 @@ class Trainer(object):
         #     print("Batch size:", batch['inputs'].size()[0])
         #     print("Total length:", batch['inputs'].size()[1])
         #     print(batch['inputs'])
-        print("still fine here 1")
+        # print("still fine here 1")
         targets2 = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size']),  dtype=torch.long, device=DEVICE)
         targets2[:, :batch['targets'].size()[1]] = batch['targets']
         decoder_hidden = encoder_hidden
@@ -78,7 +78,7 @@ class Trainer(object):
                                        self.dataset.num_words), dtype=torch.float, device=DEVICE)
         # print("decoder_outputs.get_device()", decoder_outputs.get_device())
         for i in range(batch['span_seq_len']):
-            print("still fine here !", i)
+            # print("still fine here !", i)
             # print("decoding at ", i)
             decoder_output, decoder_hidden, decoder_attn = self.decoder(targets2[:, i:i+self.config['span_size']],
                                                                         decoder_hidden, encoder_outputs)
@@ -87,7 +87,7 @@ class Trainer(object):
         loss = self.criterion(decoder_outputs[:, :-self.config['span_size']].contiguous().view(-1, self.dataset.num_words),
                                targets2[:, self.config['span_size']:].contiguous().view(-1))
 
-        print("still fine here 2")
+        # print("still fine here 2")
 
         # try:
         loss = loss.sum()
