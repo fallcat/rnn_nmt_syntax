@@ -216,6 +216,6 @@ class Trainer(object):
                 print("=> no checkpoint found at '{}'".format(restore_path))
 
     def save_checkpoint(self, state):
-        torch.save(state, self.config['experiment_path'] + self.config['save'])
+        torch.save(state, self.config['experiment_path'] + self.config['save_path'])
         # if is_best:
         #     shutil.copyfile(self.config['save_path'], self.config['best_save_path'])
