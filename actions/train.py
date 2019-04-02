@@ -153,7 +153,7 @@ class Trainer(object):
 
                 if self.experiment is not None and (i % self.config['save_loss_every'] == 0 or i == len_batches):
                     self.experiment.log_metric("loss", accumulated_loss/accumulated_loss_n)
-                    self.experiment.log_metric("learning_rate", self.encoder_optimizer.param_groups['lr'])
+                    # self.experiment.log_metric("learning_rate", self.encoder_optimizer.param_groups['lr'])
                     accumulated_loss = 0
                     accumulated_loss_n = 0
                 if i % self.config['save_checkpoint_every'] == 0 or i == len_batches:
