@@ -117,6 +117,7 @@ class Trainer(object):
         print("===== epoch " + str(epoch) + " =====")
         if self.experiment is not None:
             self.experiment.log_current_epoch(epoch)
+        print("===== epoch " + str(epoch) + " =====")
         start = time.time()
         epoch_loss = 0
         oom = self.metric_store['oom']
