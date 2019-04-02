@@ -63,10 +63,10 @@ class Trainer(object):
         # print("Batch size:", batch['inputs'].size()[0])
         # print("Total length:", batch['inputs'].size()[1])
         # print("still fine here 0")
-        print("111")
-        GPUtil.showUtilization()
+        # print("111")
+        # GPUtil.showUtilization()
         encoder_outputs, encoder_hidden = self.encoder(batch['inputs'].to(device=DEVICE), batch['input_lens'], batch['inputs'].size()[1])
-        GPUtil.showUtilization()
+        # GPUtil.showUtilization()
         # except Exception as ex:
         #     template = "An exception of type {0} occurred. Arguments:\n{1!r}"
         #     message = template.format(type(ex).__name__, ex.args)
@@ -82,8 +82,8 @@ class Trainer(object):
                                        self.dataset.num_words), dtype=torch.float, device=DEVICE)
         # print("decoder_outputs.get_device()", decoder_outputs.get_device())
         for i in range(batch['span_seq_len']):
-            print("222", i)
-            GPUtil.showUtilization()
+            # print("222", i)
+            # GPUtil.showUtilization()
             # print("still fine here !", i)
             # print("decoding at ", i)
             decoder_output, decoder_hidden, decoder_attn = self.decoder(targets2[:, i:i+self.config['span_size']],
@@ -115,10 +115,10 @@ class Trainer(object):
 
     def train_epoch(self, epoch, train_size=None):
         print("===== epoch " + str(epoch) + " =====")
-        print("hihihi")
+        # print("hihihi")
         if self.experiment is not None:
             self.experiment.log_current_epoch(epoch)
-        print("===== epoch " + str(epoch) + " =====")
+        # print("===== epoch " + str(epoch) + " =====")
         start = time.time()
         epoch_loss = 0
         oom = self.metric_store['oom']
@@ -149,11 +149,11 @@ class Trainer(object):
 
         accumulated_loss = 0
         accumulated_loss_n = 0
-        print("begin")
+        # print("begin")
 
         # with tqdm_wrap_stdout():
         for i, batch in enumerate(batches, 1):
-            print("now in batch", i)
+            # print("now in batch", i)
 
             self.step = i
             if self.experiment is not None:
@@ -161,9 +161,9 @@ class Trainer(object):
             # loss = self.train_batch3(batch)
             # try:
             # start_step = time.time()
-            GPUtil.showUtilization()
+            # GPUtil.showUtilization()
             loss = self.train_batch3(batch)
-            GPUtil.showUtilization()
+            # GPUtil.showUtilization()
             total_length = sum(batch['input_lens']).item() + sum(batch['target_lens']).item()
             epoch_loss += loss
             accumulated_loss += loss * total_length

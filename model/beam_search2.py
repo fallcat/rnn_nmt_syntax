@@ -65,11 +65,16 @@ class BeamSearchDecoder(object):
         topv2, topi2 = topv.view(-1).topk(self.config['beam_width'])
         rowi = topi2 // rows
         coli = topi2 - rowi * rows
-        for a in range(self.config['beam_width']):
+        for b in range(self.config['beam_width']):
             pass
 
     def search_sequential(self, topv, topi, scores):
-        pass
+        rows, cols = topv.size()
+        topv2, topi2 = topv.view(-1).topk(self.config['beam_width'])
+        rowi = topi2 // rows
+        coli = topi2 - rowi * rows
+        for b in range(self.config['beam_width']):
+            topv[b].topk(1)
 
     def decode(self, encoder_outputs, encoder_hidden, start_sequences):
         self.decoder.eval()
@@ -79,7 +84,7 @@ class BeamSearchDecoder(object):
             for i, row in enumerate(encoded_hidden_list):
                 beam = Beam(start_sequences[i], row[1].transpose(0, 1), self.initial_score,
                             self.config['max_length'], self.config['beam_width'])
-                for l in self.config['max_length']:
+                for l in self.config['max_length']/self.config['span_size']:
                     sequences, scores, hiddens = beam.collate()
                     decoder_output, decoder_hidden, decoder_attn = self.decoder(sequences[:, -self.config['span_size']].to(device=DEVICE),
                                                                                 hiddens.transpose(0, 1),
