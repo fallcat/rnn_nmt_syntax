@@ -31,7 +31,7 @@ def main():
         'learning_rate': args.learning_rate,
         'weight_decay': args.weight_decay,
         'print_every': args.print_every,
-        'save_path': args.save,
+        'save_path': args.save_path,
         'restore_path': args.restore,
         'best_save_path': args.best_model,
         'minibatch_size': args.minibatch_size,

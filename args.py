@@ -147,7 +147,7 @@ def get_cl_args():
     arg_parser.add_argument('--experiment-path', action='store', type=str, default='experiments/exptest/',
                             help='Specify the path to store the experiment')
 
-    arg_parser.add_argument('-s', '--save', action='store', type=str, default='checkpoint.pth.tar',
+    arg_parser.add_argument('-s', '--save-path', action='store', type=str, default='checkpoint.pth.tar',
                             help='Specify the path of checkpoint to save the stored model')
 
     arg_parser.add_argument('--save-loss-every', action='store', type=int, default=10,
