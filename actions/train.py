@@ -92,7 +92,7 @@ class Trainer(object):
             self.decoder_lr_scheduler.step()
             self.encoder_optimizer.step()
             self.decoder_optimizer.step()
-            return loss.item() / total_length
+            return loss.item(), total_length
         except RuntimeError as rte:
             if 'out of memory' in str(rte):
                 torch.cuda.empty_cache()
@@ -146,10 +146,10 @@ class Trainer(object):
             # loss = self.train_batch3(batch)
             try:
                 start_step = time.time()
-                loss = self.train_batch3(batch)
+                loss, total_length = self.train_batch3(batch)
                 epoch_loss += loss
                 accumulated_loss += loss
-                accumulated_loss_n += 1
+                accumulated_loss_n += total_length
 
                 if self.experiment is not None and (i % self.config['save_loss_every'] == 0 or i == len_batches):
                     self.experiment.log_metric("loss", accumulated_loss/accumulated_loss_n)
