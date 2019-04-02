@@ -147,9 +147,10 @@ class Trainer(object):
             try:
                 # start_step = time.time()
                 loss = self.train_batch3(batch)
+                total_length = sum(batch['input_lens']).item() + sum(batch['target_lens']).item()
                 epoch_loss += loss
-                accumulated_loss += loss
-                accumulated_loss_n += 1
+                accumulated_loss += loss * total_length
+                accumulated_loss_n += total_length
 
                 if self.experiment is not None and (i % self.config['save_loss_every'] == 0 or i == len_batches):
                     self.experiment.log_metric("loss", accumulated_loss/accumulated_loss_n)
