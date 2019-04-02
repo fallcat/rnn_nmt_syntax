@@ -121,11 +121,11 @@ class Trainer(object):
         epoch_loss = 0
         oom = self.metric_store['oom']
 
-        if train_size is not None:
-            pairs = self.dataset.pairs[:train_size]
-        else:
-            pairs = self.dataset.pairs
-        random.shuffle(pairs)
+        # if train_size is not None:
+        #     pairs = self.dataset.pairs[:train_size]
+        # else:
+        #     pairs = self.dataset.pairs
+        # random.shuffle(pairs)
 
         # def get_description():
         #     description = f'Train #{epoch}'
@@ -147,6 +147,7 @@ class Trainer(object):
 
         accumulated_loss = 0
         accumulated_loss_n = 0
+        print("begin")
 
         # with tqdm_wrap_stdout():
         for i, batch in enumerate(batches, 1):
