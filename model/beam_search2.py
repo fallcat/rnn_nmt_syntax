@@ -40,9 +40,8 @@ class Beam(object):
 
 
 class BeamSearchDecoder(object):
-    def __init__(self, decoder, sos_idx, config, initial_score=0):
+    def __init__(self, decoder, config, initial_score=0):
         self.decoder = decoder
-        self.sos_idx = sos_idx
         self.config = config
         self.initial_score = initial_score
 

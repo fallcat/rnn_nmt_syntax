@@ -20,8 +20,7 @@ class Evaluator(object):
         self.encoder.eval()
         self.decoder.eval()
         self.dataloader = dataloader
-        self.beam_search_decoder = BeamSearchDecoder(self.decoder, self.dataset.eos_idx,
-                                                     self.config['length_penalty'], self.config['span_size'])
+        self.beam_search_decoder = BeamSearchDecoder(self.decoder, self.config)
         self.experiment = experiment
 
     @property
