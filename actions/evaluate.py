@@ -78,7 +78,7 @@ class Evaluator(object):
             #     beam_width=self.config['beam_width']
             # )
 
-            return self.beam_search_decoder.decode(encoder_outputs, encoder_hidden, [[self.sos_idx]] * self.config['span_size'])
+            return self.beam_search_decoder.decode(encoder_outputs, encoder_hidden, torch.LongTensor([[self.sos_idx]] * self.config['span_size']))
 
             # span_seq_len = int(self.config['max_length'] / self.config['span_size'])
             #
