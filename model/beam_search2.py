@@ -39,9 +39,9 @@ class Beam(object):
             scores.append(hypothesis.score)
             hiddens.append(hypothesis.hidden)
         cat_sequences = torch.cat(sequences)
-        cat_scores = torch.cat(scores)
+        cat_scores = torch.LongTensor(scores)
         cat_hiddens = torch.cat(hiddens)
-        return torch.cat(sequences), torch.cat(scores), torch.cat(hiddens)
+        return torch.cat(sequences), torch.LongTensor(scores), torch.cat(hiddens)
 
 
 class BeamSearchDecoder(object):
