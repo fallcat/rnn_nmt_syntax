@@ -74,6 +74,11 @@ def main():
         NUM_DEVICES, shuffle=args.shuffle
     )
 
+    dataloader_valid = get_dataloader(
+        dataset, config, "valid", args.seed_fn, pin_memory,
+        NUM_DEVICES, shuffle=args.shuffle
+    )
+
     # define the models
 
     encoder1 = BatchEncoderRNN(dataloader_train.dataset.num_words, args.hidden_size, num_layers=args.num_layers).to(DEVICE)
@@ -100,15 +105,12 @@ def main():
         experiment = None
 
     if args.mode == "train":
-        trainer = Trainer(config=config, models=models, dataloader=dataloader_train, experiment=experiment)
+        trainer = Trainer(config=config, models=models, dataloader=dataloader_train, dataloader_valid=dataloader_valid,
+                          experiment=experiment)
         if args.restore is not None:
             trainer.restore_checkpoint(args.experiment_path + args.restore)
-        trainer.train(args.train_size)
+        trainer.train_and_evaluate(args.train_size)
     elif args.mode == "evaluate":
-        dataloader_valid = get_dataloader(
-            dataset, config, "valid", args.seed_fn, pin_memory,
-            NUM_DEVICES, shuffle=args.shuffle
-        )
         evaluator = Evaluator(config=config, models=models, dataloader=dataloader_valid, experiment=experiment)
         if args.restore is not None:
             evaluator.restore_checkpoint(args.experiment_path + args.restore)

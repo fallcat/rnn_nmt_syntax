@@ -17,7 +17,7 @@ from actions.evaluate import Evaluator
 
 
 class Trainer(object):
-    def __init__(self, config, models, dataloader, experiment=None):
+    def __init__(self, config, models, dataloader, dataloader_valid=None, experiment=None):
         self.config = config
         self.encoder = models['encoder']
         self.decoder = models['decoder']
@@ -38,6 +38,7 @@ class Trainer(object):
         self.dataloader = dataloader
         self.dataset = dataloader.dataset
         self.experiment = experiment
+        self.dataloader_valid = dataloader_valid
         self.metric_store = {'oom': 0}
 
         if 'cuda' in DEVICE.type:
@@ -123,27 +124,6 @@ class Trainer(object):
         epoch_loss = 0
         oom = self.metric_store['oom']
 
-        # if train_size is not None:
-        #     pairs = self.dataset.pairs[:train_size]
-        # else:
-        #     pairs = self.dataset.pairs
-        # random.shuffle(pairs)
-
-        # def get_description():
-        #     description = f'Train #{epoch}'
-        #     # if verbose > 0:
-        #     #     description += f' {self.metric_store}'
-        #     # if verbose > 1:
-        #     #     description += f' [{profile.mem_stat_string(["allocated"])}]'
-        #     return description
-
-        # batches = tqdm.tqdm(
-        #     self.dataloader,
-        #     unit='batch',
-        #     dynamic_ncols=True,
-        #     desc=get_description(),
-        #     file=sys.stdout  # needed to make tqdm_wrap_stdout work
-        # )
         batches = self.dataloader
         len_batches = len(batches)
 
@@ -157,47 +137,45 @@ class Trainer(object):
 
             self.step = i
             if self.experiment is not None:
-                self.experiment.set_step(i)
+                self.experiment.set_step(self.experiment.curr_step + 1)
             # loss = self.train_batch3(batch)
-            # try:
-            # start_step = time.time()
-            # GPUtil.showUtilization()
-            loss = self.train_batch3(batch)
-            # GPUtil.showUtilization()
-            total_length = sum(batch['input_lens']).item() + sum(batch['target_lens']).item()
-            epoch_loss += loss
-            accumulated_loss += loss * total_length
-            accumulated_loss_n += total_length
+            try:
+                loss = self.train_batch3(batch)
+                # GPUtil.showUtilization()
+                total_length = sum(batch['input_lens']).item() + sum(batch['target_lens']).item()
+                epoch_loss += loss
+                accumulated_loss += loss * total_length
+                accumulated_loss_n += total_length
 
-            if self.experiment is not None and (i % self.config['save_loss_every'] == 0 or i == len_batches):
-                self.experiment.log_metric("loss", accumulated_loss/accumulated_loss_n)
-                # self.experiment.log_metric("learning_rate", self.encoder_optimizer.param_groups['lr'])
-                accumulated_loss = 0
-                accumulated_loss_n = 0
-            if i % self.config['save_checkpoint_every'] == 0 or i == len_batches:
-                self.save_checkpoint({
-                    'epoch': epoch,
-                    'step': i,
-                    'encoder_state': self.encoder.state_dict(),
-                    'decoder_state': self.decoder.state_dict(),
-                    'encoder_optimizer': self.encoder_optimizer.state_dict(),
-                    'decoder_optimizer': self.decoder_optimizer.state_dict(),
-                    'encoder_lr_scheduler': self.encoder_lr_scheduler.state_dict(),
-                    'decoder_lr_scheduler': self.decoder_lr_scheduler.state_dict()
-                })
+                if self.experiment is not None and (i % self.config['save_loss_every'] == 0 or i == len_batches):
+                    self.experiment.log_metric("train_nll", accumulated_loss/accumulated_loss_n)
+                    # self.experiment.log_metric("learning_rate", self.encoder_optimizer.param_groups['lr'])
+                    accumulated_loss = 0
+                    accumulated_loss_n = 0
+                if i % self.config['save_checkpoint_every'] == 0 or i == len_batches:
+                    self.save_checkpoint({
+                        'epoch': epoch,
+                        'step': i,
+                        'encoder_state': self.encoder.state_dict(),
+                        'decoder_state': self.decoder.state_dict(),
+                        'encoder_optimizer': self.encoder_optimizer.state_dict(),
+                        'decoder_optimizer': self.decoder_optimizer.state_dict(),
+                        'encoder_lr_scheduler': self.encoder_lr_scheduler.state_dict(),
+                        'decoder_lr_scheduler': self.decoder_lr_scheduler.state_dict()
+                    })
                 # print("time for batch {} is {}".format(i, time.time()-start_step))
 
-            # except RuntimeError as rte:
-            #     if 'out of memory' in str(rte):
-            #         torch.cuda.empty_cache()
-            #         oom += 1
-            #         self.experiment.log_metric('oom', oom)
-            #         print("Out of memory")
-            #     else:
-            #         template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-            #         message = template.format(type(rte).__name__, rte.args)
-            #         print(message)
-            #         return -1
+            except RuntimeError as rte:
+                if 'out of memory' in str(rte):
+                    torch.cuda.empty_cache()
+                    oom += 1
+                    self.experiment.log_metric('oom', oom)
+                    print("Out of memory")
+                else:
+                    template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+                    message = template.format(type(rte).__name__, rte.args)
+                    print(message)
+                    return -1
 
         print('%s (%d %d%%) %.10f' % (
             time_since(start, (epoch + 1) / self.config['num_epochs']),
@@ -207,12 +185,84 @@ class Trainer(object):
 
     def train(self, train_size=None):
         # dataloader = self.prepare_dataloader(train_size)
+        self.experiment.set_step(0)
         if self.step > -1:
             for epoch in range(self.epoch, self.config['num_epochs']):
                 self.train_epoch(epoch, train_size)
         else:
             for epoch in range(self.epoch + 1, self.config['num_epochs']):
                 self.train_epoch(epoch, train_size)
+
+    def train_and_evaluate(self, train_size=None):
+        # dataloader = self.prepare_dataloader(train_size)
+        self.experiment.set_step(0)
+        if self.step > -1:
+            for epoch in range(self.epoch, self.config['num_epochs']):
+                self.train_epoch(epoch, train_size)
+                self.evaluate_nll()
+        else:
+            for epoch in range(self.epoch + 1, self.config['num_epochs']):
+                self.train_epoch(epoch, train_size)
+                self.evaluate_nll()
+
+    def evaluate_nll(self):
+        batches = self.dataloader
+
+        accumulated_loss = 0
+        accumulated_loss_n = 0
+
+        # with tqdm_wrap_stdout():
+        for i, batch in enumerate(batches, 1):
+            # loss = self.train_batch3(batch)
+            try:
+                loss = self.evaluate_nll_batch(batch)
+                # GPUtil.showUtilization()
+                total_length = sum(batch['input_lens']).item() + sum(batch['target_lens']).item()
+                accumulated_loss += loss * total_length
+                accumulated_loss_n += total_length
+
+                # print("time for batch {} is {}".format(i, time.time()-start_step))
+
+            except RuntimeError as rte:
+                if 'out of memory' in str(rte):
+                    torch.cuda.empty_cache()
+                    print("Out of memory")
+                else:
+                    template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+                    message = template.format(type(rte).__name__, rte.args)
+                    print(message)
+                    return -1
+        self.experiment.log_metric("evaluate_nll", accumulated_loss / accumulated_loss_n)
+
+    def evaluate_nll_batch(self, batch):
+        """
+        train a batch of tensors
+        :param batch: batch of sentences
+        :return:
+        """
+        with torch.no_grad():
+            self.encoder.eval()
+            self.decoder.eval()
+
+            total_length = sum(batch['input_lens']).item() + sum(batch['target_lens']).item()
+
+            # Run words through encoder
+            encoder_outputs, encoder_hidden = self.encoder(batch['inputs'].to(device=DEVICE), batch['input_lens'], batch['inputs'].size()[1])
+            targets2 = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size']),  dtype=torch.long, device=DEVICE)
+            targets2[:, :batch['targets'].size()[1]] = batch['targets']
+            decoder_hidden = encoder_hidden
+            decoder_outputs = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size'],
+                                           self.dataset.num_words), dtype=torch.float, device=DEVICE)
+            for i in range(batch['span_seq_len']):
+                decoder_output, decoder_hidden, decoder_attn = self.decoder(targets2[:, i:i+self.config['span_size']],
+                                                                            decoder_hidden, encoder_outputs)
+                decoder_outputs[:, i:i+self.config['span_size']] = decoder_output
+
+            loss = self.criterion(decoder_outputs[:, :-self.config['span_size']].contiguous().view(-1, self.dataset.num_words),
+                                   targets2[:, self.config['span_size']:].contiguous().view(-1))
+
+            loss = loss.sum()
+            return loss.item()/total_length
 
     def restore_checkpoint(self, restore_path):
         if restore_path is not None:
