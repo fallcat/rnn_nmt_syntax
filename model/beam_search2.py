@@ -33,7 +33,7 @@ class Beam(object):
         scores = []
         hiddens = []
         for hypothesis in self.hypotheses:
-            sequences.append(hypothesis.sequence)
+            sequences.append(hypothesis.sequence.unsqueeze(0))
             print("sequence", hypothesis.sequence)
             print("sequence type", type(hypothesis.sequence))
             scores.append(hypothesis.score)
@@ -105,7 +105,7 @@ class BeamSearchDecoder(object):
                             self.config['max_length'], self.config['beam_width'])
                 for l in range(int(self.config['max_length']/self.config['span_size'])):
                     sequences, scores, hiddens = beam.collate()
-                    decoder_output, decoder_hidden, decoder_attn = self.decoder(sequences[-self.config['span_size']:].to(device=DEVICE).unsqueeze(0),
+                    decoder_output, decoder_hidden, decoder_attn = self.decoder(sequences[:, -self.config['span_size']:].to(device=DEVICE),
                                                                                 hiddens.transpose(0, 1),
                                                                                 row[0])
                     topv, topi = decoder_output.topk(self.config['beam_width'], dim=2)
