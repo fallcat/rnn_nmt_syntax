@@ -5,7 +5,7 @@ import random
 import time
 import numpy as np
 from model import DEVICE, SOS_token, EOS_token
-from model.beam_search import BeamSearchDecoder, Beam
+from model.beam_search2 import BeamSearchDecoder, Beam
 
 # config: max_length, span_size, hidden_size
 
@@ -73,13 +73,13 @@ class Evaluator(object):
             encoder_outputs, encoder_hidden = self.encoder(batch_inputs.to(device=DEVICE), batch_input_lens,
                                                            batch_inputs.size()[1])
 
-            beams = self.beam_search_decoder.initialize_search(
-                [[self.sos_idx] * self.config['span_size'] for _ in range(len(batch_inputs))],
-                [l + self.config['max_length'] + self.config['span_size'] + 1 for l in length_basis],
-                beam_width=self.config['beam_width']
-            )
+            # beams = self.beam_search_decoder.initialize_search(
+            #     [[self.sos_idx] * self.config['span_size'] for _ in range(len(batch_inputs))],
+            #     [l + self.config['max_length'] + self.config['span_size'] + 1 for l in length_basis],
+            #     beam_width=self.config['beam_width']
+            # )
 
-            return self.beam_search_decoder.decode(encoder_outputs, encoder_hidden, beams)
+            return self.beam_search_decoder.decode(encoder_outputs, encoder_hidden, [[self.sos_idx]] * self.config['span_size'])
 
             # span_seq_len = int(self.config['max_length'] / self.config['span_size'])
             #
@@ -104,8 +104,8 @@ class Evaluator(object):
         ordered_outputs = []
         for batch in batches:
             beams = self.generate_batch_beam(batch['inputs'], batch['input_lens'])
-            targets = batch['targets']
-            target_lens = batch['target_lens']
+            # targets = batch['targets']
+            # target_lens = batch['target_lens']
             for i, example_id in enumerate(batch['example_ids']):
                 outputs = []
                 beam = beams[i]
