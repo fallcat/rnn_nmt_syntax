@@ -36,7 +36,7 @@ class Beam(object):
             sequences.append(hypothesis.sequence)
             scores.append(hypothesis.score)
             hiddens.append(hypothesis.hidden)
-        return torch.cat(sequences), scores, torch.cat(hiddens)
+        return torch.cat(sequences), torch.cat(scores), torch.cat(hiddens)
 
 
 class BeamSearchDecoder(object):
@@ -60,21 +60,33 @@ class BeamSearchDecoder(object):
 
         return beams
 
-    def search_all(self, topv, topi, scores):
+    def search_all(self, sequences, topv, topi, scores, hiddens):
         rows, cols = topv.size()
         topv2, topi2 = topv.view(-1).topk(self.config['beam_width'])
         rowi = topi2 // rows
         coli = topi2 - rowi * rows
-        for b in range(self.config['beam_width']):
+        for s in range(self.config['span_size']):
             pass
+        return []
 
-    def search_sequential(self, topv, topi, scores):
-        rows, cols = topv.size()
-        topv2, topi2 = topv.view(-1).topk(self.config['beam_width'])
-        rowi = topi2 // rows
-        coli = topi2 - rowi * rows
-        for b in range(self.config['beam_width']):
-            topv[b].topk(1)
+    def search_sequential(self, sequences, topv, topi, scores, hiddens):
+        for s in range(self.config['span_size']):
+            if s == 0:
+                newscores = scores.view(-1, 1) + topv[:, s, :]
+            else:
+                newscores = torch.cat([nc[2] + topv[nc[0], s, :] for nc in new_candidates])
+            topsv, topsi = newscores.view(-1).topk(self.config['beam_width'])
+            rows, cols = topsv.size()
+            rowsi = topsi // rows  # indices of the topk beams
+            colsi = topsi - rowsi * rows
+            if s == 0:
+                new_candidates = [(rowsi[i], torch.cat((sequences[rowsi[i]], torch.LongTensor([colsi[i]]))),
+                                   topsv[i], hiddens[rowsi[i]]) for i in range(self.config['beam_width'])]
+            else:
+                new_candidates = [(new_candidates[rowsi[i]][0],
+                                   torch.cat((new_candidates[rowsi[i]][1] + torch.LongTensor([colsi[i]]))), topsv[i],
+                                   new_candidates[rowsi[i]][3]) for i in range(self.config['beam_width'])]
+        return [BeamHypothesis(candidate[1], candidate[2], candidate[3]) for candidate in new_candidates]
 
     def decode(self, encoder_outputs, encoder_hidden, start_sequences):
         self.decoder.eval()
@@ -91,7 +103,8 @@ class BeamSearchDecoder(object):
                                                                                 row[0])
                     topv, topi = decoder_output.topk(self.config['beam_width'], dim=2)
                     if self.config['beam_search_all']:
-                        self.search_all(topv, topi, scores)
+                        new_hypotheses = self.search_all(sequences, topv, topi, scores, decoder_hidden)
                     else:
-                        self.search_sequential(topv, topi, scores)
+                        new_hypotheses = self.search_sequential(sequences, topv, topi, scores, decoder_hidden)
+                    beam.hypotheses = new_hypotheses
 

@@ -74,7 +74,7 @@ def add_evaluate_args(parser):
     group.add_argument(
         '--beam-search-all',
         action='store_true',
-        help='Default beam width for beam search decoder.'
+        help='Search optimal of all combinations in the span instead of search sequentially.'
     )
 
     return group
