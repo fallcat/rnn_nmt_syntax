@@ -14,7 +14,7 @@ class BeamHypothesis(object):
 
 
 class Beam(object):
-    def __init__(self, start_sequence, hidden, initial_score=0, max_length=0, width=4):
+    def __init__(self, start_sequence, hidden, initial_score=0., max_length=0, width=4):
         self.width = width
         self.max_length = max_length
         self.hypotheses = [BeamHypothesis(start_sequence, initial_score, hidden)]
@@ -45,7 +45,7 @@ class Beam(object):
 
 
 class BeamSearchDecoder(object):
-    def __init__(self, decoder, config, initial_score=0):
+    def __init__(self, decoder, config, initial_score=0.):
         self.decoder = decoder
         self.config = config
         self.initial_score = initial_score
