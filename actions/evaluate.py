@@ -72,30 +72,8 @@ class Evaluator(object):
             encoder_outputs, encoder_hidden = self.encoder(batch_inputs.to(device=DEVICE), batch_input_lens,
                                                            batch_inputs.size()[1])
 
-            # beams = self.beam_search_decoder.initialize_search(
-            #     [[self.sos_idx] * self.config['span_size'] for _ in range(len(batch_inputs))],
-            #     [l + self.config['max_length'] + self.config['span_size'] + 1 for l in length_basis],
-            #     beam_width=self.config['beam_width']
-            # )
-
-            return self.beam_search_decoder.decode(encoder_outputs, encoder_hidden, torch.LongTensor([[self.sos_idx]] * self.config['span_size']))
-
-            # span_seq_len = int(self.config['max_length'] / self.config['span_size'])
-            #
-            # decoder_hidden = encoder_hidden
-            # decoder_input = torch.tensor([SOS_token] * self.config['span_size'] * batch_size, device=DEVICE).view(
-            #     batch_size, -1)
-            # decoder_outputs = torch.zeros((batch_size, self.config['max_length']), dtype=torch.long, device=DEVICE)
-            # for i in range(span_seq_len):
-            #     decoder_output, decoder_hidden, decoder_attn = self.decoder(decoder_input,
-            #                                                                 decoder_hidden, encoder_outputs)
-            #     topv, topi = decoder_output.topk(1, dim=2)
-            #     decoder_input = topi
-            #     decoder_outputs[:, i:i + self.config['span_size']] = topi.squeeze(2)
-            #
-            # decoded_words = [[self.dataloader.dataset.index2word[w.item()] for w in tensor_sentence]
-            #                      for tensor_sentence in decoder_outputs]
-            # return decoded_words
+            return self.beam_search_decoder.decode(encoder_outputs, encoder_hidden,
+                                                   torch.LongTensor([[self.sos_idx]] * self.config['span_size']))
 
     def evaluate_beam(self):
         batches = self.dataloader
