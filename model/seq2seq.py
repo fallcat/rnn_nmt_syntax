@@ -45,6 +45,8 @@ class BatchEncoderRNN(nn.Module):
         # print("inside batch encoder")
         # print("input_seq len", input_seqs.size()[1])
         # print("batch size", batch_size)
+
+        ##### input_seq.new_zeros
         hidden = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=DEVICE)
         embedded = self.embedding(input_seqs)
         # print("embedded", embedded)
@@ -55,7 +57,7 @@ class BatchEncoderRNN(nn.Module):
         # except:
         #     print("packed", packed)
         # print("hidden", hidden.size())
-        self.gru.flatten_parameters()
+        self.gru.flatten_parameters() ####### maybe only need to do it once in the init?
         output, hidden = self.gru(packed, hidden)
         # print("output", output.data.size())
         output, _ = torch.nn.utils.rnn.pad_packed_sequence(output, batch_first=True, total_length=total_length)  # unpack (back to padded)

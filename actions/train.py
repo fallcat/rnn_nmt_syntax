@@ -22,6 +22,7 @@ class Trainer(object):
         self.encoder = models['encoder']
         self.decoder = models['decoder']
         optimizers = {"SGD": optim.SGD, "Adadelta": optim.Adadelta, "Adagrad": optim.Adagrad, "RMSprop": optim.RMSprop, "Adam": optim.Adam}
+        # concat the params in one optimizer
         self.encoder_optimizer = optimizers[self.config["optimizer"]](self.encoder.parameters(), lr=self.config['learning_rate'], weight_decay=self.config['weight_decay'])
         self.decoder_optimizer = optimizers[self.config["optimizer"]](self.decoder.parameters(), lr=self.config['learning_rate'], weight_decay=self.config['weight_decay'])
         self.encoder_lr_scheduler = optim.lr_scheduler.ExponentialLR(
@@ -76,13 +77,17 @@ class Trainer(object):
         #     print("Total length:", batch['inputs'].size()[1])
         #     print(batch['inputs'])
         # print("still fine here 1")
+
+        # put this in dataloader
         targets2 = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size']),  dtype=torch.long, device=DEVICE)
         targets2[:, :batch['targets'].size()[1]] = batch['targets']
         decoder_hidden = encoder_hidden
+
+        # make it a list and cat later
         decoder_outputs = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size'],
-                                       self.dataset.num_words), dtype=torch.float, device=DEVICE)
+                                       self.dataset.num_words), dtype=torch.float, device=DEVICE) # remove device
         # print("decoder_outputs.get_device()", decoder_outputs.get_device())
-        for i in range(batch['span_seq_len']):
+        for i in range(0, batch['span_seq_len'] * self.config['span_size'], self.config['span_size']):
             # print("222", i)
             # GPUtil.showUtilization()
             # print("still fine here !", i)
