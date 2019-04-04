@@ -65,12 +65,10 @@ class BeamSearchDecoder(object):
         return beams
 
     def search_all(self, sequences, topv, topi, scores, hiddens):
-        rows, cols = topv.size()
-        topv2, topi2 = topv.view(-1).topk(self.config['beam_width'])
-        rowi = topi2 // rows
-        coli = topi2 - rowi * rows
+        product = 1
         for s in range(self.config['span_size']):
-            pass
+            product *= topv[:, s].view([len(scores)] + [1]*s + [-1] + [1]*(self.config['beam_width'] - s))
+
         return []
 
     def search_sequential(self, sequences, topv, topi, scores, hiddens):

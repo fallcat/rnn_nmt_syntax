@@ -197,7 +197,8 @@ class Trainer(object):
 
     def train_and_evaluate(self, train_size=None):
         # dataloader = self.prepare_dataloader(train_size)
-        self.experiment.set_step(0)
+        if self.experiment is not None:
+            self.experiment.set_step(0)
         if self.step > -1:
             for epoch in range(self.epoch, self.config['num_epochs']):
                 self.train_epoch(epoch, train_size)
@@ -234,7 +235,10 @@ class Trainer(object):
                     message = template.format(type(rte).__name__, rte.args)
                     print(message)
                     return -1
-        self.experiment.log_metric("evaluate_nll", accumulated_loss / accumulated_loss_n)
+        valid_nll = accumulated_loss / accumulated_loss_n
+        if self.experiment is not None:
+            self.experiment.log_metric("evaluate_nll", valid_nll)
+        print("Validation NLL:", valid_nll)
 
     def evaluate_nll_batch(self, batch):
         """
