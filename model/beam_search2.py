@@ -34,14 +34,14 @@ class Beam(object):
         hiddens = []
         for hypothesis in self.hypotheses:
             sequences.append(hypothesis.sequence.unsqueeze(0))
-            print("sequence", hypothesis.sequence)
-            print("sequence type", type(hypothesis.sequence))
+            # print("sequence", hypothesis.sequence)
+            # print("sequence type", type(hypothesis.sequence))
             scores.append(hypothesis.score)
             hiddens.append(hypothesis.hidden)
-        print("lists")
-        print("sequences", sequences)
-        print("scores", scores)
-        print("hiddens", hiddens)
+        # print("lists")
+        # print("sequences", sequences)
+        # print("scores", scores)
+        # print("hiddens", hiddens)
 
         return torch.cat(sequences), torch.FloatTensor(scores), torch.cat(hiddens)
 
