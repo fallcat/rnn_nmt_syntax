@@ -43,9 +43,6 @@ class Beam(object):
         print("scores", scores)
         print("hiddens", hiddens)
 
-        cat_sequences = torch.cat(sequences)
-        cat_scores = torch.LongTensor(scores)
-        cat_hiddens = torch.cat(hiddens)
         return torch.cat(sequences), torch.LongTensor(scores), torch.cat(hiddens)
 
 
