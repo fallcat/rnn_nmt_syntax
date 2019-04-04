@@ -237,7 +237,7 @@ class Trainer(object):
                     return -1
         valid_nll = accumulated_loss / accumulated_loss_n
         if self.experiment is not None:
-            self.experiment.log_metric("evaluate_nll", valid_nll)
+            self.experiment.log_metric("valid_nll", valid_nll)
         print("Validation NLL:", valid_nll)
 
     def evaluate_nll_batch(self, batch):
