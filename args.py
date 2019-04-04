@@ -48,7 +48,7 @@ def add_train_args(parser):
     group.add_argument('--lr-decay', action='store', type=float, default=1,
                        help='Multiplicative factor of learning rate decay.')
 
-    parser.add_argument('--clip', type=float, default=0.25,
+    parser.add_argument('--clip', type=float, default=2.,
                         help='Gradient clipping')
 
     return group
