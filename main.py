@@ -53,7 +53,8 @@ def main():
         'length_penalty': args.length_penalty,
         'drop_last': args.drop_last,
         'beam_width': args.beam_width,
-        'beam_search_all': args.beam_search_all
+        'beam_search_all': args.beam_search_all,
+        'clip': args.clip
     }
 
     # config dataloader

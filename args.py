@@ -20,19 +20,19 @@ def add_train_args(parser):
     group = parser.add_argument_group('Training')
 
     group.add_argument('-e', '--num-epochs', action='store', type=int, default=2,
-                            help='Specify the number of epochs to train')
+                       help='Specify the number of epochs to train')
 
     group.add_argument('--learning-rate', action='store', type=float, default=0.01,
-                            help='Specify the learning rate')
+                       help='Specify the learning rate')
 
     group.add_argument('--weight-decay', action='store', type=float, default=1e-5,
-                            help='Specify the weight decay')
+                       help='Specify the weight decay')
 
     group.add_argument('--print-every', action='store', type=int, default=40,
-                            help='Specify the number of batches to report loss')
+                       help='Specify the number of batches to report loss')
 
     group.add_argument('--num-evaluate', action='store', type=int, default=10,
-                            help='Number of sentences to evaluate during training')
+                       help='Number of sentences to evaluate during training')
 
     group.add_argument('--train-size', action='store', type=int, default=None,
                        help='Specify the size of data to train. If specify a small number,'
@@ -42,11 +42,14 @@ def add_train_args(parser):
                        help='Specify the size of minibatch')
 
     group.add_argument('--optimizer', action='store', type=str, default="Adam",
-                            choices=["SGD", "Adadelta", "Adagrad", "RMSprop", "Adam"],
-                            help='Specify which optimizer to use')
+                       choices=["SGD", "Adadelta", "Adagrad", "RMSprop", "Adam"],
+                       help='Specify which optimizer to use')
 
     group.add_argument('--lr-decay', action='store', type=float, default=1,
-                            help='Multiplicative factor of learning rate decay.')
+                       help='Multiplicative factor of learning rate decay.')
+
+    parser.add_argument('--clip', type=float, default=0.25,
+                        help='Gradient clipping')
 
     return group
 

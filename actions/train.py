@@ -99,6 +99,8 @@ class Trainer(object):
         # try:
         loss = loss.sum()
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.encoder.parameters(), self.config['clip'])
+        torch.nn.utils.clip_grad_norm_(self.decoder.parameters(), self.config['clip'])
         self.encoder_lr_scheduler.step()
         self.decoder_lr_scheduler.step()
         self.encoder_optimizer.step()
