@@ -110,6 +110,8 @@ class BeamSearchDecoder(object):
     def decode(self, encoder_outputs, encoder_hidden, start_sequences):
         self.decoder.eval()
         with torch.no_grad():
+            print("encoder_outputs", encoder_outputs)
+            print("encoder_hidden", encoder_hidden.transpose(0, 1))
             encoded_hidden_list = utils.split_or_chunk((encoder_outputs, encoder_hidden.transpose(0, 1)),
                                                        len(encoder_outputs))
             beams = []
