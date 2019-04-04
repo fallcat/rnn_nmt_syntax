@@ -115,6 +115,8 @@ class Trainer(object):
         #         return -1
 
     def train_epoch(self, epoch, train_size=None):
+        self.encoder.train()
+        self.decoder.train()
         print("===== epoch " + str(epoch) + " =====")
         # print("hihihi")
         if self.experiment is not None:
@@ -262,6 +264,8 @@ class Trainer(object):
                                    targets2[:, self.config['span_size']:].contiguous().view(-1))
 
             loss = loss.sum()
+            self.encoder.train()
+            self.decoder.train()
             return loss.item()/total_length
 
     def restore_checkpoint(self, restore_path):
