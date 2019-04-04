@@ -72,6 +72,9 @@ class Evaluator(object):
             encoder_outputs, encoder_hidden = self.encoder(batch_inputs.to(device=DEVICE), batch_input_lens,
                                                            batch_inputs.size()[1])
 
+            print("outside encoder_outputs", encoder_outputs.size())
+            print("outside encoder_hidden", encoder_hidden.size())
+
             return self.beam_search_decoder.decode(encoder_outputs, encoder_hidden,
                                                    torch.LongTensor([[self.sos_idx]] * self.config['span_size']))
 
