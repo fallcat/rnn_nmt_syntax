@@ -65,11 +65,24 @@ class BeamSearchDecoder(object):
         return beams
 
     def search_all(self, sequences, topv, topi, scores, hiddens):
-        product = 1
-        for s in range(self.config['span_size']):
-            product *= topv[:, s].view([len(scores)] + [1]*s + [-1] + [1]*(self.config['beam_width'] - s))
+        new_scores = scores
 
-        return []
+        # Project each position's beam_width number of candidates to a 2d vector in a beam_width + 2 d space,
+        # and broadcast to add together to get the score of each combination.
+        for s in range(self.config['span_size']):
+            new_scores += topv[:, s].view([len(scores)] + [1]*s + [-1] + [1]*(self.config['beam_width'] - s))
+        new_topv, new_topi = new_scores.view(-1).topk(self.config['beam_width'])
+        top_indices = [[] for _ in range(len(new_topv))]
+        for s in range(self.config['span_size']):
+            dims_elements = self.config['beam_width'] ** (self.config['span_size'] - s)
+            dim_idx = new_topi // dims_elements
+            new_topi -= dim_idx * dims_elements
+            for i, new_subseq in enumerate(top_indices):
+                new_subseq.append(dim_idx[i])
+        return [BeamHypothesis(torch.cat(sequences[new_subseq[0]],
+                                         topi[new_subseq[0]][range(self.config['span_size']), new_subseq[1:]]),
+                               new_topv[i], hiddens[new_subseq[0]])
+                for i, new_subseq in enumerate(top_indices)]
 
     def search_sequential(self, sequences, topv, topi, scores, hiddens):
         for s in range(self.config['span_size']):
@@ -82,7 +95,7 @@ class BeamSearchDecoder(object):
             topsv, topsi = newscores.view(-1).topk(self.config['beam_width'])
             rows, cols = topv[:, s, :].size()
             rowsi = topsi // cols  # indices of the topk beams
-            colsi = topsi - rowsi * rows
+            colsi = topsi - rowsi * cols
             if s == 0:
                 # each candiate has a tuple of (idx of previously decoded sequence, sequence including this new word,
                 # the new word, corresponding hidden layer)
