@@ -89,8 +89,8 @@ class BeamSearchDecoder(object):
     def search_sequential(self, sequences, topv, topi, scores, hiddens):
         for s in range(self.config['span_size']):
             if s == 0:
-                print("scores", type(scores.view(-1, 1)))
-                print("topv", type(topv[:, s, :]))
+                print("scores", scores.view(-1, 1).dtype)
+                print("topv", topv[:, s, :].dtype)
                 newscores = scores.view(-1, 1) + topv[:, s, :]
             else:
                 newscores = torch.cat([nc[2] + topv[nc[0], s, :] for nc in new_candidates])
@@ -112,8 +112,8 @@ class BeamSearchDecoder(object):
     def decode(self, encoder_outputs, encoder_hidden, start_sequences):
         self.decoder.eval()
         with torch.no_grad():
-            print("encoder_outputs", encoder_outputs.size())
-            print("encoder_hidden", encoder_hidden.transpose(0, 1).size())
+            # print("encoder_outputs", encoder_outputs.size())
+            # print("encoder_hidden", encoder_hidden.transpose(0, 1).size())
             encoded_hidden_list = utils.split_or_chunk((encoder_outputs, encoder_hidden.transpose(0, 1)),
                                                        len(encoder_outputs))
             beams = []
@@ -122,9 +122,9 @@ class BeamSearchDecoder(object):
                             self.config['max_length'], self.config['beam_width'])
                 for l in range(int(self.config['max_length']/self.config['span_size'])):
                     sequences, scores, hiddens = beam.collate()
-                    print("sequences", sequences.size())
-                    print("scores", scores.size())
-                    print("hiddens", hiddens.size())
+                    # print("sequences", sequences.size())
+                    # print("scores", scores.size())
+                    # print("hiddens", hiddens.size())
                     decoder_output, decoder_hidden, decoder_attn = self.decoder(sequences[:, -self.config['span_size']:].to(device=DEVICE),
                                                                                 hiddens.transpose(0, 1),
                                                                                 row[0])
