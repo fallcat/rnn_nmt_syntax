@@ -66,7 +66,7 @@ class Trainer(object):
         # print("still fine here 0")
         # print("111")
         # GPUtil.showUtilization()
-        encoder_outputs, encoder_hidden = self.encoder(batch['inputs'].to(device=DEVICE), batch['input_lens'], batch['inputs'].size()[1])
+        encoder_outputs, encoder_hidden = self.encoder(batch['inputs'], batch['input_lens'], batch['inputs'].size()[1])
         # GPUtil.showUtilization()
         # except Exception as ex:
         #     template = "An exception of type {0} occurred. Arguments:\n{1!r}"
