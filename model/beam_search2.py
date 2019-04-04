@@ -43,7 +43,7 @@ class Beam(object):
         print("scores", scores)
         print("hiddens", hiddens)
 
-        return torch.cat(sequences), torch.LongTensor(scores), torch.cat(hiddens)
+        return torch.cat(sequences), torch.FloatTensor(scores), torch.cat(hiddens)
 
 
 class BeamSearchDecoder(object):
@@ -52,7 +52,7 @@ class BeamSearchDecoder(object):
         self.config = config
         self.initial_score = initial_score
 
-    def initialize_search(self, start_sequences, max_lengths=0, initial_scores=0, beam_width=4):
+    def initialize_search(self, start_sequences, max_lengths=0, initial_scores=0., beam_width=4):
         ''' Initialize a batch of beams '''
         beams = []
         if isinstance(max_lengths, int):
