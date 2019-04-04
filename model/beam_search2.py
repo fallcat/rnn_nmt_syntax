@@ -43,7 +43,7 @@ class Beam(object):
         # print("scores", scores)
         # print("hiddens", hiddens)
 
-        return torch.cat(sequences), torch.FloatTensor(scores), torch.cat(hiddens)
+        return torch.cat(sequences), torch.FloatTensor(scores).to(DEVICE), torch.cat(hiddens)
 
 
 class BeamSearchDecoder(object):
@@ -101,11 +101,12 @@ class BeamSearchDecoder(object):
             if s == 0:
                 # each candiate has a tuple of (idx of previously decoded sequence, sequence including this new word,
                 # the new word, corresponding hidden layer)
-                new_candidates = [(rowsi[i], torch.cat((sequences[rowsi[i]], torch.LongTensor([topi[rowsi[i], colsi[i]]]))),
+                new_candidates = [(rowsi[i], torch.cat((sequences[rowsi[i]], torch.LongTensor([topi[rowsi[i], colsi[i]]]).to(DEVICE))),
                                    topsv[i], hiddens[rowsi[i]]) for i in range(self.config['beam_width'])]
             else:
                 new_candidates = [(new_candidates[rowsi[i]][0],
-                                   torch.cat((new_candidates[rowsi[i]][1] + torch.LongTensor([topi[rowsi[i], colsi[i]]]))), topsv[i],
+                                   torch.cat((new_candidates[rowsi[i]][1] + torch.LongTensor([topi[rowsi[i], colsi[i]]]).to(DEVICE))),
+                                   topsv[i],
                                    new_candidates[rowsi[i]][3]) for i in range(self.config['beam_width'])]
         return [BeamHypothesis(candidate[1], candidate[2], candidate[3]) for candidate in new_candidates]
 
