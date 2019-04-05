@@ -12,7 +12,7 @@ from data.wmt import WMTDataset
 from data.iwslt import IWSLTDataset
 from actions.train import Trainer
 from actions.evaluate import Evaluator
-from model.seq2seq import EncoderRNN, AttnKspanDecoderRNN, BatchEncoderRNN, BatchAttnKspanDecoderRNN3
+from model.seq2seq import BatchEncoderRNN, BatchAttnKspanDecoderRNN3
 from model import DEVICE, NUM_DEVICES
 
 # config: max_length, span_size, teacher_forcing_ratio, learning_rate, num_iters, print_every, plot_every, save_path,
