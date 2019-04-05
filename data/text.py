@@ -139,7 +139,7 @@ class TextDataset(Dataset):
             inputs = nn.utils.rnn.pad_sequence(
                 inputs, batch_first=True, padding_value=self.padding_idx)
             targets = nn.utils.rnn.pad_sequence(
-                [dummy_data] + targets, batch_first=True, padding_value=self.padding_idx)[1:]
+                [dummy_data] + list(targets), batch_first=True, padding_value=self.padding_idx)[1:]
 
             return {
                 'inputs': inputs,
