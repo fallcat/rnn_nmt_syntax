@@ -24,8 +24,8 @@ class BatchEncoderRNN(nn.Module):
         # print("batch size", batch_size)
 
         ##### input_seq.new_zeros v
-        # hidden = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=DEVICE)
-        hidden = input_seqs.new_zeros(self.num_layers, batch_size, self.hidden_size)
+        hidden = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=DEVICE)
+        # hidden = input_seqs.new_zeros(self.num_layers, batch_size, self.hidden_size)
         embedded = self.embedding(input_seqs)
         # print("embedded", embedded)
         # print("emb size", embedded.size())
