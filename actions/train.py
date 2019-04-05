@@ -121,7 +121,7 @@ class Trainer(object):
         #         print(message)
         #         return -1
 
-    def train_epoch(self, epoch, train_size=None):
+    def train_epoch(self, epoch):
         self.encoder.train()
         self.decoder.train()
         print("===== epoch " + str(epoch) + " =====")
@@ -161,17 +161,6 @@ class Trainer(object):
                     # self.experiment.log_metric("learning_rate", self.encoder_optimizer.param_groups['lr'])
                     accumulated_loss = 0
                     accumulated_loss_n = 0
-                if i % self.config['save_checkpoint_every'] == 0 or i == len_batches:
-                    self.save_checkpoint({
-                        'epoch': epoch,
-                        'step': i,
-                        'encoder_state': self.encoder.state_dict(),
-                        'decoder_state': self.decoder.state_dict(),
-                        'encoder_optimizer': self.encoder_optimizer.state_dict(),
-                        'decoder_optimizer': self.decoder_optimizer.state_dict(),
-                        'encoder_lr_scheduler': self.encoder_lr_scheduler.state_dict(),
-                        'decoder_lr_scheduler': self.decoder_lr_scheduler.state_dict()
-                    })
                 # print("time for batch {} is {}".format(i, time.time()-start_step))
 
             except RuntimeError as rte:
@@ -186,33 +175,27 @@ class Trainer(object):
                     print(message)
                     return -1
 
+        self.save_checkpoint({
+            'epoch': epoch,
+            'encoder_state': self.encoder.state_dict(),
+            'decoder_state': self.decoder.state_dict(),
+            'encoder_optimizer': self.encoder_optimizer.state_dict(),
+            'decoder_optimizer': self.decoder_optimizer.state_dict(),
+            'encoder_lr_scheduler': self.encoder_lr_scheduler.state_dict(),
+            'decoder_lr_scheduler': self.decoder_lr_scheduler.state_dict()
+        }, epoch)
+
         print('%s (%d %d%%) %.10f' % (
             time_since(start, (epoch + 1) / self.config['num_epochs']),
             epoch + 1, (epoch + 1) / self.config['num_epochs'] * 100,
             epoch_loss), flush=True)
         self.step = -1
 
-    def train(self, train_size=None):
-        # dataloader = self.prepare_dataloader(train_size)
+    def train(self):
         self.experiment.set_step(0)
-        if self.step > -1:
-            for epoch in range(self.epoch, self.config['num_epochs']):
-                self.train_epoch(epoch, train_size)
-        else:
-            for epoch in range(self.epoch + 1, self.config['num_epochs']):
-                self.train_epoch(epoch, train_size)
-
-    def train_and_evaluate(self, train_size=None):
-        # dataloader = self.prepare_dataloader(train_size)
-        if self.experiment is not None:
-            self.experiment.set_step(0)
-        if self.step > -1:
-            for epoch in range(self.epoch, self.config['num_epochs']):
-                self.train_epoch(epoch, train_size)
-                self.evaluate_nll()
-        else:
-            for epoch in range(self.epoch + 1, self.config['num_epochs']):
-                self.train_epoch(epoch, train_size)
+        for epoch in range(self.epoch + 1, self.config['num_epochs']):
+            self.train_epoch(epoch)
+            if self.config['eval_when_train']:
                 self.evaluate_nll()
 
     def evaluate_nll(self):
@@ -299,7 +282,7 @@ class Trainer(object):
             else:
                 print("=> no checkpoint found at '{}'".format(restore_path))
 
-    def save_checkpoint(self, state):
-        torch.save(state, self.config['experiment_path'] + self.config['save_path'])
+    def save_checkpoint(self, state, epoch):
+        torch.save(state, self.config['experiment_path'] + self.config['save_path'] + str(epoch) + ".pth.tar")
         # if is_best:
         #     shutil.copyfile(self.config['save_path'], self.config['best_save_path'])

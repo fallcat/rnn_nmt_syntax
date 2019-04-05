@@ -56,7 +56,8 @@ def main():
         'beam_search_all': args.beam_search_all,
         'clip': args.clip,
         'search_method': args.search_method,
-        'sort_data': args.sort_data
+        'sort_data': args.sort_data,
+        'eval_when_train': args.eval_when_train
     }
 
     # config dataloader
@@ -112,7 +113,7 @@ def main():
                           experiment=experiment)
         if args.restore is not None:
             trainer.restore_checkpoint(args.experiment_path + args.restore)
-        trainer.train_and_evaluate(args.train_size)
+        trainer.train()
     elif args.mode == "evaluate":
         evaluator = Evaluator(config=config, models=models, dataloader=dataloader_valid, experiment=experiment)
         if args.restore is not None:
