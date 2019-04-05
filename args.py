@@ -133,6 +133,14 @@ def add_data_args(parser):
              'If it is evaluating, and using one GPU, then do not drop.'
     )
 
+    group.add_argument(
+        '--sort-data',
+        action='store',
+        type=bool,
+        default=True,
+        help='Whether or not to sort the data when making the dataset'
+    )
+
     return group
 
 

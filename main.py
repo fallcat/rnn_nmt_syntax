@@ -55,7 +55,8 @@ def main():
         'beam_width': args.beam_width,
         'beam_search_all': args.beam_search_all,
         'clip': args.clip,
-        'search_method': args.search_method
+        'search_method': args.search_method,
+        'sort_data': args.sort_data
     }
 
     # config dataloader

@@ -15,8 +15,8 @@ class WMTDataset(TextDataset):
     """
     Prepare data from WMTDataset
     """
-    def __init__(self, max_length, span_size, split="train", reverse=False):
-        super(WMTDataset, self).__init__(max_length, span_size, split, reverse)
+    def __init__(self, max_length, span_size, sort, split="train", reverse=False):
+        super(WMTDataset, self).__init__(max_length, span_size, sort, split, reverse)
 
     def read_vocab(self):
         t = tarfile.open(WMTDataset.TAR_PATH, "r")

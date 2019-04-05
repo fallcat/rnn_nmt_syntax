@@ -20,12 +20,13 @@ class TextDataset(Dataset):
     """
     Prepare data from WMTDataset
     """
-    def __init__(self, max_length, span_size, split="train", reverse=False):
+    def __init__(self, max_length, span_size, sort, split="train", reverse=False):
         self.word2index = {PAD: 0, SOS: 1, EOS: 2, UNK: 3}
         self.word2count = {}
         self.index2word = {0: PAD, 1: SOS, 2: EOS, 3: UNK}
         self.num_words = 4  # Count SOS and EOS and UNK
         self.split = split
+        self.sort = sort
 
         self.span_size = span_size
         self.reverse = reverse
