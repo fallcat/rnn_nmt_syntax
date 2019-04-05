@@ -79,25 +79,25 @@ class Trainer(object):
         # print("still fine here 1")
 
         # put this in dataloader
-        targets2 = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size']),  dtype=torch.long, device=DEVICE)
-        targets2[:, :batch['targets'].size()[1]] = batch['targets']
         decoder_hidden = encoder_hidden
 
         # make it a list and cat later
-        decoder_outputs = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size'],
-                                       self.dataset.num_words), dtype=torch.float, device=DEVICE) # remove device
+        # decoder_outputs = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size'],
+        #                                self.dataset.num_words), dtype=torch.float, device=DEVICE) # remove device
         # print("decoder_outputs.get_device()", decoder_outputs.get_device())
+        decoder_outputs = []
         for i in range(0, batch['span_seq_len'] * self.config['span_size'], self.config['span_size']):
             # print("222", i)
             # GPUtil.showUtilization()
             # print("still fine here !", i)
             # print("decoding at ", i)
-            decoder_output, decoder_hidden, decoder_attn = self.decoder(targets2[:, i:i+self.config['span_size']],
+            decoder_output, decoder_hidden, decoder_attn = self.decoder(batch['targets'][:, i:i+self.config['span_size']],
                                                                         decoder_hidden, encoder_outputs)
-            decoder_outputs[:, i:i+self.config['span_size']] = decoder_output
-
+            # decoder_outputs[:, i:i+self.config['span_size']] = decoder_output
+            decoder_outputs.append(decoder_output)
+        decoder_outputs = torch.cat(decoder_outputs, dim=1)
         loss = self.criterion(decoder_outputs[:, :-self.config['span_size']].contiguous().view(-1, self.dataset.num_words),
-                               targets2[:, self.config['span_size']:].contiguous().view(-1))
+                              batch['targets'][:, self.config['span_size']:].contiguous().view(-1))
 
         # print("still fine here 2")
 
