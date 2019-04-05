@@ -11,6 +11,7 @@ import shutil
 import random
 import collections, gc, torch
 import numpy as np
+from sacremoses import MosesDetokenizer
 
 import matplotlib.pyplot as plt
 plt.switch_backend('agg')
@@ -82,12 +83,13 @@ def debug_memory():
 
 
 def save_predictions(preds, evaluate_path):
+    md = MosesDetokenizer()
     with open(evaluate_path, 'w') as f:
         for pred in preds:
-            if 'EOS' in pred:
-                f.write(' '.join(pred[:pred.index('EOS')]) + '\n')
-            else:
-                f.write(' '.join(pred) + '\n')
+            if '<EOS>' in pred:
+                pred = pred[:pred.index('<EOS>')]
+            detokenized = md.detokenize(' '.join(pred).replace('@@ ', '').split())
+            f.write(detokenized + '\n')
 
 # Beam search utils
 

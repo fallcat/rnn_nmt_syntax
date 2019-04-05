@@ -56,6 +56,7 @@ def normalize_string(s):
     s = re.sub(r"[^a-zA-Z.!?]+", r" ", s)
     return s
 
+
 def read_langs(lang1, lang2, reverse=False):
     print("Reading lines...")
 
