@@ -132,10 +132,11 @@ class TextDataset(Dataset):
             # targets2 = torch.zeros((batch_size, span_seq_len * self.span_size),
             #                               dtype=torch.long, device=DEVICE)
 
-            print("targets", targets)
-            print("targets", type(targets))
-            dummy_data = torch.ones((1, span_seq_len * self.span_size), dtype=torch.long)
 
+            dummy_data = torch.ones((span_seq_len * self.span_size), dtype=torch.long)
+
+            print("targets", targets.size())
+            print("dummy_data", dummy_data.size())
             inputs = nn.utils.rnn.pad_sequence(
                 inputs, batch_first=True, padding_value=self.padding_idx)
             targets = nn.utils.rnn.pad_sequence(
