@@ -103,7 +103,7 @@ def add_data_args(parser):
     group.add_argument('--seed', action='store', type=int, default=None,
                             help='Set seed for random scheduler')
 
-    group.add_argument('--shuffle', action='store', type=bool, default=True,
+    group.add_argument('--shuffle', action='store_false',
                             help='Shuffle the dataloader')
 
     group.add_argument('--dataset', action='store', type=str, default="WMT",
@@ -126,35 +126,27 @@ def add_data_args(parser):
 
     group.add_argument(
         '--drop-last',
-        action='store',
-        type=bool,
-        default=True,
+        action='store_false',
         help='Whether or not to drop the last minibatch. If it is training, and using multiple GPU, then drop.'
              'If it is evaluating, and using one GPU, then do not drop.'
     )
 
     group.add_argument(
         '--sort-data',
-        action='store',
-        type=bool,
-        default=True,
+        action='store_false',
         help='Whether or not to sort the data when making the dataset'
     )
 
     group.add_argument(
         '--eval-when-train',
-        action='store',
-        type=bool,
-        default=True,
+        action='store_false',
         help='Whether or not evaluate when training'
     )
 
     group.add_argument(
         '--filter',
-        action='store',
-        type=bool,
-        default=True,
-        help='Whether or not filter data by max length'
+        action='store_false',
+        help='Whether or not filter data by length'
     )
 
     return group
