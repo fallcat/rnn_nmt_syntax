@@ -15,8 +15,8 @@ class WMTDataset(TextDataset):
     """
     Prepare data from WMTDataset
     """
-    def __init__(self, max_length, span_size, sort, split="train", reverse=False):
-        super(WMTDataset, self).__init__(max_length, span_size, sort, split, reverse)
+    def __init__(self, max_length, span_size, sort, filter, split="train", reverse=False):
+        super(WMTDataset, self).__init__(max_length, span_size, sort, filter, split, reverse)
 
     def read_vocab(self):
         t = tarfile.open(WMTDataset.TAR_PATH, "r")
@@ -40,8 +40,10 @@ class WMTDataset(TextDataset):
             pairs = [list(reversed(p)) for p in pairs]
 
         print("Read %s sentence pairs in %s" % (len(pairs), self.split))
-
-        pairs = self.filter_pairs(pairs)
+        if self.filter:
+            pairs = self.filter_pairs(pairs)
         print("Trimmed to %s sentence pairs" % len(pairs))
+        if self.sort:
+            pairs = sorted(pairs, key=lambda x: len(x[1]))
 
         self.pairs = pairs

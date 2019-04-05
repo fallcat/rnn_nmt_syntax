@@ -149,6 +149,14 @@ def add_data_args(parser):
         help='Whether or not evaluate when training'
     )
 
+    group.add_argument(
+        '--filter',
+        action='store',
+        type=bool,
+        default=True,
+        help='Whether or not filter data by max length'
+    )
+
     return group
 
 
