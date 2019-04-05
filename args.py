@@ -51,6 +51,12 @@ def add_train_args(parser):
     parser.add_argument('--clip', type=float, default=2.,
                         help='Gradient clipping')
 
+    group.add_argument(
+        '--eval-when-train',
+        action='store_false',
+        help='Whether or not evaluate when training'
+    )
+
     return group
 
 
@@ -135,12 +141,6 @@ def add_data_args(parser):
         '--sort-data',
         action='store_false',
         help='Whether or not to sort the data when making the dataset'
-    )
-
-    group.add_argument(
-        '--eval-when-train',
-        action='store_false',
-        help='Whether or not evaluate when training'
     )
 
     group.add_argument(

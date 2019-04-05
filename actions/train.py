@@ -23,14 +23,20 @@ class Trainer(object):
         self.decoder = models['decoder']
         optimizers = {"SGD": optim.SGD, "Adadelta": optim.Adadelta, "Adagrad": optim.Adagrad, "RMSprop": optim.RMSprop, "Adam": optim.Adam}
         # concat the params in one optimizer
-        self.encoder_optimizer = optimizers[self.config["optimizer"]](self.encoder.parameters(), lr=self.config['learning_rate'], weight_decay=self.config['weight_decay'])
-        self.decoder_optimizer = optimizers[self.config["optimizer"]](self.decoder.parameters(), lr=self.config['learning_rate'], weight_decay=self.config['weight_decay'])
-        self.encoder_lr_scheduler = optim.lr_scheduler.ExponentialLR(
-            self.encoder_optimizer,
-            config['lr_decay']
-        )
-        self.decoder_lr_scheduler = optim.lr_scheduler.ExponentialLR(
-            self.decoder_optimizer,
+        # self.encoder_optimizer = optimizers[self.config["optimizer"]](self.encoder.parameters(), lr=self.config['learning_rate'], weight_decay=self.config['weight_decay'])
+        # self.decoder_optimizer = optimizers[self.config["optimizer"]](self.decoder.parameters(), lr=self.config['learning_rate'], weight_decay=self.config['weight_decay'])
+        self.optimizer = optimizers[self.config['optimizer']](list(self.encoder.parameters()) + list(self.decoder.parameters()),
+                                                              lr=self.config['learning_rate'], weight_decay=self.config['weight_decay'])
+        # self.encoder_lr_scheduler = optim.lr_scheduler.ExponentialLR(
+        #     self.encoder_optimizer,
+        #     config['lr_decay']
+        # )
+        # self.decoder_lr_scheduler = optim.lr_scheduler.ExponentialLR(
+        #     self.decoder_optimizer,
+        #     config['lr_decay']
+        # )
+        self.lr_scheduler = optim.lr_scheduler.ExponentialLR(
+            self.optimizer,
             config['lr_decay']
         )
         self.criterion = nn.NLLLoss(ignore_index=0)
@@ -52,74 +58,35 @@ class Trainer(object):
         """
         train a batch of tensors
         :param batch: batch of sentences
-        :return:
+        :return: float: Average loss per token
         """
 
         # Zero gradients of both optimizers
-        self.encoder_optimizer.zero_grad()
-        self.decoder_optimizer.zero_grad()
-        total_length = sum(batch['input_lens']).item() + sum(batch['target_lens']).item()
+        self.optimizer.zero_grad()
 
         # Run words through encoder
-        # try:
-        # print("Batch size:", batch['inputs'].size()[0])
-        # print("Total length:", batch['inputs'].size()[1])
-        # print("still fine here 0")
-        # print("111")
-        # GPUtil.showUtilization()
+        # Make sure inputs are all gathered to be the longest length of the input, or else error will occur
+        total_length = sum(batch['input_lens']).item() + sum(batch['target_lens']).item()
         encoder_outputs, encoder_hidden = self.encoder(batch['inputs'], batch['input_lens'], batch['inputs'].size()[1])
-        # GPUtil.showUtilization()
-        # except Exception as ex:
-        #     template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-        #     message = template.format(type(ex).__name__, ex.args)
-        #     print(message)
-        #     print("Batch size:", batch['inputs'].size()[0])
-        #     print("Total length:", batch['inputs'].size()[1])
-        #     print(batch['inputs'])
-        # print("still fine here 1")
 
-        # put this in dataloader
         decoder_hidden = encoder_hidden
 
-        # make it a list and cat later
-        # decoder_outputs = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size'],
-        #                                self.dataset.num_words), dtype=torch.float, device=DEVICE) # remove device
-        # print("decoder_outputs.get_device()", decoder_outputs.get_device())
         decoder_outputs = []
         for i in range(0, batch['span_seq_len'] * self.config['span_size'], self.config['span_size']):
-            # print("222", i)
-            # GPUtil.showUtilization()
-            # print("still fine here !", i)
-            # print("decoding at ", i)
             decoder_output, decoder_hidden, decoder_attn = self.decoder(batch['targets'][:, i:i+self.config['span_size']],
                                                                         decoder_hidden, encoder_outputs)
-            # decoder_outputs[:, i:i+self.config['span_size']] = decoder_output
             decoder_outputs.append(decoder_output)
         decoder_outputs = torch.cat(decoder_outputs, dim=1)
         loss = self.criterion(decoder_outputs[:, :-self.config['span_size']].contiguous().view(-1, self.dataset.num_words),
                               batch['targets'][:, self.config['span_size']:].contiguous().view(-1))
 
-        # print("still fine here 2")
-
-        # try:
         loss = loss.sum()
         loss.backward()
         torch.nn.utils.clip_grad_norm_(self.encoder.parameters(), self.config['clip'])
         torch.nn.utils.clip_grad_norm_(self.decoder.parameters(), self.config['clip'])
-        self.encoder_lr_scheduler.step()
-        self.decoder_lr_scheduler.step()
-        self.encoder_optimizer.step()
-        self.decoder_optimizer.step()
+        self.lr_scheduler.step()
+        self.optimizer.step()
         return loss.item()/total_length
-        # except RuntimeError as rte:
-        #     if 'out of memory' in str(rte):
-        #         torch.cuda.empty_cache()
-        #         print("Out of memory")
-        #     else:
-        #         template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-        #         message = template.format(type(rte).__name__, rte.args)
-        #         print(message)
-        #         return -1
 
     def train_epoch(self, epoch):
         self.encoder.train()
@@ -179,10 +146,12 @@ class Trainer(object):
             'epoch': epoch,
             'encoder_state': self.encoder.state_dict(),
             'decoder_state': self.decoder.state_dict(),
-            'encoder_optimizer': self.encoder_optimizer.state_dict(),
-            'decoder_optimizer': self.decoder_optimizer.state_dict(),
-            'encoder_lr_scheduler': self.encoder_lr_scheduler.state_dict(),
-            'decoder_lr_scheduler': self.decoder_lr_scheduler.state_dict()
+            'optimizer': self.optimizer.state_dict(),
+            'lr_scheduler': self.lr_scheduler.state_dict()
+            # 'encoder_optimizer': self.encoder_optimizer.state_dict(),
+            # 'decoder_optimizer': self.decoder_optimizer.state_dict(),
+            # 'encoder_lr_scheduler': self.encoder_lr_scheduler.state_dict(),
+            # 'decoder_lr_scheduler': self.decoder_lr_scheduler.state_dict()
         }, epoch)
 
         print('%s (%d %d%%) %.10f' % (
@@ -272,10 +241,12 @@ class Trainer(object):
                 self.encoder.load_state_dict(checkpoint['encoder_state'])
                 self.decoder.load_state_dict(checkpoint['decoder_state'])
                 try:
-                    self.encoder_optimizer.load_state_dict(checkpoint['encoder_optimizer'])
-                    self.decoder_optimizer.load_state_dict(checkpoint['decoder_optimizer'])
-                    self.encoder_lr_scheduler.load_state_dict(checkpoint['encoder_lr_scheduler'])
-                    self.decoder_lr_scheduler.load_state_dict(checkpoint['decoder_lr_scheduler'])
+                    self.optimizer.load_state_dict(checkpoint['optimizer'])
+                    self.lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
+                    # self.encoder_optimizer.load_state_dict(checkpoint['encoder_optimizer'])
+                    # self.decoder_optimizer.load_state_dict(checkpoint['decoder_optimizer'])
+                    # self.encoder_lr_scheduler.load_state_dict(checkpoint['encoder_lr_scheduler'])
+                    # self.decoder_lr_scheduler.load_state_dict(checkpoint['decoder_lr_scheduler'])
                 except:
                     print("exception when loading state dict to optimizer and lr scheduler")
                 print("=> loaded checkpoint '{}' (epoch {}, step {})".format(restore_path, checkpoint['epoch'], checkpoint['step']))
