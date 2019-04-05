@@ -471,7 +471,7 @@ class BatchAttnKspanDecoderRNN3(nn.Module):
         rnn_output, hidden = self.gru(embeddeds, hidden)
 
         # for l in range(span_seq_len):
-        print("rnn_output", rnn_output.expand((rnn_output.size()[0], encoder_seq_len, rnn_output.size()[2])).size())
+        # print("rnn_output", rnn_output.expand((rnn_output.size()[0], encoder_seq_len, rnn_output.size()[2])).size())
         # print("encoder_outputs", encoder_outputs.size())
         # print(torch.cat((rnn_output, encoder_outputs), 1).size())
         attn_weight = F.softmax(self.v(self.attn(torch.cat((rnn_output.expand((rnn_output.size()[0], encoder_seq_len, rnn_output.size()[2])), encoder_outputs), 2))), dim=1)
