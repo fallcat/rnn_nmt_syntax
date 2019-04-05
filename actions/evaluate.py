@@ -100,7 +100,7 @@ class Evaluator(object):
             preds.append(outputs)
         return preds
 
-    def evaluate(self):
+    def evaluate_greedy(self):
         batches = self.dataloader
         start = time.time()
         preds = []
@@ -109,6 +109,14 @@ class Evaluator(object):
             preds.extend(pred)
         print("Evaluation time for {} sentences is {}".format(len(self.dataloader.dataset.pairs), time.time() - start))
         return preds
+
+    def evaluate(self, method):
+        if method == 'greedy':
+            return self.evaluate_greedy()
+        elif method == 'beam':
+            return self.evaluate_beam()
+        else:
+            raise ValueError("Unknown evaluate method!!")
 
     def restore_checkpoint(self, restore_path):
         if restore_path is not None:

@@ -54,7 +54,8 @@ def main():
         'drop_last': args.drop_last,
         'beam_width': args.beam_width,
         'beam_search_all': args.beam_search_all,
-        'clip': args.clip
+        'clip': args.clip,
+        'search_method': args.search_method
     }
 
     # config dataloader
@@ -115,7 +116,7 @@ def main():
         evaluator = Evaluator(config=config, models=models, dataloader=dataloader_valid, experiment=experiment)
         if args.restore is not None:
             evaluator.restore_checkpoint(args.experiment_path + args.restore)
-        preds = evaluator.evaluate_beam()
+        preds = evaluator.evaluate(args.search_method)
         save_predictions(preds, args.evaluate_path)
 
 

@@ -78,7 +78,7 @@ class BeamSearchDecoder(object):
         for s in range(self.config['span_size']):
             dims_elements = self.config['beam_width'] ** (self.config['span_size'] - s)
             dim_idx = new_topi // dims_elements
-            new_topi -= dim_idx * dims_elements
+            torch.remainder_(new_topi, dims_elements)
             for i, new_subseq in enumerate(top_indices):
                 new_subseq.append(dim_idx[i])
         return [BeamHypothesis(torch.cat(sequences[new_subseq[0]],
@@ -97,7 +97,7 @@ class BeamSearchDecoder(object):
             topsv, topsi = newscores.view(-1).topk(self.config['beam_width'])
             rows, cols = topv[:, s, :].size()
             rowsi = topsi // cols  # indices of the topk beams
-            colsi = topsi - rowsi * cols
+            colsi = torch.remainder(topsi, cols)
             if s == 0:
                 # each candiate has a tuple of (idx of previously decoded sequence, sequence including this new word,
                 # the new word, corresponding hidden layer)

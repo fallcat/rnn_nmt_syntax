@@ -61,6 +61,14 @@ def add_evaluate_args(parser):
                             help='Specify a path to store the evaluated sentences')
 
     group.add_argument(
+        '--search-method',
+        type=str,
+        default='greedy',
+        choices=['greedy', 'beam'],
+        help='Use greedy search or beam search to evaluate.'
+    )
+
+    group.add_argument(
         '--length-penalty',
         type=float,
         default=0.6,
