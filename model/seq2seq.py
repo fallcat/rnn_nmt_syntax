@@ -174,7 +174,9 @@ class BatchAttnKspanDecoderRNN3(nn.Module):
         self.cat_embeddings = nn.Linear(self.hidden_size * self.span_size, self.hidden_size)
         # self.attn = nn.Linear(self.hidden_size * 2, self.hidden_size)
         # self.v = nn.Linear(self.hidden_size, 1)
-        self.attn = nn.Linear(self.hidden_size * 2, 1)
+        self.attn = nn.Parameter(torch.Tensor(self.hidden_size * 2, self.hidden_size))
+        self.v = nn.Parameter(torch.Tensor(self.hidden_size, 1))
+        # self.attn = nn.Linear(self.hidden_size * 2, 1)
         self.attn_combine = nn.Linear(self.hidden_size * 2, self.hidden_size)
         self.dropout = nn.Dropout(self.dropout_p)
         self.gru = nn.GRU(self.hidden_size, self.hidden_size, self.num_layers, dropout=self.dropout_p, batch_first=True)
@@ -215,9 +217,17 @@ class BatchAttnKspanDecoderRNN3(nn.Module):
         #     rnn_output.expand((rnn_output.size()[0], encoder_seq_len, rnn_output.size()[2])),
         #     encoder_outputs), 2))), dim=1)
 
-        attn_weight = F.softmax(self.attn(torch.cat((
+        # attn_weight = F.softmax(self.attn(torch.cat((
+        #     rnn_output.expand((rnn_output.size()[0], encoder_seq_len, rnn_output.size()[2])),
+        #     encoder_outputs), 2)), dim=1)
+
+        print("aa", torch.cat((
             rnn_output.expand((rnn_output.size()[0], encoder_seq_len, rnn_output.size()[2])),
-            encoder_outputs), 2)), dim=1)
+            encoder_outputs), 2).size())
+
+        attn_weight = F.softmax(torch.chain_matmul(torch.cat((
+            rnn_output.expand((rnn_output.size()[0], encoder_seq_len, rnn_output.size()[2])),
+            encoder_outputs), 2), self.attn, self.v), dim=1)
 
         # attn_weight B x S x 1
         # print("attn_weight", attn_weight.size())
