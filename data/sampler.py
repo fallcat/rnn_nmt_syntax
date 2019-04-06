@@ -36,6 +36,7 @@ class SequenceLengthSampler(Sampler):
 
         def split(batch):
             ''' Split a batch across devices '''
+            print("batch", batch)
             device_batches = []
             example_length = sum(batch_max(batch))
             for max_device_length in max_lengths:
@@ -60,6 +61,7 @@ class SequenceLengthSampler(Sampler):
             print("expected_batch_lengths", expected_batch_lengths)
             expected_batch_length = sum(expected_batch_lengths) * (len(next_batch) + 1)
             print("expected_batch_length", expected_batch_length)
+            print("max_batch_length", max_batch_length)
             if expected_batch_length > max_batch_length:
                 device_batches, next_batch = split(next_batch)
                 self.batches.append(device_batches)
@@ -67,6 +69,7 @@ class SequenceLengthSampler(Sampler):
 
             max_batch_lengths = pairwise_max(lengths, max_batch_lengths)
             next_batch.append((idx, lengths))
+            print("next_batch", next_batch)
 
         # There is always at least one left over batch since it's the last step in the loop, so make
         # sure to add it to the list of batches.
