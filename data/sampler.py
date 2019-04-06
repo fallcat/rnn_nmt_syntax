@@ -57,7 +57,9 @@ class SequenceLengthSampler(Sampler):
         max_batch_length = sum(max_lengths)
         for idx, lengths in sorted(enumerate(example_lengths), key=lambda x: x[1]):
             expected_batch_lengths = pairwise_max(lengths, max_batch_lengths)
+            print("expected_batch_lengths", expected_batch_lengths)
             expected_batch_length = sum(expected_batch_lengths) * (len(next_batch) + 1)
+            print("expected_batch_length", expected_batch_length)
             if expected_batch_length > max_batch_length:
                 device_batches, next_batch = split(next_batch)
                 self.batches.append(device_batches)
