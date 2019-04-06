@@ -161,7 +161,8 @@ class Trainer(object):
         self.step = -1
 
     def train(self):
-        self.experiment.set_step(0)
+        if self.experiment is not None:
+            self.experiment.set_step(0)
         for epoch in range(self.epoch + 1, self.config['num_epochs']):
             self.train_epoch(epoch)
             if self.config['eval_when_train']:
