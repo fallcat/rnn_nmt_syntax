@@ -38,6 +38,9 @@ class SequenceLengthSampler(Sampler):
             example_length = sum(batch_max(batch))
             for max_device_length in max_lengths:
                 max_idx = max_device_length // example_length
+                print("batch[:max_idx]", batch[:max_idx])
+                print("batch[:max_idx] len", len(batch[:max_idx]))
+                print("batch[:max_idx].shape", batch[:max_idx].shape)
                 ids, _ = zip(*batch[:max_idx])
                 device_batches.append(ids)
                 batch = batch[max_idx:]
