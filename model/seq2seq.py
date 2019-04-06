@@ -221,13 +221,17 @@ class BatchAttnKspanDecoderRNN3(nn.Module):
         #     rnn_output.expand((rnn_output.size()[0], encoder_seq_len, rnn_output.size()[2])),
         #     encoder_outputs), 2)), dim=1)
 
-        print("aa", torch.cat((
-            rnn_output.expand((rnn_output.size()[0], encoder_seq_len, rnn_output.size()[2])),
-            encoder_outputs), 2).size())
+        # print("aa", torch.cat((
+        #     rnn_output.expand((rnn_output.size()[0], encoder_seq_len, rnn_output.size()[2])),
+        #     encoder_outputs), 2).size())
 
-        attn_weight = F.softmax(torch.chain_matmul(torch.cat((
+        concatted = torch.cat((
             rnn_output.expand((rnn_output.size()[0], encoder_seq_len, rnn_output.size()[2])),
-            encoder_outputs), 2), self.attn, self.v), dim=1)
+            encoder_outputs), 2)
+
+        concatted_size = concatted.size()
+
+        attn_weight = F.softmax(torch.chain_matmul(concatted.view(-1, concatted.size()[2]), self.attn, self.v).view(concatted_size[0], concatted_size[1], -1), dim=1)
 
         # attn_weight B x S x 1
         # print("attn_weight", attn_weight.size())
