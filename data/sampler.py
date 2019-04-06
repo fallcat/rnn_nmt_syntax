@@ -15,6 +15,8 @@ class SequenceLengthSampler(Sampler):
         max_lengths - a list of lengths of the desired total sequence length for each device
         lengths - a list containing the length for each example in the dataset
         '''
+        print("max_lengths", max_lengths)
+        print("example_lengths", example_lengths)
         super(SequenceLengthSampler, self).__init__(example_lengths)
 
         self.batches = []
