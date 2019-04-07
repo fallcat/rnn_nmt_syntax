@@ -19,8 +19,8 @@ class BatchEncoderRNN(nn.Module):
     def forward(self, input_seqs, input_lengths, total_length, hidden=None):
         # print("inp", input_seqs.size())
         batch_size = input_seqs.size()[0]
-        print("inside batch encoder")
-        print("inp", input_seqs.size())
+        # print("inside batch encoder")
+        # print("inp", input_seqs.size())
         # print("input_seq len", input_seqs.size()[1])
         # print("batch size", batch_size)
 
