@@ -2,6 +2,7 @@
 A module implementing various data samplers for datasets.
 '''
 import numpy as np
+import psutil
 from model import NUM_DEVICES
 from torch.utils.data import Sampler
 
@@ -98,6 +99,8 @@ class SequenceLengthSampler2(Sampler):
 
     def __iter__(self):
         ''' Iterate over the batches '''
+        vm = psutil.virtual_memory()
+        print("1virtual_memory", vm)
         max_tokens = self.batch_size
         max_sentences = float("Inf")
         bsz_mult = NUM_DEVICES
@@ -125,6 +128,8 @@ class SequenceLengthSampler2(Sampler):
                     bsz_mult * (len(batch) // bsz_mult),
                     len(batch) % bsz_mult,
                 )
+                vm = psutil.virtual_memory()
+                print("2virtual_memory", vm)
                 yield batch[:mod_len]
                 batch = batch[mod_len:]
                 sample_lens = sample_lens[mod_len:]
