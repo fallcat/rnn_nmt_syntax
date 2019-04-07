@@ -176,6 +176,9 @@ class BatchAttnKspanDecoderRNN3(nn.Module):
         # self.v = nn.Linear(self.hidden_size, 1)
         self.attn = nn.Parameter(torch.Tensor(self.hidden_size * 2, self.hidden_size))
         self.v = nn.Parameter(torch.Tensor(self.hidden_size, 1))
+        gain = nn.init.calculate_gain('linear')
+        nn.init.xavier_uniform_(self.attn, gain)
+        nn.init.xavier_uniform_(self.v, gain)
         # self.attn = nn.Linear(self.hidden_size * 2, 1)
         self.attn_combine = nn.Linear(self.hidden_size * 2, self.hidden_size)
         self.dropout = nn.Dropout(self.dropout_p)
@@ -187,43 +190,16 @@ class BatchAttnKspanDecoderRNN3(nn.Module):
         # Assume inputs is padded to max length, max_length is multiple of span_size
         # ==========================================================================
 
-        # inputs = [(len(inp) % self.span_size + self.span_size) for inp in inputs]
         bsz = inputs.size()[0]
         encoder_seq_len = encoder_outputs.size()[1]
-        # print("seq_len", seq_len)
         embeddeds = self.embedding(inputs)  # B x S -> B x S x H
-        # print("embedds", embeddeds.size())
         embeddeds = embeddeds.view(bsz, -1)  # B x (S x H)
-        # embeddeds = tuple([self.embedding(input_i).view(1, 1, -1)[0] for input_i in input])
-        # embeddeds = torch.cat(embeddeds, 1)
         embeddeds = self.dropout(embeddeds)  # B x (S x H)
-        # hiddens = torch.zeros(span_seq_len, bsz, self.hidden_size, device=DEVICE)
-        # outputs = torch.zeros(bsz, span_seq_len, self.hidden_size, device=DEVICE)
-        # attn_weights = torch.zeros(1, bsz, self.max_length)
-        # print("embeddeds", embeddeds.size())
 
         embeddeds = self.cat_embeddings(embeddeds).unsqueeze(1)
-        # print("embeddeds", embeddeds.size())
-        # print("hidden", hidden.size())
 
         self.gru.flatten_parameters()
         rnn_output, hidden = self.gru(embeddeds, hidden)
-
-        # for l in range(span_seq_len):
-        # print("rnn_output", rnn_output.expand((rnn_output.size()[0], encoder_seq_len, rnn_output.size()[2])).size())
-        # print("encoder_outputs", encoder_outputs.size())
-        # print(torch.cat((rnn_output, encoder_outputs), 1).size())
-        # attn_weight = F.softmax(self.v(self.attn(torch.cat((
-        #     rnn_output.expand((rnn_output.size()[0], encoder_seq_len, rnn_output.size()[2])),
-        #     encoder_outputs), 2))), dim=1)
-
-        # attn_weight = F.softmax(self.attn(torch.cat((
-        #     rnn_output.expand((rnn_output.size()[0], encoder_seq_len, rnn_output.size()[2])),
-        #     encoder_outputs), 2)), dim=1)
-
-        # print("aa", torch.cat((
-        #     rnn_output.expand((rnn_output.size()[0], encoder_seq_len, rnn_output.size()[2])),
-        #     encoder_outputs), 2).size())
 
         concatted = torch.cat((
             rnn_output.expand((rnn_output.size()[0], encoder_seq_len, rnn_output.size()[2])),
@@ -233,34 +209,14 @@ class BatchAttnKspanDecoderRNN3(nn.Module):
 
         attn_weight = F.softmax(torch.chain_matmul(concatted.view(-1, concatted.size()[2]), self.attn, self.v).view(concatted_size[0], concatted_size[1], -1), dim=1)
 
-        # attn_weight B x S x 1
-        # print("attn_weight", attn_weight.size())
-        # print("encoder_outputs", encoder_outputs.size())
-        # attn_weights[l] = attn_weight
-        # print("attn_weight.unsqueeze(1)", attn_weight.unsqueeze(1).size())
-        # print("encoder_outputs", encoder_outputs.size())
-        # print("attn_weight.transpose(1, 2)", attn_weight.transpose(1, 2).size())
-        # print("encoder_outputs", encoder_outputs.size())
         attn_applied = torch.bmm(attn_weight.transpose(1, 2), encoder_outputs) # B x 1 x H
 
-        # print("embeddeds", embeddeds[:, l].size())
-        # print("attn_applied", attn_applied.size())
         output = torch.cat((rnn_output, attn_applied), 2)
-        # print("output", output.size())
+
         output = self.attn_combine(output)
 
         output = F.relu(output)
-        # print("output", output.size())
-        # print("hidden", hidden.size())
-        # outputs[:, l:l + 1] = output
-            #             outputs.append(output)
-            # hiddens[l] = hidden
-        # for i, gru in enumerate(self.grus):
-        #     output, hiddens[i] = gru(output, hiddens[i])
         output = self.out(output).view(bsz, self.span_size, -1)
         output = F.log_softmax(output, dim=2)
-        # print("decodre outputs", outputs.size())
-        # output = torch.split(output, self.output_size, dim=1)
 
-        # output = tuple([F.log_softmax(output_i, dim=1) for output_i in output])
         return output, hidden, attn_weight
