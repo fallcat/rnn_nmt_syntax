@@ -72,8 +72,8 @@ class SequenceLengthSampler(Sampler):
             self.batches.append(data_indices[i:i + batch_max_len])
             i += batch_max_len
 
-        if not drop_last and i < len(data_indices) - 1:
-            self.batches.append(data_indices[i:])
+        if drop_last and len(self.batches[-1]) < batch_max_len:
+            self.batches = self.batches[:-1]
         print("num batches", len(self.batches))
 
     def __len__(self):
