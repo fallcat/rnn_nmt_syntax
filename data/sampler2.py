@@ -54,6 +54,8 @@ class SequenceLengthSampler(Sampler):
         batch = []
 
         for idx in data_indices:
+            print("====")
+            print("idx", idx)
             if len(batch) == 0:
                 seq_len = example_lengths[idx][1]
                 print("seq_len", seq_len)
@@ -61,7 +63,8 @@ class SequenceLengthSampler(Sampler):
                 print("batch_max_len", batch_max_len)
                 batch_max_len -= batch_max_len % NUM_DEVICES
             batch.append(idx)
-            if len(batch) == batch_max_len:
+            print("batch len", len(batch))
+            if len(batch) >= batch_max_len:
                 self.batches.append(batch)
                 batch = []
 
