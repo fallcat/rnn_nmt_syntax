@@ -63,7 +63,10 @@ class SequenceLengthSampler(Sampler):
             # print("seq_len", seq_len)
             # print(example_lengths[data_indices[i]])
             batch_max_len = batch_size // seq_len
+            print("batch_max_len", batch_max_len)
+            print("NUM_DEVICES", NUM_DEVICES)
             batch_max_len -= batch_max_len % NUM_DEVICES
+            print("batch_max_len", batch_max_len)
             # print("batch_max_len", batch_max_len)
             self.batches.append(data_indices[i:i + batch_max_len])
             i += batch_max_len
