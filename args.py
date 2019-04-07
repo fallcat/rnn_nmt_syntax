@@ -119,7 +119,7 @@ def add_data_args(parser):
         '--batch-method',
         type=str,
         default='token',
-        choices=['token', 'example'],
+        choices=['token', 'example', 'random_batch'],
         help='By which method to sample batches'
     )
 
