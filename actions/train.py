@@ -68,7 +68,7 @@ class Trainer(object):
         # Run words through encoder
         # Make sure inputs are all gathered to be the longest length of the input, or else error will occur
         total_length = sum(batch['input_lens']).item() + sum(batch['target_lens']).item()
-        # print("batch input size", batch['inputs'].size())
+        print("batch input size", batch['inputs'].size())
         encoder_outputs, encoder_hidden = self.encoder(batch['inputs'], batch['input_lens'], batch['inputs'].size()[1])
 
         decoder_hidden = encoder_hidden
