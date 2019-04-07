@@ -87,5 +87,6 @@ class SequenceLengthSampler(Sampler):
             np.random.shuffle(batch_indices)
 
         for idx in batch_indices:
+            print("idx", idx)
             print(len(self.batches[idx]))
             yield self.batches[idx]

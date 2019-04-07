@@ -124,6 +124,7 @@ class TextDataset(Dataset):
             # must store off lengths before padding sequence
             input_lens = torch.LongTensor([len(input) for input in inputs])
             target_lens = torch.LongTensor([len(target) for target in targets])
+            print("input_lens len", len(input_lens))
 
             batch_size = len(target_lens)
             span_seq_len = int(
