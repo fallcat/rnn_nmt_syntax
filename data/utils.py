@@ -18,9 +18,16 @@ def get_dataloader(dataset, config, split, worker_init_fn=None, pin_memory=True,
     #         [tuple(len(p) for p in s) for s in dataset.pairs],
     #         shuffle=shuffle
     #     )
-    if config['batch_method'] == 'random_batch':
+    if config['batch_method'] == 'token':
         batch_sampler = RandomBatchSampler(
             [tuple(len(p) for p in s) for s in dataset.pairs],
+            config['minibatch_size'],
+            config['drop_last'],
+            config['shuffle']
+        )
+    elif config['batch_method'] == 'random_batch':
+        batch_sampler = RandomBatchSampler(
+            dataset,
             config['minibatch_size'],
             config['drop_last'],
             config['shuffle']
