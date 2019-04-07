@@ -76,3 +76,61 @@ class SequenceLengthSampler(Sampler):
 
         for idx in batch_indices:
             yield self.batches[idx]
+
+
+class SequenceLengthSampler2(Sampler):
+    ''' A sampler that tries to select batches that have a given total sequence length '''
+    def __init__(self, example_lengths, batch_size, drop_last=False, shuffle=False):
+        super(SequenceLengthSampler2, self).__init__(example_lengths)
+
+        self.batches = []
+        self.shuffle = shuffle
+        self.batch_size = batch_size
+        self.example_lengths = example_lengths
+        self.drop_last = drop_last
+        self.indices = [i[0] for i in sorted(enumerate(example_lengths), key=lambda x: x[1][1], reverse=True)]
+
+
+
+    def __len__(self):
+        ''' Estimate the number of batches per iteration '''
+        return len(self.batches)
+
+    def __iter__(self):
+        ''' Iterate over the batches '''
+        max_tokens = self.batch_size
+        max_sentences = 50
+        bsz_mult = NUM_DEVICES
+
+        batch = []
+
+        def is_batch_full(num_tokens):
+            if len(batch) == 0:
+                return False
+            if len(batch) == max_sentences:
+                return True
+            if num_tokens > max_tokens:
+                return True
+            return False
+
+        sample_len = 0
+        sample_lens = []
+        for idx in self.indices:
+            sample_lens.append(self.example_lengths[idx][1])
+            sample_len = max(sample_len, sample_lens[-1])
+            assert sample_len <= max_tokens, "sentence at index {idx} exceeds max_tokens limit!".format(idx=idx)
+            num_tokens = (len(batch) + 1) * sample_len
+            if is_batch_full(num_tokens):
+                mod_len = max(
+                    bsz_mult * (len(batch) // bsz_mult),
+                    len(batch) % bsz_mult,
+                )
+                yield batch[:mod_len]
+                batch = batch[mod_len:]
+                sample_lens = sample_lens[mod_len:]
+                sample_len = max(sample_lens) if len(sample_lens) > 0 else 0
+
+            batch.append(idx)
+
+        if len(batch) > 0 and not self.drop_last:
+            yield batch
