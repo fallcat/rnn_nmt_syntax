@@ -49,8 +49,9 @@ class SequenceLengthSampler(Sampler):
         self.batches = []
         self.shuffle = shuffle
 
-        data_indices = [i[0] for i in sorted(enumerate(example_lengths), key=lambda x: x[2], reverse=True)]
+        data_indices = [i[0] for i in sorted(enumerate(example_lengths), key=lambda x: x[1], reverse=True)]
         print("total indices", len(data_indices), len(example_lengths))
+        print("data_indices", data_indices[:10])
 
 
         i = 0
