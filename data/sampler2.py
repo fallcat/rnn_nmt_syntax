@@ -2,6 +2,7 @@
 A module implementing various data samplers for datasets.
 '''
 import numpy as np
+from model import NUM_DEVICES
 from torch.utils.data import Sampler
 
 
@@ -57,6 +58,7 @@ class SequenceLengthSampler(Sampler):
             if len(batch) == 0:
                 seq_len = len(datasource[1][idx])
                 batch_max_len = batch_size // seq_len
+                batch_max_len -= batch_max_len % NUM_DEVICES
             batch.append(idx)
             if len(batch) == batch_max_len:
                 self.batches.append(batch)
