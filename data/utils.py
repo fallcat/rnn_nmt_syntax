@@ -20,7 +20,7 @@ def get_dataloader(dataset, config, split, worker_init_fn=None, pin_memory=True,
     #     )
     if config['batch_method'] == 'random_batch':
         batch_sampler = RandomBatchSampler(
-            dataset,
+            [tuple(len(p) for p in s) for s in dataset.pairs],
             config['minibatch_size'],
             config['drop_last'],
             config['shuffle']
@@ -39,7 +39,7 @@ def get_dataloader(dataset, config, split, worker_init_fn=None, pin_memory=True,
         dataset,
         batch_sampler=batch_sampler,
         collate_fn=partial(dataset.collate, sort=True),
-        num_workers=2,
+        num_workers=1,
         pin_memory=pin_memory,
         worker_init_fn=worker_init_fn
     )

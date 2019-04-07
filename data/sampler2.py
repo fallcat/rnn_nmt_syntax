@@ -44,19 +44,19 @@ class RandomBatchSampler(Sampler):
 
 class SequenceLengthSampler(Sampler):
     ''' A sampler that tries to select batches that have a given total sequence length '''
-    def __init__(self, datasource, batch_size, drop_last=False, shuffle=False):
-        super(SequenceLengthSampler, self).__init__(datasource)
+    def __init__(self, example_lengths, batch_size, drop_last=False, shuffle=False):
+        super(SequenceLengthSampler, self).__init__(example_lengths)
 
         self.batches = []
         self.shuffle = shuffle
 
-        data_indices = [i[0] for i in sorted(enumerate(datasource), key=lambda x: len(x[1]), reverse=True)]
+        data_indices = [i[0] for i in sorted(enumerate(example_lengths), key=lambda x: x[1], reverse=True)]
 
         batch = []
 
         for idx in data_indices:
             if len(batch) == 0:
-                seq_len = len(datasource[1][idx])
+                seq_len = example_lengths[1][idx]
                 batch_max_len = batch_size // seq_len
                 batch_max_len -= batch_max_len % NUM_DEVICES
             batch.append(idx)
