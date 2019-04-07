@@ -58,7 +58,7 @@ class SequenceLengthSampler(Sampler):
 
         while i < len(data_indices):
             # print("i", i)
-            print(len(self.batches))
+            # print(len(self.batches))
             seq_len = example_lengths[data_indices[i]][1]
             # print("batch_size", batch_size)
             # print("seq_len", seq_len)
@@ -74,7 +74,7 @@ class SequenceLengthSampler(Sampler):
 
         if drop_last and len(self.batches[-1]) < batch_max_len:
             self.batches = self.batches[:-1]
-        print("num batches", len(self.batches))
+        # print("num batches", len(self.batches))
 
     def __len__(self):
         ''' Estimate the number of batches per iteration '''
