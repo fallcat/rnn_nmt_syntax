@@ -41,7 +41,6 @@ class RandomBatchSampler(Sampler):
             yield self.batches[idx]
 
 
-
 class SequenceLengthSampler(Sampler):
     ''' A sampler that tries to select batches that have a given total sequence length '''
     def __init__(self, example_lengths, batch_size, drop_last=False, shuffle=False):
@@ -66,6 +65,7 @@ class SequenceLengthSampler(Sampler):
 
         if not drop_last and len(batch) > 0:
             self.batches.append(batch)
+        print("num batches", len(self.batches))
 
     def __len__(self):
         ''' Estimate the number of batches per iteration '''
