@@ -86,6 +86,8 @@ def main():
 
     # define the models
 
+    torch.cuda.empty_cache()
+
     encoder1 = BatchEncoderRNN(dataloader_train.dataset.num_words, args.hidden_size, num_layers=args.num_layers).to(DEVICE)
     attn_decoder1 = BatchAttnKspanDecoderRNN3(args.hidden_size, dataloader_train.dataset.num_words, num_layers=args.num_layers,
                                               dropout_p=args.dropout, max_length=args.max_length,
