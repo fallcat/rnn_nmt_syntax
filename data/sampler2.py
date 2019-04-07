@@ -50,23 +50,36 @@ class SequenceLengthSampler(Sampler):
         self.shuffle = shuffle
 
         data_indices = [i[0] for i in sorted(enumerate(example_lengths), key=lambda x: x[1], reverse=True)]
+        print("total indices", len(data_indices), len(example_lengths))
 
         batch = []
 
-        for idx in data_indices:
-            print("====")
-            print("idx", idx)
-            if len(batch) == 0:
-                seq_len = example_lengths[idx][1]
-                print("seq_len", seq_len)
-                batch_max_len = batch_size // seq_len
-                print("batch_max_len", batch_max_len)
-                batch_max_len -= batch_max_len % NUM_DEVICES
-            batch.append(idx)
-            print("batch len", len(batch))
-            if len(batch) >= batch_max_len:
-                self.batches.append(batch)
-                batch = []
+        i = 0
+
+        while i < len(data_indices):
+            seq_len = example_lengths[data_indices[i]][1]
+            batch_max_len = batch_size // seq_len
+            batch_max_len -= batch_max_len % NUM_DEVICES
+            batch.append(data_indices[i:i + batch_max_len])
+            self.batches.append(batch)
+            batch = []
+            i = i + batch_max_len
+        #
+        #
+        # for idx in data_indices:
+        #     print("====")
+        #     print("idx", idx)
+        #     if len(batch) == 0:
+        #         seq_len = example_lengths[idx][1]
+        #         print("seq_len", seq_len)
+        #         batch_max_len = batch_size // seq_len
+        #         print("batch_max_len", batch_max_len)
+        #         batch_max_len -= batch_max_len % NUM_DEVICES
+        #     batch.append(idx)
+        #     print("batch len", len(batch))
+        #     if len(batch) >= batch_max_len:
+        #         self.batches.append(batch)
+        #         batch = []
 
         if not drop_last and len(batch) > 0:
             self.batches.append(batch)
