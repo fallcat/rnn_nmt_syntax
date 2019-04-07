@@ -57,32 +57,16 @@ class SequenceLengthSampler(Sampler):
         i = 0
 
         while i < len(data_indices):
-            print("i", i)
+            # print("i", i)
             seq_len = example_lengths[data_indices[i]][1]
-            print("batch_size", batch_size)
-            print("seq_len", seq_len)
-            print(example_lengths[data_indices[i]])
+            # print("batch_size", batch_size)
+            # print("seq_len", seq_len)
+            # print(example_lengths[data_indices[i]])
             batch_max_len = batch_size // seq_len
             batch_max_len -= batch_max_len % NUM_DEVICES
-            print("batch_max_len", batch_max_len)
+            # print("batch_max_len", batch_max_len)
             self.batches.append(data_indices[i:i + batch_max_len])
             i += batch_max_len
-        #
-        #
-        # for idx in data_indices:
-        #     print("====")
-        #     print("idx", idx)
-        #     if len(batch) == 0:
-        #         seq_len = example_lengths[idx][1]
-        #         print("seq_len", seq_len)
-        #         batch_max_len = batch_size // seq_len
-        #         print("batch_max_len", batch_max_len)
-        #         batch_max_len -= batch_max_len % NUM_DEVICES
-        #     batch.append(idx)
-        #     print("batch len", len(batch))
-        #     if len(batch) >= batch_max_len:
-        #         self.batches.append(batch)
-        #         batch = []
 
         if not drop_last and i < len(data_indices) - 1:
             self.batches.append(data_indices[i:])
@@ -99,5 +83,5 @@ class SequenceLengthSampler(Sampler):
             np.random.shuffle(batch_indices)
 
         for idx in batch_indices:
-            print(len(self.batches[idx]))
+            # print(len(self.batches[idx]))
             yield self.batches[idx]
