@@ -6,6 +6,7 @@ import time
 import tqdm
 import shutil
 import GPUtil
+import psutil
 from torch import nn, optim
 from torch.autograd import Variable
 from model import SOS_token, EOS_token, DEVICE
@@ -128,6 +129,13 @@ class Trainer(object):
                     # self.experiment.log_metric("learning_rate", self.encoder_optimizer.param_groups['lr'])
                     accumulated_loss = 0
                     accumulated_loss_n = 0
+                    vm = psutil.virtual_memory()
+                    print("virtual_memory", vm)
+                    vm = dict(vm._asdict())
+                    self.experiment.log_metric("available_memory", vm['available'])
+                    self.experiment.log_metric("total_memory", vm['total'])
+                    self.experiment.log_metric("used_memory", vm['used'])
+                    self.experiment.log_metric("free_memory", vm['free'])
                 # print("time for batch {} is {}".format(i, time.time()-start_step))
 
             except RuntimeError as rte:

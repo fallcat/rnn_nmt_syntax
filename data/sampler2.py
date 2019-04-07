@@ -37,4 +37,5 @@ class RandomBatchSampler(Sampler):
             np.random.shuffle(batch_indices)
 
         for idx in batch_indices:
+            print("random idx", idx)
             yield self.batches[idx]

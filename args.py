@@ -1,5 +1,6 @@
 import argparse
 
+# TODO: make args more comprehensible, reduce unnecessary ones and make some default to each action
 
 def add_lstm_args(parser):
     group = parser.add_argument_group('LSTM Model')
