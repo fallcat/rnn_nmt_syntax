@@ -99,7 +99,7 @@ class SequenceLengthSampler2(Sampler):
     def __iter__(self):
         ''' Iterate over the batches '''
         max_tokens = self.batch_size
-        max_sentences = 50
+        max_sentences = float("Inf")
         bsz_mult = NUM_DEVICES
 
         batch = []
