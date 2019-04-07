@@ -38,3 +38,42 @@ class RandomBatchSampler(Sampler):
 
         for idx in batch_indices:
             yield self.batches[idx]
+
+
+
+class SequenceLengthSampler(Sampler):
+    ''' A sampler that tries to select batches that have a given total sequence length '''
+    def __init__(self, datasource, batch_size, drop_last=False, shuffle=False):
+        super(SequenceLengthSampler, self).__init__(datasource)
+
+        self.batches = []
+        self.shuffle = shuffle
+
+        data_indices = [i[0] for i in sorted(enumerate(datasource), key=lambda x: len(x[1]), reverse=True)]
+
+        batch = []
+
+        for idx in data_indices:
+            if len(batch) == 0:
+                seq_len = len(datasource[1][idx])
+                batch_max_len = batch_size // seq_len
+            batch.append(idx)
+            if len(batch) == batch_max_len:
+                self.batches.append(batch)
+                batch = []
+
+        if not drop_last and len(batch) > 0:
+            self.batches.append(batch)
+
+    def __len__(self):
+        ''' Estimate the number of batches per iteration '''
+        return len(self.batches)
+
+    def __iter__(self):
+        ''' Iterate over the batches '''
+        batch_indices = np.arange(len(self))
+        if self.shuffle:
+            np.random.shuffle(batch_indices)
+
+        for idx in batch_indices:
+            yield self.batches[idx]
