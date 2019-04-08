@@ -1,5 +1,5 @@
 from functools import partial
-from data.sampler2 import RandomBatchSampler, SequenceLengthSampler2
+from data.sampler2 import RandomBatchSampler, SequenceLengthSampler3
 
 from torch.utils.data.dataloader import DataLoader
 from torch.utils.data.sampler import BatchSampler, RandomSampler, SequentialSampler
@@ -19,7 +19,7 @@ def get_dataloader(dataset, config, split, worker_init_fn=None, pin_memory=True,
     #         shuffle=shuffle
     #     )
     if config['batch_method'] == 'token':
-        batch_sampler = SequenceLengthSampler2(
+        batch_sampler = SequenceLengthSampler3(
             [tuple(len(p) for p in s) for s in dataset.pairs],
             config['minibatch_size'],
             config['drop_last'],
