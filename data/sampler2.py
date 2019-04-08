@@ -69,7 +69,8 @@ class SequenceLengthSampler3(Sampler):
 
         if not drop_last and len(batch) > 0:
             self.batches.append(batch)
-        # print("num batches", len(self.batches))
+        print("num batches", len(self.batches))
+        print("batch[0]", self.batches[0])
 
     def __len__(self):
         ''' Estimate the number of batches per iteration '''
@@ -82,6 +83,7 @@ class SequenceLengthSampler3(Sampler):
             np.random.shuffle(batch_indices)
 
         for idx in batch_indices:
+            print("idx", idx)
             yield self.batches[idx]
 
 
