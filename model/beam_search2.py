@@ -102,20 +102,21 @@ class BeamSearchDecoder(object):
                 # each candiate has a tuple of (idx of previously decoded sequence, sequence including this new word,
                 # the new word, corresponding hidden layer)
                 print("rowsi[i]", rowsi[0])
-                print("sequences[rowsi[i]]", sequences[rowsi[0]])
+                print("sequences[rowsi[i]]", sequences[rowsi[0].item()])
                 print("topi[rowsi[0], colsi[0]]", topi[rowsi[0], colsi[0]])
-                print("torch.LongTensor([topi[rowsi[0], colsi[0]]]).to(DEVICE)", torch.LongTensor([topi[rowsi[0], colsi[0]]]).to(DEVICE))
+                print("colsi[0]", colsi[0])
+                print("torch.LongTensor([topi[rowsi[0], colsi[0]]]).to(DEVICE)", torch.LongTensor([topi[rowsi[0].item(), colsi[0].item()]]).to(DEVICE))
                 print("torch.cat((sequences[rowsi[i]], torch.LongTensor([topi[rowsi[i], colsi[i]]]).to(DEVICE)))",
-                      torch.cat((sequences[rowsi[0]], torch.LongTensor([topi[rowsi[0], colsi[0]]]).to(DEVICE))))
+                      torch.cat((sequences[rowsi[0].item()], torch.LongTensor([topi[rowsi[0].item(), colsi[0].item()]]).to(DEVICE))))
                 print("topsv[i]", topsv[0])
-                print("hiddens[rowsi[i]]", hiddens[rowsi[0]])
-                new_candidates = [(rowsi[i], torch.cat((sequences[rowsi[i]], torch.LongTensor([topi[rowsi[i], colsi[i]]]).to(DEVICE))),
-                                   topsv[i], hiddens[rowsi[i]]) for i in range(self.config['beam_width'])]
+                print("hiddens[rowsi[i]]", hiddens[rowsi[0].item()])
+                new_candidates = [(rowsi[i], torch.cat((sequences[rowsi[i].item()], torch.LongTensor([topi[rowsi[i].item(), colsi[i].item()]]).to(DEVICE))),
+                                   topsv[i], hiddens[rowsi[i].item()]) for i in range(self.config['beam_width'])]
             else:
                 new_candidates = [(new_candidates[rowsi[i]][0],
-                                   torch.cat((new_candidates[rowsi[i]][1] + torch.LongTensor([topi[rowsi[i], colsi[i]]]).to(DEVICE))),
+                                   torch.cat((new_candidates[rowsi[i].item()][1] + torch.LongTensor([topi[rowsi[i].item(), colsi[i].item()]]).to(DEVICE))),
                                    topsv[i],
-                                   new_candidates[rowsi[i]][3]) for i in range(self.config['beam_width'])]
+                                   new_candidates[rowsi[i].item()][3]) for i in range(self.config['beam_width'])]
         return [BeamHypothesis(candidate[1], candidate[2], candidate[3]) for candidate in new_candidates]
 
     def decode(self, encoder_outputs, encoder_hidden, start_sequences):
