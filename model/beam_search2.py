@@ -132,7 +132,7 @@ class BeamSearchDecoder(object):
                     # print("sequences", sequences.size())
                     # print("scores", scores.size())
                     # print("hiddens", hiddens.size())
-                    decoder_output, decoder_hidden, decoder_attn = self.decoder(sequences[:, -self.config['span_size']:].to(device=DEVICE),
+                    decoder_output, decoder_hidden, decoder_attn = self.decoder(sequences[:, -self.config['span_size']:],
                                                                                 hiddens.transpose(0, 1),
                                                                                 row[0])
                     topv, topi = decoder_output.topk(self.config['beam_width'], dim=2)
