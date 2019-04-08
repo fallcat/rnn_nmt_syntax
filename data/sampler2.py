@@ -62,6 +62,7 @@ class SequenceLengthSampler3(Sampler):
                 batch_max_len = batch_size // seq_len
                 batch_max_len -= batch_max_len % NUM_DEVICES
             batch.append(idx)
+            print("batch_max_len", batch_max_len)
             batch_max_len -= 1
             if batch_max_len == 0:
                 self.batches.append(batch)
