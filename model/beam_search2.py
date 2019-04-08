@@ -97,9 +97,9 @@ class BeamSearchDecoder(object):
             topsv, topsi = newscores.view(-1).topk(self.config['beam_width'])
             rows, cols = topv[:, s, :].size()
             rowsi = topsi // (cols * self.config['beam_width'])  # indices of the topk beams
-            torch.remainder_(topsi, cols * self.config['beam_width'])
+            topsi.remainder_(cols * self.config['beam_width'])
             colsi = topsi // self.config['beam_width']
-            torch.remainder_(topsi, self.config['beam_width'])
+            topsi.remainder_(self.config['beam_width'])
             if s == 0:
                 # each candiate has a tuple of (idx of previously decoded sequence, sequence including this new word,
                 # the new word, corresponding hidden layer)
