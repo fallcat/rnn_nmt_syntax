@@ -260,7 +260,7 @@ class Trainer(object):
                     # self.decoder_lr_scheduler.load_state_dict(checkpoint['decoder_lr_scheduler'])
                 except:
                     print("exception when loading state dict to optimizer and lr scheduler")
-                print("=> loaded checkpoint '{}' (epoch {}, step {})".format(restore_path, checkpoint['epoch'], checkpoint['step']))
+                print("=> loaded checkpoint '{}' (epoch {})".format(restore_path, checkpoint['epoch']))
             else:
                 print("=> no checkpoint found at '{}'".format(restore_path))
 

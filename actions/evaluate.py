@@ -125,6 +125,6 @@ class Evaluator(object):
                 checkpoint = torch.load(restore_path)
                 self.encoder.load_state_dict(checkpoint['encoder_state'])
                 self.decoder.load_state_dict(checkpoint['decoder_state'])
-                print("=> loaded checkpoint '{}' (epoch {}, step {})".format(restore_path, checkpoint['epoch'], checkpoint['step']))
+                print("=> loaded checkpoint '{}' (epoch {})".format(restore_path, checkpoint['epoch']))
             else:
                 print("=> no checkpoint found at '{}'".format(restore_path))
