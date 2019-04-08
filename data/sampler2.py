@@ -44,14 +44,15 @@ class RandomBatchSampler(Sampler):
 
 class SequenceLengthSampler3(Sampler):
     ''' A sampler that tries to select batches that have a given total sequence length '''
-    def __init__(self, example_lengths, batch_size, drop_last=False, shuffle=False):
-        super(SequenceLengthSampler3, self).__init__(example_lengths)
+    def __init__(self, datasource, batch_size, drop_last=False, shuffle=False):
+        super(SequenceLengthSampler3, self).__init__(datasource)
 
         self.batches = []
         self.shuffle = shuffle
 
-        data_indices = [i[0] for i in sorted(enumerate(example_lengths), key=lambda x: x[1][1], reverse=True)]
-        print("example_lengths", example_lengths[data_indices[0]])
+        data_indices = [i[0] for i in sorted(enumerate(datasource), key=lambda x: len(x[1][1]), reverse=True)]
+        print("example_lengths", datasource[data_indices[0]])
+        print("example_lengths", len(datasource[data_indices[0]][1]))
 
         i = 0
 
@@ -59,7 +60,7 @@ class SequenceLengthSampler3(Sampler):
 
         for idx in data_indices:
             if len(batch) == 0:
-                seq_len = example_lengths[data_indices[i]][1]
+                seq_len = len(datasource[data_indices[i]][1])
                 print("batch_size", batch_size)
                 print("seq_len", seq_len)
                 batch_max_len = batch_size // seq_len
