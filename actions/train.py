@@ -152,6 +152,7 @@ class Trainer(object):
                     print(message)
                     return -1
 
+        print("now save")
         self.save_checkpoint({
             'epoch': epoch,
             'encoder_state': self.encoder.state_dict(),
