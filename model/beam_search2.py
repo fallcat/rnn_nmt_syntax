@@ -104,6 +104,10 @@ class BeamSearchDecoder(object):
                 # each candiate has a tuple of (idx of previously decoded sequence, sequence including this new word,
                 # the new word, corresponding hidden layer)
                 print("rowsi[i]", rowsi[0].device)
+                print("topi[rowsi[0], colsi[0], topsi[0]]", topi[rowsi[0], colsi[0], topsi[0]].size())
+                print("topi[rowsi[0], colsi[0], topsi[0]]", topi[rowsi[0], colsi[0], topsi[0]].device)
+                print("sequences[rowsi[0]]", sequences[rowsi[0]])
+                print("topi[rowsi[0], colsi[0], topsi[0]]", topi[rowsi[0], colsi[0], topsi[0]])
                 print("torch.cat((sequences[rowsi[i]],torch.LongTensor([topi[rowsi[i], colsi[i], topsi[i]]]).to(DEVICE)))",
                       torch.cat((sequences[rowsi[0]],
                                  torch.LongTensor([topi[rowsi[0], colsi[0], topsi[0]]]).to(DEVICE))).device
