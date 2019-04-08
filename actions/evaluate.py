@@ -49,7 +49,7 @@ class Evaluator(object):
             decoder_input = torch.tensor([SOS_token] * self.config['span_size'] * batch_size, device=DEVICE).view(
                 batch_size, -1)
             decoder_outputs = torch.zeros((batch_size, self.config['max_length']), dtype=torch.long, device=DEVICE)
-            for i in range(span_seq_len):
+            for i in range(0, span_seq_len * self.config['span_size'], self.config['span_size']):
                 decoder_output, decoder_hidden, decoder_attn = self.decoder(decoder_input,
                                                                             decoder_hidden, encoder_outputs)
                 topv, topi = decoder_output.topk(1, dim=2)
