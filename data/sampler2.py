@@ -75,7 +75,7 @@ class SequenceLengthSampler3(Sampler):
 
         if not drop_last and len(batch) > 0:
             self.batches.append(batch)
-        # print("num batches", len(self.batches))
+        print("num batches", len(self.batches))
         # print("batch[0]", self.batches[0])
 
     def __len__(self):
