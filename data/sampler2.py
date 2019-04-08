@@ -51,8 +51,8 @@ class SequenceLengthSampler3(Sampler):
         self.shuffle = shuffle
 
         data_indices = [i[0] for i in sorted(enumerate(datasource), key=lambda x: len(x[1][1]), reverse=True)]
-        print("example_lengths", datasource[data_indices[0]])
-        print("example_lengths", len(datasource[data_indices[0]][1]))
+        # print("example_lengths", datasource[data_indices[0]])
+        # print("example_lengths", len(datasource[data_indices[0]][1]))
 
         i = 0
 
@@ -61,13 +61,13 @@ class SequenceLengthSampler3(Sampler):
         for idx in data_indices:
             if len(batch) == 0:
                 seq_len = len(datasource[data_indices[i]][1])
-                print("batch_size", batch_size)
-                print("seq_len", seq_len)
+                # print("batch_size", batch_size)
+                # print("seq_len", seq_len)
                 batch_max_len = batch_size // seq_len
                 batch_max_len -= batch_max_len % NUM_DEVICES
-                print("batch_max_len", batch_max_len)
+                # print("batch_max_len", batch_max_len)
             batch.append(idx)
-            print("batch_max_len", batch_max_len)
+            # print("batch_max_len", batch_max_len)
             batch_max_len -= 1
             if batch_max_len == 0:
                 self.batches.append(batch)
@@ -75,8 +75,8 @@ class SequenceLengthSampler3(Sampler):
 
         if not drop_last and len(batch) > 0:
             self.batches.append(batch)
-        print("num batches", len(self.batches))
-        print("batch[0]", self.batches[0])
+        # print("num batches", len(self.batches))
+        # print("batch[0]", self.batches[0])
 
     def __len__(self):
         ''' Estimate the number of batches per iteration '''
@@ -89,7 +89,7 @@ class SequenceLengthSampler3(Sampler):
             np.random.shuffle(batch_indices)
 
         for idx in batch_indices:
-            print("idx", idx)
+            # print("idx", idx)
             yield self.batches[idx]
 
 
