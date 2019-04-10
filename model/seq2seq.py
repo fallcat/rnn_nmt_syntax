@@ -257,14 +257,14 @@ class BatchBahdanauAttnKspanDecoderRNN(nn.Module):
 
         bsz = inputs.size()[0]
         encoder_seq_len = encoder_outputs.size()[1]
-        print("bsz", bsz)
-        print("encoder_seq_len", encoder_seq_len)
+        # print("bsz", bsz)
+        # print("encoder_seq_len", encoder_seq_len)
         embeddeds = self.embedding(inputs)  # B x S -> B x S x H
         embeddeds = embeddeds.view(bsz, -1)  # B x (S x H)
         embeddeds = self.dropout(embeddeds)  # B x (S x H)
 
         embeddeds = self.cat_embeddings(embeddeds).unsqueeze(1)
-        print("embeddeds", embeddeds.size())
+        # print("embeddeds", embeddeds.size())
 
 
         hidden_size = hidden.size()
