@@ -269,7 +269,7 @@ class BatchBahdanauAttnKspanDecoderRNN(nn.Module):
 
         hidden_size = hidden.size()
         concatted = torch.cat((
-            hidden[-1].expand((hidden_size[1], encoder_seq_len, hidden_size[2])),
+            hidden[-1].unsqueeze(1).expand((hidden_size[1], encoder_seq_len, hidden_size[2])),
             encoder_outputs), 2)
 
         concatted_size = concatted.size()
