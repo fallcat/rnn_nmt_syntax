@@ -118,7 +118,7 @@ class Trainer(object):
                 self.experiment.set_step(self.experiment.curr_step + 1)
             # loss = self.train_batch3(batch)
             # try:
-            print("train now")
+            # print("train now")
             loss = self.train_batch3(batch)
             # GPUtil.showUtilization()
             total_length = sum(batch['input_lens']).item() + sum(batch['target_lens']).item()
