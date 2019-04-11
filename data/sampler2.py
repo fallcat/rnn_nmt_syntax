@@ -59,13 +59,12 @@ class SequenceLengthSampler3(Sampler):
         # print("example_lengths", datasource[data_indices[0]])
         # print("example_lengths", len(datasource[data_indices[0]][1]))
 
-        i = 0
 
         batch = []
 
         for idx in data_indices:
             if len(batch) == 0:
-                seq_len = len(datasource[data_indices[i]][1])
+                seq_len = len(datasource[data_indices[idx]][1])
                 # print("batch_size", batch_size)
                 # print("seq_len", seq_len)
                 batch_max_len = batch_size // seq_len
