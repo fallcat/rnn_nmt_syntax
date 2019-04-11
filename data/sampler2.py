@@ -103,7 +103,7 @@ class SequenceLengthSampler3(Sampler):
 class SequenceLengthSampler(Sampler):
     ''' A sampler that tries to select batches that have a given total sequence length '''
     def __init__(self, datasource, batch_size, drop_last=False, shuffle=False):
-        super(SequenceLengthSampler, self).__init__(example_lengths)
+        super(SequenceLengthSampler, self).__init__(datasource)
 
         self.batches = []
         self.shuffle = shuffle
