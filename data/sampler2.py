@@ -54,8 +54,8 @@ class SequenceLengthSampler3(Sampler):
 
         data_indices = [i[0] for i in sorted(enumerate(datasource), key=lambda x: len(x[1][1]), reverse=True)]
         print("data_indices[0]", data_indices[0])
-        print("datasource[data_indices[0]][0]", len(datasource[data_indices[0][0]]))
-        print("datasource[data_indices[0]][1]", len(datasource[data_indices[0][1]]))
+        print("datasource[data_indices[0]][0]", len(datasource[data_indices[0]][0]))
+        print("datasource[data_indices[0]][1]", len(datasource[data_indices[0]][1]))
         # print("example_lengths", datasource[data_indices[0]])
         # print("example_lengths", len(datasource[data_indices[0]][1]))
 
