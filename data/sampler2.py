@@ -49,13 +49,13 @@ class SequenceLengthSampler3(Sampler):
 
         self.batches = []
         self.shuffle = shuffle
-        print("len(datasource)", len(datasource))
-        print("datasource[0]", datasource[0])
+        # print("len(datasource)", len(datasource))
+        # print("datasource[0]", datasource[0])
 
         data_indices = [i[0] for i in sorted(enumerate(datasource), key=lambda x: len(x[1][1]), reverse=True)]
-        print("data_indices[0]", data_indices[0])
-        print("datasource[data_indices[0]][0]", len(datasource[data_indices[0]][1]))
-        print("datasource[data_indices[0]][1]", len(datasource[data_indices[0]][2]))
+        # print("data_indices[0]", data_indices[0])
+        # print("datasource[data_indices[0]][0]", len(datasource[data_indices[0]][1]))
+        # print("datasource[data_indices[0]][1]", len(datasource[data_indices[0]][2]))
         # print("example_lengths", datasource[data_indices[0]])
         # print("example_lengths", len(datasource[data_indices[0]][1]))
 
@@ -73,10 +73,10 @@ class SequenceLengthSampler3(Sampler):
             batch.append(idx)
             batch_max_len -= 1
             if batch_max_len <= 0:
-                print(seq_len)
-                print("batch_max_len", batch_max_len)
-                print("batch len", len(batch))
-                print("batch", batch)
+                # print(seq_len)
+                # print("batch_max_len", batch_max_len)
+                # print("batch len", len(batch))
+                # print("batch", batch)
                 self.batches.append(batch)
                 batch = []
 
