@@ -54,7 +54,7 @@ class SequenceLengthSampler3(Sampler):
 
         data_indices = [i[0] for i in sorted(enumerate(datasource), key=lambda x: len(x[1][1]), reverse=True)]
         print("data_indices[0]", data_indices[0])
-        print("datasource[data_indices[0]]", datasource[data_indices[0]])
+        print("datasource[data_indices[0]]", len(datasource[data_indices[0]]))
         # print("example_lengths", datasource[data_indices[0]])
         # print("example_lengths", len(datasource[data_indices[0]][1]))
 
@@ -71,9 +71,9 @@ class SequenceLengthSampler3(Sampler):
                 batch_max_len -= batch_max_len % NUM_DEVICES
                 # print("batch_max_len", batch_max_len)
             batch.append(idx)
-            # print("batch_max_len", batch_max_len)
+            print("batch_max_len", batch_max_len)
             batch_max_len -= 1
-            if batch_max_len == 0:
+            if batch_max_len <= 0:
                 print("batch len", len(batch))
                 self.batches.append(batch)
                 batch = []
