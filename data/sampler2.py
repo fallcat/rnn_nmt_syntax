@@ -126,7 +126,7 @@ class SequenceLengthSampler3(Sampler):
           229,    26,    40,    62,   122,     4, 27806,     4,    29,    26,
            40,   372,   122,   135,   135, 17800,     4,   114,   167,    40,
             4,    29,    26,   146,   135,     2]
-        decoded_words = [datasource.index2word[w.item()] for w in tensor_sentence]
+        decoded_words = [datasource.index2word[w] for w in tensor_sentence]
         print("decoded words", decoded_words)
 
         self.batches = []
