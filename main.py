@@ -58,7 +58,8 @@ def main():
         'search_method': args.search_method,
         'sort_data': args.sort_data,
         'eval_when_train': args.eval_when_train,
-        'filter': args.filter
+        'filter': args.filter,
+        'detokenize': args.detokenize
     }
 
     # config dataloader
@@ -122,7 +123,7 @@ def main():
         if args.restore is not None:
             evaluator.restore_checkpoint(args.experiment_path + args.restore)
         preds = evaluator.evaluate(args.search_method)
-        save_predictions(preds, args.evaluate_path)
+        save_predictions(preds, args.evaluate_path, args.detokenize)
 
 
 if __name__ == "__main__":

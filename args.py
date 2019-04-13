@@ -95,6 +95,12 @@ def add_evaluate_args(parser):
         help='Search optimal of all combinations in the span instead of search sequentially.'
     )
 
+    group.add_argument(
+        '--detokenzie',
+        action='store_false',
+        help='False if do not want to detokenize the predictions'
+    )
+
     return group
 
 

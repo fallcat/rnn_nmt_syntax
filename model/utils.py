@@ -82,14 +82,17 @@ def debug_memory():
     print("--------")
 
 
-def save_predictions(preds, evaluate_path):
+def save_predictions(preds, evaluate_path, detokenize):
     md = MosesDetokenizer()
     with open(evaluate_path, 'w') as f:
         for pred in preds:
             if '<EOS>' in pred:
                 pred = pred[:pred.index('<EOS>')]
-            detokenized = md.detokenize(' '.join(pred).replace('@@ ', '').split())
-            f.write(detokenized + '\n')
+            if detokenize:
+                output = md.detokenize(' '.join(pred).replace('@@ ', '').split())
+            else:
+                output = ' '.join(pred)
+            f.write(output + '\n')
 
 # Beam search utils
 
