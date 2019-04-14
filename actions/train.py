@@ -74,6 +74,7 @@ class Trainer(object):
         decoder_hidden = encoder_hidden
 
         decoder_outputs = []
+        print("targets", batch['targets'])
         for i in range(0, batch['span_seq_len'] * self.config['span_size'], self.config['span_size']):
             decoder_output, decoder_hidden, decoder_attn = self.decoder(batch['targets'][:, i:i+self.config['span_size']],
                                                                         decoder_hidden, encoder_outputs)
