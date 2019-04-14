@@ -74,12 +74,14 @@ class Trainer(object):
         decoder_hidden = encoder_hidden
 
         decoder_outputs = []
-        print("targets", batch['targets'])
+        # print("targets", batch['targets'])
         for i in range(0, batch['span_seq_len'] * self.config['span_size'], self.config['span_size']):
             decoder_output, decoder_hidden, decoder_attn = self.decoder(batch['targets'][:, i:i+self.config['span_size']],
                                                                         decoder_hidden, encoder_outputs)
             decoder_outputs.append(decoder_output)
         decoder_outputs = torch.cat(decoder_outputs, dim=1)
+        print("decoder_outputs", decoder_outputs.size())
+        print("targets", batch['targets'].size())
         loss = self.criterion(decoder_outputs[:, :-self.config['span_size']].contiguous().view(-1, self.dataset.num_words),
                               batch['targets'][:, self.config['span_size']:].contiguous().view(-1))
 
