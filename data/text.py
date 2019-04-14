@@ -123,19 +123,21 @@ class TextDataset(Dataset):
             ''' Make a batch given a list of inputs and targets '''
             # must store off lengths before padding sequence
             input_lens = torch.LongTensor([len(input) for input in inputs])
-            target_lens = torch.LongTensor([len(target) for target in targets])
+            target_lens = torch.LongTensor([len(target) + self.span_size for target in targets])
             # print("input_lens len", len(input_lens))
 
             batch_size = len(target_lens)
             span_seq_len = int(
                 (len(max(targets, key=lambda x: len(x))) - 1) / self.span_size) + 1
 
-            dummy_data = torch.ones((span_seq_len * self.span_size), dtype=torch.long)
+            dummy_data = torch.ones(((span_seq_len + 1) * self.span_size), dtype=torch.long)
+            soses = torch.new_full((len(targets), self.span_size), self.sos_idx)
 
             inputs = nn.utils.rnn.pad_sequence(
                 inputs, batch_first=True, padding_value=self.padding_idx)
             targets = nn.utils.rnn.pad_sequence(
                 [dummy_data] + list(targets), batch_first=True, padding_value=self.padding_idx)[1:]
+            targets = torch.cat((soses, targets), 1)
 
             return {
                 'inputs': inputs,
@@ -144,7 +146,7 @@ class TextDataset(Dataset):
                 'target_lens': target_lens,
                 'example_ids': example_ids,
                 'batch_size': batch_size,
-                'span_seq_len': span_seq_len
+                'span_seq_len': span_seq_len + 1
             }
 
         if any(
