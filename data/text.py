@@ -130,7 +130,7 @@ class TextDataset(Dataset):
             span_seq_len = int(
                 (len(max(targets, key=lambda x: len(x))) - 1) / self.span_size) + 1
 
-            dummy_data = torch.ones(((span_seq_len + 1) * self.span_size), dtype=torch.long)
+            dummy_data = torch.ones((span_seq_len * self.span_size), dtype=torch.long)
 
             inputs = nn.utils.rnn.pad_sequence(
                 inputs, batch_first=True, padding_value=self.padding_idx)
