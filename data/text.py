@@ -136,11 +136,6 @@ class TextDataset(Dataset):
                 inputs, batch_first=True, padding_value=self.padding_idx)
             targets = nn.utils.rnn.pad_sequence(
                 [dummy_data] + list(targets), batch_first=True, padding_value=self.padding_idx)[1:]
-            # soses = targets.new_full((len(targets), self.span_size), self.sos_idx)
-            # targets = torch.cat((soses, targets), 1)
-            print("inputs", inputs.size())
-            print("targets", targets)
-            print("==========")
 
             return {
                 'inputs': inputs,
