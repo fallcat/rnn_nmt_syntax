@@ -96,7 +96,7 @@ def add_evaluate_args(parser):
     )
 
     group.add_argument(
-        '--detokenzie',
+        '--detokenize',
         action='store_false',
         help='False if do not want to detokenize the predictions'
     )
