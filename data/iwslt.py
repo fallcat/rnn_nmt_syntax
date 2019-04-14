@@ -1,4 +1,4 @@
-from data.text import TextDataset
+from data.text import TextDataset, SOS
 
 
 class IWSLTDataset(TextDataset):
@@ -28,7 +28,7 @@ class IWSLTDataset(TextDataset):
         de_lines = open(IWSLTDataset.DIR_PATH + '%s.de' % (IWSLTDataset.SPLITS[self.split])).read().strip().split('\n')
 
         # Split every line into pairs
-        pairs = [[s1, s2] for s1, s2 in zip(de_lines, en_lines)]
+        pairs = [[s1, (SOS + ' ') * self.span_size + s2] for s1, s2 in zip(de_lines, en_lines)]
 
         # Reverse pairs, make Lang instances
         if self.reverse:
