@@ -139,7 +139,7 @@ class TextDataset(Dataset):
             # soses = targets.new_full((len(targets), self.span_size), self.sos_idx)
             # targets = torch.cat((soses, targets), 1)
             print("inputs", inputs.size())
-            print("targets", targets.size())
+            print("targets", targets)
             print("==========")
 
             return {
