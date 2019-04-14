@@ -131,12 +131,12 @@ class TextDataset(Dataset):
                 (len(max(targets, key=lambda x: len(x))) - 1) / self.span_size) + 1
 
             dummy_data = torch.ones(((span_seq_len + 1) * self.span_size), dtype=torch.long)
-            soses = torch.new_full((len(targets), self.span_size), self.sos_idx)
 
             inputs = nn.utils.rnn.pad_sequence(
                 inputs, batch_first=True, padding_value=self.padding_idx)
             targets = nn.utils.rnn.pad_sequence(
                 [dummy_data] + list(targets), batch_first=True, padding_value=self.padding_idx)[1:]
+            soses = targets.new_full((len(targets), self.span_size), self.sos_idx)
             targets = torch.cat((soses, targets), 1)
 
             return {
