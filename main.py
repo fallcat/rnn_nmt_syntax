@@ -124,6 +124,12 @@ def main():
             evaluator.restore_checkpoint(args.experiment_path + args.restore)
         preds = evaluator.evaluate(args.search_method)
         save_predictions(preds, args.evaluate_path, args.detokenize)
+    elif args.mode == "evaluate_train":
+        evaluator = Evaluator(config=config, models=models, dataloader=dataloader_train, experiment=experiment)
+        if args.restore is not None:
+            evaluator.restore_checkpoint(args.experiment_path + args.restore)
+        preds = evaluator.evaluate(args.search_method)
+        save_predictions(preds, args.evaluate_path, args.detokenize)
 
 
 if __name__ == "__main__":

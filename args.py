@@ -199,7 +199,7 @@ def get_cl_args():
     arg_parser.add_argument('--track', action='store_true',
                             help='Track this run in experiment')
 
-    arg_parser.add_argument('--mode', action='store', type=str, default="train",
+    arg_parser.add_argument('--mode', action='store', type=str, default="train", choices=["train", "evaluate", "evaluate_train"],
                             help='Specify train or evaluate, if evaluate, need to load a model')
 
     groups = {}
