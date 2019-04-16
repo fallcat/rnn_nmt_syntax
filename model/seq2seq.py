@@ -46,7 +46,7 @@ class BatchEncoderRNN(nn.Module):
             output, hidden = self.gru(packed, hidden)
         else:
             self.lstm.flatten_parameters()
-            output, (hidden, cell) = self.gru(packed, (hidden, cell))
+            output, (hidden, cell) = self.lstm(packed, (hidden, cell))
         # print("output", output.data.size())
         output, _ = torch.nn.utils.rnn.pad_packed_sequence(output, batch_first=True, total_length=total_length)  # unpack (back to padded)
         return output, hidden, cell
