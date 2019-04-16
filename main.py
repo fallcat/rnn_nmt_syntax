@@ -60,7 +60,8 @@ def main():
         'eval_when_train': args.eval_when_train,
         'filter': args.filter,
         'detokenize': args.detokenize,
-        'rnn_type': args.rnn_type
+        'rnn_type': args.rnn_type,
+        'num_layers': args.num_layers
     }
 
     # config dataloader
