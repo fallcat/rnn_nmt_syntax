@@ -102,9 +102,9 @@ class BatchAttnKspanDecoderRNN(nn.Module):
             rnn_output, hidden = self.gru(embeddeds, hidden)
         else:
             self.lstm.flatten_parameters()
-            print("embeddeds", embeddeds.size())
-            print("hidden", hidden.size())
-            print("cell", cell.size())
+            # print("embeddeds", embeddeds.size())
+            # print("hidden", hidden.size())
+            # print("cell", cell.size())
             rnn_output, (hidden, cell) = self.lstm(embeddeds, (hidden, cell))
 
         concatted = torch.cat((
