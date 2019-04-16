@@ -22,20 +22,13 @@ class Trainer(object):
         self.config = config
         self.encoder = models['encoder']
         self.decoder = models['decoder']
-        optimizers = {"SGD": optim.SGD, "Adadelta": optim.Adadelta, "Adagrad": optim.Adagrad, "RMSprop": optim.RMSprop, "Adam": optim.Adam}
-        # concat the params in one optimizer
-        # self.encoder_optimizer = optimizers[self.config["optimizer"]](self.encoder.parameters(), lr=self.config['learning_rate'], weight_decay=self.config['weight_decay'])
-        # self.decoder_optimizer = optimizers[self.config["optimizer"]](self.decoder.parameters(), lr=self.config['learning_rate'], weight_decay=self.config['weight_decay'])
-        self.optimizer = optimizers[self.config['optimizer']](list(self.encoder.parameters()) + list(self.decoder.parameters()),
-                                                              lr=self.config['learning_rate'], weight_decay=self.config['weight_decay'])
-        # self.encoder_lr_scheduler = optim.lr_scheduler.ExponentialLR(
-        #     self.encoder_optimizer,
-        #     config['lr_decay']
-        # )
-        # self.decoder_lr_scheduler = optim.lr_scheduler.ExponentialLR(
-        #     self.decoder_optimizer,
-        #     config['lr_decay']
-        # )
+        optimizers = {"SGD": optim.SGD, "Adadelta": optim.Adadelta, "Adagrad": optim.Adagrad,
+                      "RMSprop": optim.RMSprop, "Adam": optim.Adam}
+        self.optimizer = optimizers[self.config['optimizer']](list(self.encoder.parameters()) +
+                                                              list(self.decoder.parameters()),
+                                                              lr=self.config['learning_rate'],
+                                                              weight_decay=self.config['weight_decay'])
+
         self.lr_scheduler = optim.lr_scheduler.ExponentialLR(
             self.optimizer,
             config['lr_decay']
@@ -69,15 +62,16 @@ class Trainer(object):
         # Make sure inputs are all gathered to be the longest length of the input, or else error will occur
         total_length = sum(batch['input_lens']).item() + sum(batch['target_lens']).item()
         # print("batch input size", batch['inputs'].size())
-        encoder_outputs, encoder_hidden = self.encoder(batch['inputs'], batch['input_lens'], batch['inputs'].size()[1])
+        encoder_outputs, encoder_hidden, encoder_cell = self.encoder(batch['inputs'], batch['input_lens'], batch['inputs'].size()[1])
 
         decoder_hidden = encoder_hidden
+        decoder_cell = torch.zeros(self.config['num_layers'], batch['inputs'].size()[1], self.config['hidden_size'], device=DEVICE)
 
         decoder_outputs = []
         # print("targets", batch['targets'])
         for i in range(0, batch['span_seq_len'] * self.config['span_size'], self.config['span_size']):
-            decoder_output, decoder_hidden, decoder_attn = self.decoder(batch['targets'][:, i:i+self.config['span_size']],
-                                                                        decoder_hidden, encoder_outputs)
+            decoder_output, decoder_hidden, decoder_cell, decoder_attn = self.decoder(batch['targets'][:, i:i+self.config['span_size']],
+                                                                                      decoder_hidden, decoder_cell, encoder_outputs)
             decoder_outputs.append(decoder_output)
         decoder_outputs = torch.cat(decoder_outputs, dim=1)
         loss = self.criterion(decoder_outputs[:, :-self.config['span_size']].contiguous().view(-1, self.dataset.num_words),

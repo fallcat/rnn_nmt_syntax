@@ -12,7 +12,7 @@ from data.wmt import WMTDataset
 from data.iwslt import IWSLTDataset
 from actions.train import Trainer
 from actions.evaluate import Evaluator
-from model.seq2seq import BatchEncoderRNN, BatchAttnKspanDecoderRNN3, BatchBahdanauAttnKspanDecoderRNN
+from model.seq2seq import BatchEncoderRNN, BatchAttnKspanDecoderRNN3, BatchAttnKspanDecoderRNN
 from model import DEVICE, NUM_DEVICES
 
 # config: max_length, span_size, teacher_forcing_ratio, learning_rate, num_iters, print_every, plot_every, save_path,
@@ -59,7 +59,8 @@ def main():
         'sort_data': args.sort_data,
         'eval_when_train': args.eval_when_train,
         'filter': args.filter,
-        'detokenize': args.detokenize
+        'detokenize': args.detokenize,
+        'rnn_type': args.rnn_type
     }
 
     # config dataloader
@@ -89,10 +90,11 @@ def main():
 
     torch.cuda.empty_cache()
 
-    encoder1 = BatchEncoderRNN(dataloader_train.dataset.num_words, args.hidden_size, num_layers=args.num_layers).to(DEVICE)
-    attn_decoder1 = BatchAttnKspanDecoderRNN3(args.hidden_size, dataloader_train.dataset.num_words, num_layers=args.num_layers,
-                                              dropout_p=args.dropout, max_length=args.max_length,
-                                              span_size=args.span_size).to(DEVICE)
+    encoder1 = BatchEncoderRNN(dataloader_train.dataset.num_words, args.hidden_size, num_layers=args.num_layers,
+                               rnn_type=args.rnn_type).to(DEVICE)
+    attn_decoder1 = BatchAttnKspanDecoderRNN(args.hidden_size, dataloader_train.dataset.num_words, num_layers=args.num_layers,
+                                             dropout_p=args.dropout, max_length=args.max_length,
+                                             span_size=args.span_size, rnn_type=args.rnn_type).to(DEVICE)
     models = {'encoder': encoder1, 'decoder': attn_decoder1}
 
     if args.track:

@@ -2,8 +2,8 @@ import argparse
 
 # TODO: make args more comprehensible, reduce unnecessary ones and make some default to each action
 
-def add_lstm_args(parser):
-    group = parser.add_argument_group('LSTM Model')
+def add_rnn_args(parser):
+    group = parser.add_argument_group('RNN Model')
 
     group.add_argument('--hidden-size', action='store', type=int, default=1000,
                             help='Specify the hidden size of the model')
@@ -13,6 +13,9 @@ def add_lstm_args(parser):
 
     group.add_argument('-l', '--num-layers', action='store', type=int, default=4,
                             help='Specify the number of GRU layers of the model')
+
+    group.add_argument('--rnn-type', action='store', type=str, default='GRU', choices=['GRU', 'LSTM'],
+                       help='Specify the number of GRU layers of the model')
 
     return group
 
@@ -203,7 +206,7 @@ def get_cl_args():
                             help='Specify train or evaluate, if evaluate, need to load a model')
 
     groups = {}
-    groups['lstm'] = add_lstm_args(arg_parser)
+    groups['rnn'] = add_rnn_args(arg_parser)
     groups['data'] = add_data_args(arg_parser)
     groups['train'] = add_train_args(arg_parser)
     groups['evaluate'] = add_evaluate_args(arg_parser)
