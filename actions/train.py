@@ -65,7 +65,7 @@ class Trainer(object):
         encoder_outputs, encoder_hidden, encoder_cell = self.encoder(batch['inputs'], batch['input_lens'], batch['inputs'].size()[1])
 
         decoder_hidden = encoder_hidden
-        decoder_cell = torch.zeros(self.config['num_layers'], batch['inputs'].size()[1], self.config['hidden_size'], device=DEVICE)
+        decoder_cell = torch.zeros(self.config['num_layers'], batch['inputs'].size()[0], self.config['hidden_size'], device=DEVICE)
 
         decoder_outputs = []
         # print("targets", batch['targets'])
