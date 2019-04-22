@@ -337,7 +337,7 @@ class BatchBahdanauAttnKspanDecoderRNN(nn.Module):
         # self.grus = nn.ModuleList([nn.GRU(self.hidden_size, self.hidden_size) for _ in range(num_layers)])
         self.out = nn.Linear(self.hidden_size, self.output_size * span_size)
 
-    def forward(self, inputs, hidden, encoder_outputs):
+    def forward(self, inputs, hidden, cell, encoder_outputs):
         # Assume inputs is padded to max length, max_length is multiple of span_size
         # ==========================================================================
 
@@ -375,4 +375,4 @@ class BatchBahdanauAttnKspanDecoderRNN(nn.Module):
         output = self.out(output).view(bsz, self.span_size, -1)
         output = F.log_softmax(output, dim=2)
 
-        return output, hidden, attn_weight
+        return output, hidden, cell, attn_weight
