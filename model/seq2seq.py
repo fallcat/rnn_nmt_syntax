@@ -52,6 +52,71 @@ class BatchEncoderRNN(nn.Module):
         return output, hidden, cell
 
 
+class BatchDecoderRNN(nn.Module):
+    def __init__(self, hidden_size, output_size, num_layers=4, dropout_p=0.1, max_length=MAX_LENGTH, span_size=SPAN_SIZE, rnn_type="GRU"):
+        super(BatchDecoderRNN, self).__init__()
+        self.hidden_size = hidden_size
+        self.output_size = output_size
+        self.num_layers = num_layers
+        self.dropout_p = dropout_p
+        self.max_length = max_length
+        self.span_size = 1
+
+        self.embedding = nn.Embedding(self.output_size, self.hidden_size)
+        # self.cat_embeddings = nn.Linear(self.hidden_size * self.span_size, self.hidden_size)
+        # self.attn = nn.Linear(self.hidden_size * 2, self.hidden_size)
+        # self.v = nn.Linear(self.hidden_size, 1)
+        # self.attn = nn.Parameter(torch.Tensor(self.hidden_size * 2, self.hidden_size))
+        # self.v = nn.Parameter(torch.Tensor(self.hidden_size, 1))
+        # gain = nn.init.calculate_gain('linear')
+        # nn.init.xavier_uniform_(self.attn, gain)
+        # nn.init.xavier_uniform_(self.v, gain)
+        # # self.attn = nn.Linear(self.hidden_size * 2, 1)
+        # self.attn_combine = nn.Linear(self.hidden_size * 2, self.hidden_size)
+        self.dropout = nn.Dropout(self.dropout_p)
+        self.rnn_type = rnn_type
+        if rnn_type == "GRU":
+            self.gru = nn.GRU(self.hidden_size, self.hidden_size, self.num_layers, dropout=self.dropout_p,
+                              batch_first=True)
+        else:
+            self.lstm = nn.LSTM(self.hidden_size, self.hidden_size, self.num_layers, dropout=self.dropout_p,
+                                batch_first=True)
+        # self.grus = nn.ModuleList([nn.GRU(self.hidden_size, self.hidden_size) for _ in range(num_layers)])
+        self.out = nn.Linear(self.hidden_size, self.output_size * span_size)
+
+    def forward(self, inputs, hidden, cell, encoder_outputs):
+        # Assume inputs is padded to max length, max_length is multiple of span_size
+        # ==========================================================================
+
+        bsz = inputs.size()[0]
+        encoder_seq_len = encoder_outputs.size()[1]
+        # print("bsz", bsz)
+        # print("encoder_seq_len", encoder_seq_len)
+        embeddeds = self.embedding(inputs)  # B x S -> B x S x H
+        # embeddeds = embeddeds.view(bsz, -1)  # B x (S x H)
+        embeddeds = self.dropout(embeddeds)  # B x (S x H)
+
+        # embeddeds = self.cat_embeddings(embeddeds).unsqueeze(1)
+
+        if self.rnn_type == "GRU":
+            self.gru.flatten_parameters()
+            rnn_output, hidden = self.gru(embeddeds, hidden)
+        else:
+            self.lstm.flatten_parameters()
+            # print("embeddeds", embeddeds.size())
+            # print("hidden", hidden.size())
+            # print("cell", cell.size())
+            rnn_output, (hidden, cell) = self.lstm(embeddeds, (hidden, cell))
+
+        output = F.relu(rnn_output)
+        output = self.out(output)
+        output = F.log_softmax(output, dim=2)
+
+        attn_weight = 0
+
+        return output, hidden, cell, attn_weight
+
+
 class BatchKspanDecoderRNN(nn.Module):
     def __init__(self, hidden_size, output_size, num_layers=4, dropout_p=0.1, max_length=MAX_LENGTH, span_size=SPAN_SIZE, rnn_type="GRU"):
         super(BatchKspanDecoderRNN, self).__init__()
