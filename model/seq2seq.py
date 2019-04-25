@@ -95,7 +95,7 @@ class BatchDecoderRNN(nn.Module):
         embeddeds = self.embedding(inputs)  # B x S -> B x S x H
         # embeddeds = embeddeds.view(bsz, -1)  # B x (S x H)
         embeddeds = self.dropout(embeddeds)  # B x (S x H)
-        print("embeddes", embeddeds.size())
+        # print("embeddes", embeddeds.size())
 
         # embeddeds = self.cat_embeddings(embeddeds).unsqueeze(1)
 
