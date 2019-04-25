@@ -56,7 +56,7 @@ class Evaluator(object):
                 decoder_output, decoder_hidden, decoder_cell, decoder_attn = self.decoder(decoder_input,
                                                                             decoder_hidden, decoder_cell, encoder_outputs)
                 topv, topi = decoder_output.topk(1, dim=2)
-                decoder_input = topi
+                decoder_input = topi.squeeze(2)
                 decoder_outputs[:, i:i + self.config['span_size']] = topi.squeeze(2)
 
             decoded_words = [[self.dataloader.dataset.index2word[w.item()] for w in tensor_sentence]
