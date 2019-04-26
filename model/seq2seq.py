@@ -19,12 +19,12 @@ class BatchEncoderRNN(nn.Module):
             self.gru = nn.GRU(hidden_size, hidden_size, num_layers, dropout=self.dropout, batch_first=True)
             for name, param in self.gru.named_parameters():
                 if 'bias' or 'weight' in name:
-                    nn.init.uniform(param, -0.1, 0.1)
+                    nn.init.uniform_(param, -0.1, 0.1)
         else:
             self.lstm = nn.LSTM(hidden_size, hidden_size, num_layers, dropout=self.dropout, batch_first=True)
             for name, param in self.lstm.named_parameters():
                 if 'bias' or 'weight' in name:
-                    nn.init.uniform(param, -0.1, 0.1)
+                    nn.init.uniform_(param, -0.1, 0.1)
 
     def forward(self, input_seqs, input_lengths, total_length, hidden=None):
         # print("inp", input_seqs.size())

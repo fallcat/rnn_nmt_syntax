@@ -130,7 +130,7 @@ class Trainer(object):
                     accumulated_loss = 0
                     accumulated_loss_n = 0
                     vm = psutil.virtual_memory()
-                    print("virtual_memory", vm)
+                    # print("virtual_memory", vm)
                     vm = dict(vm._asdict())
                     self.experiment.log_metric("available_memory", vm['available'])
                     self.experiment.log_metric("total_memory", vm['total'])
