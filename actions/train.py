@@ -222,19 +222,22 @@ class Trainer(object):
             total_length = sum(batch['input_lens']).item() + sum(batch['target_lens']).item()
 
             # Run words through encoder
-            encoder_outputs, encoder_hidden = self.encoder(batch['inputs'].to(device=DEVICE), batch['input_lens'], batch['inputs'].size()[1])
-            targets2 = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size']),  dtype=torch.long, device=DEVICE)
-            targets2[:, :batch['targets'].size()[1]] = batch['targets']
+            encoder_outputs, encoder_hidden, encoder_cell = self.encoder(batch['inputs'].to(device=DEVICE), batch['input_lens'], batch['inputs'].size()[1])
+            # targets2 = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size']),  dtype=torch.long, device=DEVICE)
+            # targets2[:, :batch['targets'].size()[1]] = batch['targets']
             decoder_hidden = encoder_hidden
-            decoder_outputs = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size'],
-                                           self.dataset.num_words), dtype=torch.float, device=DEVICE)
+            decoder_cell = torch.zeros(self.config['num_layers'], batch['inputs'].size()[0], self.config['hidden_size'],
+                                       device=DEVICE)
+            # decoder_outputs = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size'],
+            #                                self.dataset.num_words), dtype=torch.float, device=DEVICE)
+            decoder_outputs = []
             for i in range(batch['span_seq_len']):
-                decoder_output, decoder_hidden, decoder_attn = self.decoder(targets2[:, i:i+self.config['span_size']],
-                                                                            decoder_hidden, encoder_outputs)
-                decoder_outputs[:, i:i+self.config['span_size']] = decoder_output
-
+                decoder_output, decoder_hidden, decoder_cell, decoder_attn = self.decoder(batch['targets'][:, i:i+self.config['span_size']],
+                                                                            decoder_hidden, decoder_cell, encoder_outputs)
+                decoder_outputs.append(decoder_output)
+            decoder_outputs = torch.cat(decoder_outputs, dim=1)
             loss = self.criterion(decoder_outputs[:, :-self.config['span_size']].contiguous().view(-1, self.dataset.num_words),
-                                   targets2[:, self.config['span_size']:].contiguous().view(-1))
+                                   batch['targets'][:, self.config['span_size']:].contiguous().view(-1))
 
             loss = loss #.sum()
             self.encoder.train()

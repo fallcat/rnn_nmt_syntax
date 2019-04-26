@@ -291,6 +291,7 @@ class BatchAttnKspanDecoderRNN(nn.Module):
 
         return output, hidden, cell, attn_weight
 
+
 class BatchAttnKspanDecoderRNN3(nn.Module):
     def __init__(self, hidden_size, output_size, num_layers=4, dropout_p=0.1, max_length=MAX_LENGTH, span_size=SPAN_SIZE):
         super(BatchAttnKspanDecoderRNN3, self).__init__()
