@@ -77,13 +77,13 @@ class Trainer(object):
         loss = self.criterion(decoder_outputs[:, :-self.config['span_size']].contiguous().view(-1, self.dataset.num_words),
                               batch['targets'][:, self.config['span_size']:].contiguous().view(-1))
 
-        loss = loss.sum()
+        loss = loss #.sum()
         loss.backward()
         torch.nn.utils.clip_grad_norm_(self.encoder.parameters(), self.config['clip'])
         torch.nn.utils.clip_grad_norm_(self.decoder.parameters(), self.config['clip'])
         self.lr_scheduler.step()
         self.optimizer.step()
-        return loss.item()/total_length
+        return loss.item()
 
     def train_epoch(self, epoch):
         self.encoder.train()
@@ -234,10 +234,10 @@ class Trainer(object):
             loss = self.criterion(decoder_outputs[:, :-self.config['span_size']].contiguous().view(-1, self.dataset.num_words),
                                    targets2[:, self.config['span_size']:].contiguous().view(-1))
 
-            loss = loss.sum()
+            loss = loss #.sum()
             self.encoder.train()
             self.decoder.train()
-            return loss.item()/total_length
+            return loss.item()
 
     def restore_checkpoint(self, restore_path):
         if restore_path is not None:
