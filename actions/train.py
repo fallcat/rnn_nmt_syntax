@@ -33,7 +33,7 @@ class Trainer(object):
             self.optimizer,
             config['lr_decay']
         )
-        self.criterion = nn.CrossEntropyLoss(ignore_index=0)  #nn.NLLLoss(ignore_index=0)
+        self.criterion = nn.NLLLoss(ignore_index=0)
         self.epoch = -1
         self.step = -1
         self.dataloader = dataloader
