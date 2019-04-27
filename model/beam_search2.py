@@ -153,7 +153,7 @@ class BeamSearchDecoder(object):
                 print("==========")
                 print("row[1]", row[1].size())
                 print("row[2]", row[2].size())
-                print("start_sequences[i]", start_sequences[i].size())
+                print("start_sequences[i]", start_sequences[i])
                 beam = Beam(start_sequences[i], (row[1].transpose(0, 1), row[2].transpose(0, 1)), self.initial_score,
                             self.config['max_length'], self.config['beam_width'])
                 for l in range(int(self.config['max_length']/self.config['span_size'])):
