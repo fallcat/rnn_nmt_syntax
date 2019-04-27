@@ -111,13 +111,13 @@ class BeamSearchDecoder(object):
                 print("sequences[rowsi[0]]", sequences[rowsi[0]])
                 print("topi[rowsi[0], colsi[0], topsi[0]]", topi[rowsi[0], colsi[0], topsi[0]])
                 print("torch.cat((sequences[rowsi[i]],torch.LongTensor([topi[rowsi[i], colsi[i], topsi[i]]]).to(DEVICE)))",
-                      torch.cat((sequences[rowsi[0]],topi[rowsi[0], colsi[0], topsi[0]].unsqueeze(0))))
+                      torch.cat((sequences[rowsi[0]],topi[rowsi[0], colsi[0], topsi[0]].to('cpu').unsqueeze(0))))
                 print("topsv[i]", topsv[0].device)
 
                 print("hiddens[rowsi[i]]", hiddens[0][rowsi[0]])
                 print("hiddens[rowsi[i]]", hiddens[0][rowsi[0]].device)
                 new_candidates = [(rowsi[i],
-                                   torch.cat((sequences[rowsi[i]], topi[rowsi[i], colsi[i], topsi[i]].unsqueeze(0))),
+                                   torch.cat((sequences[rowsi[i]], topi[rowsi[i], colsi[i], topsi[i]].to('cpu').unsqueeze(0))),
                                    topsv[i],
                                    (hiddens[0][rowsi[i]], hiddens[1][rowsi[i]]))
                                   for i in range(self.config['beam_width'])]
