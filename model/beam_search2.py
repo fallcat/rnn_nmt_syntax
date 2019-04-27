@@ -144,11 +144,12 @@ class BeamSearchDecoder(object):
             for i, row in enumerate(encoded_hidden_list):
                 print("row[1]", row[1].size())
                 print("row[2]", row[2].size())
+                print("start_sequences[i]", start_sequences[i].size())
                 beam = Beam(start_sequences[i], (row[1].transpose(0, 1), row[2].transpose(0, 1)), self.initial_score,
                             self.config['max_length'], self.config['beam_width'])
                 for l in range(int(self.config['max_length']/self.config['span_size'])):
                     sequences, scores, hiddens = beam.collate()
-                    # print("sequences", sequences.size())
+                    print("sequences", sequences.size())
                     # print("scores", scores.size())
                     # print("hiddens", hiddens.size())
                     print("hiddens[0]", hiddens[0].view(self.config['num_layers'], len(sequences), -1).size())
