@@ -158,7 +158,7 @@ class BeamSearchDecoder(object):
                                                                                                   self.config[
                                                                                                       'num_layers'],
                                                                                                   len(sequences), -1),
-                                                                                              hiddens[0].view(
+                                                                                              hiddens[1].view(
                                                                                                   self.config[
                                                                                                       'num_layers'],
                                                                                                   len(sequences), -1),
