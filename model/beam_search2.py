@@ -32,20 +32,20 @@ class Beam(object):
         sequences = []
         scores = []
         hiddens = []
-        cell = []
+        cells = []
         for hypothesis in self.hypotheses:
             sequences.append(hypothesis.sequence.unsqueeze(0))
             # print("sequence", hypothesis.sequence)
             # print("sequence type", type(hypothesis.sequence))
             scores.append(hypothesis.score)
             hiddens.append(hypothesis.hidden[0])
-            cell.append(hypothesis.hidden[1])
+            cells.append(hypothesis.hidden[1])
         # print("lists")
         # print("sequences", sequences)
         # print("scores", scores)
         # print("hiddens", hiddens)
 
-        return torch.cat(sequences), torch.FloatTensor(scores).to(DEVICE), torch.cat(hiddens[0]), torch.cat(hiddens[1])
+        return torch.cat(sequences), torch.FloatTensor(scores).to(DEVICE), (torch.cat(hiddens), torch.cat(cells[1]))
 
 
 class BeamSearchDecoder(object):
