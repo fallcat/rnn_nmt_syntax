@@ -105,9 +105,9 @@ class BeamSearchDecoder(object):
             if s == 0:
                 # each candiate has a tuple of (idx of previously decoded sequence, sequence including this new word,
                 # the new word, corresponding hidden layer)
-                print("rowsi", rowsi.size())
-                print("colsi", colsi.size())
-                print("topsi", topsi.size())
+                print("rowsi", rowsi)
+                print("colsi", colsi)
+                # print("topsi", topsi.size())
                 print("topsv", topsv.size())
                 print("hiddens[0]", hiddens[0].size())
                 print("hiddens[1]", hiddens[1].size())
