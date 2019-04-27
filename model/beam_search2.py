@@ -112,12 +112,12 @@ class BeamSearchDecoder(object):
                       torch.cat((sequences[rowsi[0]],topi[rowsi[0], colsi[0], topsi[0]].unsqueeze(0))))
                 print("topsv[i]", topsv[0].device)
 
-                print("hiddens[rowsi[i]]", hiddens[rowsi[0]])
-                print("hiddens[rowsi[i]]", hiddens[rowsi[0]].device)
+                print("hiddens[rowsi[i]]", hiddens[0][rowsi[0]])
+                print("hiddens[rowsi[i]]", hiddens[0][rowsi[0]].device)
                 new_candidates = [(rowsi[i],
                                    torch.cat((sequences[rowsi[i]], topi[rowsi[i], colsi[i], topsi[i]].unsqueeze(0))),
                                    topsv[i],
-                                   hiddens[rowsi[i]])
+                                   (hiddens[0][rowsi[i]], hiddens[1][rowsi[i]]))
                                   for i in range(self.config['beam_width'])]
             else:
                 new_candidates = [(new_candidates[rowsi[i]][0],
@@ -131,25 +131,29 @@ class BeamSearchDecoder(object):
         with torch.no_grad():
             # print("encoder_outputs", encoder_outputs.size())
             # print("encoder_hidden", encoder_hidden.transpose(0, 1).size())
-            encoded_hidden_list = utils.split_or_chunk((encoder_outputs, encoder_hidden.transpose(0, 1)),
+            decoder_cell = torch.zeros(self.config['num_layers'], len(encoder_outputs), self.config['hidden_size'],
+                                       device=DEVICE)
+            encoded_hidden_list = utils.split_or_chunk((encoder_outputs, encoder_hidden.transpose(0, 1),
+                                                        decoder_cell.transpose(0, 1)),
                                                        len(encoder_outputs))
             beams = []
             for i, row in enumerate(encoded_hidden_list):
-                beam = Beam(start_sequences[i], row[1].transpose(0, 1), self.initial_score,
+                beam = Beam(start_sequences[i], (row[1].transpose(0, 1), row[2].transpose(0, 1)), self.initial_score,
                             self.config['max_length'], self.config['beam_width'])
                 for l in range(int(self.config['max_length']/self.config['span_size'])):
                     sequences, scores, hiddens = beam.collate()
                     # print("sequences", sequences.size())
                     # print("scores", scores.size())
                     # print("hiddens", hiddens.size())
-                    decoder_output, decoder_hidden, decoder_attn = self.decoder(sequences[:, -self.config['span_size']:],
-                                                                                hiddens.transpose(0, 1),
+                    decoder_output, decoder_hidden, decoder_cell, decoder_attn = self.decoder(sequences[:, -self.config['span_size']:],
+                                                                                              hiddens[0].transpose(0, 1),
+                                                                                              hiddens[1].transpose(0, 1),
                                                                                 row[0])
                     topv, topi = decoder_output.topk(self.config['beam_width'], dim=2)
                     if self.config['beam_search_all']:
-                        new_hypotheses = self.search_all(sequences, topv, topi, scores, decoder_hidden)
+                        new_hypotheses = self.search_all(sequences, topv, topi, scores, (decoder_hidden, decoder_cell))
                     else:
-                        new_hypotheses = self.search_sequential(sequences, topv, topi, scores, decoder_hidden)
+                        new_hypotheses = self.search_sequential(sequences, topv, topi, scores, (decoder_hidden, decoder_cell))
                     beam.hypotheses = new_hypotheses
                 beams.append(beam)
 

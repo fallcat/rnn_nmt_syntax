@@ -15,8 +15,9 @@ class Evaluator(object):
         self.config = config
         self.encoder = models['encoder']
         self.decoder = models['decoder']
-        self.encoder = nn.DataParallel(self.encoder)
-        self.decoder = nn.DataParallel(self.decoder)
+        if 'cuda' in DEVICE.type:
+            self.encoder = nn.DataParallel(self.encoder)
+            self.decoder = nn.DataParallel(self.decoder)
         self.encoder.eval()
         self.decoder.eval()
         self.dataloader = dataloader
@@ -72,8 +73,8 @@ class Evaluator(object):
 
             length_basis = [0] * len(batch_inputs)
 
-            encoder_outputs, encoder_hidden = self.encoder(batch_inputs.to(device=DEVICE), batch_input_lens,
-                                                           batch_inputs.size()[1])
+            encoder_outputs, encoder_hidden, encoder_cell = self.encoder(batch_inputs.to(device=DEVICE), batch_input_lens,
+                                                            batch_inputs.size()[1])
 
             print("outside encoder_outputs", encoder_outputs.size())
             print("outside encoder_hidden", encoder_hidden.size())
