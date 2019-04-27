@@ -61,7 +61,8 @@ def main():
         'filter': args.filter,
         'detokenize': args.detokenize,
         'rnn_type': args.rnn_type,
-        'num_layers': args.num_layers
+        'num_layers': args.num_layers,
+        'teacher_forcing_ratio': args.teacher_forcing_ratio
     }
 
     # config dataloader
