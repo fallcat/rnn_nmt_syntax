@@ -150,6 +150,8 @@ class BeamSearchDecoder(object):
                 beam = Beam(start_sequences[i], (row[1].transpose(0, 1), row[2].transpose(0, 1)), self.initial_score,
                             self.config['max_length'], self.config['beam_width'])
                 for l in range(int(self.config['max_length']/self.config['span_size'])):
+                    print("l", l)
+                    print("------------")
                     sequences, scores, hiddens = beam.collate()
                     print("sequences", sequences.size())
                     # print("scores", scores.size())
