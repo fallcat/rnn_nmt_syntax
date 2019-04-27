@@ -84,12 +84,13 @@ class Trainer(object):
                 decoder_output, decoder_hidden, decoder_cell, decoder_attn = self.decoder(decoder_input,
                                                                             decoder_hidden, decoder_cell, encoder_outputs)
                 topv, topi = decoder_output.topk(1, dim=2)
+                print("topi", topi.size())
                 decoder_input = topi.squeeze(2)
-                decoder_outputs.append(topi.squeeze(2))
+                decoder_outputs.append(decoder_output)
             decoder_outputs = torch.cat(decoder_outputs, dim=1)
 
-        # print("decoder_outputs", decoder_outputs.size())
-        # print("targets", batch['targets'].size())
+        print("decoder_outputs", decoder_outputs.size())
+        print("targets", batch['targets'].size())
         loss = self.criterion(decoder_outputs[:, :-self.config['span_size']].contiguous().view(-1, self.dataset.num_words),
                               batch['targets'][:, self.config['span_size']:].contiguous().view(-1))
 
