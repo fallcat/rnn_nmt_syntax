@@ -42,7 +42,7 @@ class Beam(object):
             cells.append(hypothesis.hidden[1])
         # print("lists")
         print("sequences", sequences[0].size())
-        print("scores", scores[0].size())
+        print("scores", scores[0])
         print("hiddens", hiddens[0].size())
 
         return torch.cat(sequences), torch.FloatTensor(scores).to(DEVICE), (torch.cat(hiddens, 1), torch.cat(cells, 1))
