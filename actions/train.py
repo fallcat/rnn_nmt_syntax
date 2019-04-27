@@ -85,7 +85,8 @@ class Trainer(object):
                                                                             decoder_hidden, decoder_cell, encoder_outputs)
                 topv, topi = decoder_output.topk(1, dim=2)
                 decoder_input = topi.squeeze(2)
-                decoder_outputs[:, i:i + self.config['span_size']] = topi.squeeze(2)
+                decoder_outputs.append(topi.squeeze(2))
+            decoder_outputs = torch.cat(decoder_outputs, dim=1)
 
         # print("decoder_outputs", decoder_outputs.size())
         # print("targets", batch['targets'].size())
