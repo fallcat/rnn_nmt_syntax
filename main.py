@@ -94,7 +94,7 @@ def main():
 
     encoder1 = BatchEncoderRNN(dataloader_train.dataset.num_words, args.hidden_size, num_layers=args.num_layers,
                                rnn_type=args.rnn_type).to(DEVICE)
-    attn_decoder1 = BatchKspanDecoderRNN(args.hidden_size, dataloader_train.dataset.num_words, num_layers=args.num_layers,
+    attn_decoder1 = BatchAttnKspanDecoderRNN(args.hidden_size, dataloader_train.dataset.num_words, num_layers=args.num_layers,
                                              dropout_p=args.dropout, max_length=args.max_length,
                                              span_size=args.span_size, rnn_type=args.rnn_type).to(DEVICE)
     # attn_decoder1 = BatchBahdanauAttnKspanDecoderRNN(args.hidden_size, dataloader_train.dataset.num_words,
