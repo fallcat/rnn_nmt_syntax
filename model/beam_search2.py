@@ -147,10 +147,12 @@ class BeamSearchDecoder(object):
                     # print("sequences", sequences.size())
                     # print("scores", scores.size())
                     # print("hiddens", hiddens.size())
+                    print("hiddens[0]", hiddens[0].size())
+                    print("hiddens[1]", hiddens[1].size())
                     decoder_output, decoder_hidden, decoder_cell, decoder_attn = self.decoder(sequences[:, -self.config['span_size']:],
                                                                                               hiddens[0].transpose(0, 1),
                                                                                               hiddens[1].transpose(0, 1),
-                                                                                row[0])
+                                                                                              row[0])
                     topv, topi = decoder_output.topk(self.config['beam_width'], dim=2)
                     if self.config['beam_search_all']:
                         new_hypotheses = self.search_all(sequences, topv, topi, scores, (decoder_hidden, decoder_cell))
