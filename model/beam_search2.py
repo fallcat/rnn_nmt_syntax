@@ -105,17 +105,11 @@ class BeamSearchDecoder(object):
             if s == 0:
                 # each candiate has a tuple of (idx of previously decoded sequence, sequence including this new word,
                 # the new word, corresponding hidden layer)
-                print("rowsi[i]", rowsi[0].device)
-                print("topi[rowsi[0], colsi[0], topsi[0]]", topi[rowsi[0], colsi[0], topsi[0]].size())
-                print("topi[rowsi[0], colsi[0], topsi[0]]", topi[rowsi[0], colsi[0], topsi[0]].device)
-                print("sequences[rowsi[0]]", sequences[rowsi[0]])
-                print("topi[rowsi[0], colsi[0], topsi[0]]", topi[rowsi[0], colsi[0], topsi[0]])
-                print("torch.cat((sequences[rowsi[i]],torch.LongTensor([topi[rowsi[i], colsi[i], topsi[i]]]).to(DEVICE)))",
-                      torch.cat((sequences[rowsi[0]],topi[rowsi[0], colsi[0], topsi[0]].to('cpu').unsqueeze(0))))
-                print("topsv[i]", topsv[0].device)
-
-                print("hiddens[rowsi[i]]", hiddens[0][rowsi[0]])
-                print("hiddens[rowsi[i]]", hiddens[0][rowsi[0]].device)
+                print("rowsi[i]", rowsi[0].size())
+                print("torch.cat((sequences[rowsi[i]], topi[rowsi[i], colsi[i], topsi[i]].to('cpu').unsqueeze(0)))", torch.cat((sequences[rowsi[0]], topi[rowsi[0], colsi[0], topsi[0]].to('cpu').unsqueeze(0))).size())
+                print("topsv[i]", topsv[0].size())
+                print("hiddens[0][rowsi[i]]", hiddens[0][rowsi[0]].size())
+                print("hiddens[1][rowsi[i]]", hiddens[1][rowsi[0]].size())
                 new_candidates = [(rowsi[i],
                                    torch.cat((sequences[rowsi[i]], topi[rowsi[i], colsi[i], topsi[i]].to('cpu').unsqueeze(0))),
                                    topsv[i],
@@ -125,7 +119,7 @@ class BeamSearchDecoder(object):
                 print("new_candidates[rowsi[i]][0]", new_candidates[rowsi[0]][0].size())
                 print("torch.cat((new_candidates[rowsi[i]][1], topi[rowsi[i], colsi[i], topsi[i]].unsqueeze(0)))", torch.cat((new_candidates[rowsi[0]][1], topi[rowsi[0], colsi[0], topsi[0]].unsqueeze(0))).size())
                 print("topsv[i]", topsv[0].size())
-                print("new_candidates[rowsi[i]][3]", new_candidates[rowsi[i]][3].size())
+                print("new_candidates[rowsi[i]][3]", new_candidates[rowsi[0]][3].size())
                 new_candidates = [(new_candidates[rowsi[i]][0],
                                    torch.cat((new_candidates[rowsi[i]][1], topi[rowsi[i], colsi[i], topsi[i]].unsqueeze(0))),
                                    topsv[i],
