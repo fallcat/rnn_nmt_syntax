@@ -168,7 +168,9 @@ class BeamSearchDecoder(object):
                                                                                                   self.config[
                                                                                                       'num_layers'],
                                                                                                   len(sequences), -1),
-                                                                                              row[0])
+                                                                                              row[0].expand(len(sequences),
+                                                                                                            row[0].size()[1],
+                                                                                                            row[0].size()[2]))
                     topv, topi = decoder_output.topk(self.config['beam_width'], dim=2)
                     if self.config['beam_search_all']:
                         new_hypotheses = self.search_all(sequences, topv, topi, scores, (decoder_hidden, decoder_cell))
