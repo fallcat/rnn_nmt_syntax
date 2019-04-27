@@ -45,7 +45,7 @@ class Beam(object):
         # print("scores", scores)
         # print("hiddens", hiddens)
 
-        return torch.cat(sequences), torch.FloatTensor(scores).to(DEVICE), (torch.cat(hiddens), torch.cat(cells[1]))
+        return torch.cat(sequences), torch.FloatTensor(scores).to(DEVICE), (torch.cat(hiddens), torch.cat(cells))
 
 
 class BeamSearchDecoder(object):
