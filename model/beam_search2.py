@@ -142,6 +142,8 @@ class BeamSearchDecoder(object):
                                                        len(encoder_outputs))
             beams = []
             for i, row in enumerate(encoded_hidden_list):
+                print("i", i)
+                print("==========")
                 print("row[1]", row[1].size())
                 print("row[2]", row[2].size())
                 print("start_sequences[i]", start_sequences[i].size())
