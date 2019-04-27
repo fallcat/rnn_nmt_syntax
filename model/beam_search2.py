@@ -153,6 +153,7 @@ class BeamSearchDecoder(object):
                     # print("hiddens", hiddens.size())
                     print("hiddens[0]", hiddens[0].view(self.config['num_layers'], len(sequences), -1).size())
                     print("hiddens[1]", hiddens[1].size())
+                    print("row[0]", row[0].size())
                     decoder_output, decoder_hidden, decoder_cell, decoder_attn = self.decoder(sequences[:, -self.config['span_size']:],
                                                                                               hiddens[0].view(
                                                                                                   self.config[
