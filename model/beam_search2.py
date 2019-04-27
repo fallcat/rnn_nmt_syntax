@@ -135,11 +135,15 @@ class BeamSearchDecoder(object):
             # print("encoder_hidden", encoder_hidden.transpose(0, 1).size())
             decoder_cell = torch.zeros(self.config['num_layers'], len(encoder_outputs), self.config['hidden_size'],
                                        device=DEVICE)
+            print("encoder_hidden", encoder_hidden.size())
+            print("decoder_cell", decoder_cell.size())
             encoded_hidden_list = utils.split_or_chunk((encoder_outputs, encoder_hidden.transpose(0, 1),
                                                         decoder_cell.transpose(0, 1)),
                                                        len(encoder_outputs))
             beams = []
             for i, row in enumerate(encoded_hidden_list):
+                print("row[1]", row[1].size())
+                print("row[2]", row[2].size())
                 beam = Beam(start_sequences[i], (row[1].transpose(0, 1), row[2].transpose(0, 1)), self.initial_score,
                             self.config['max_length'], self.config['beam_width'])
                 for l in range(int(self.config['max_length']/self.config['span_size'])):
