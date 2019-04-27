@@ -93,7 +93,7 @@ class Evaluator(object):
             for i, example_id in enumerate(batch['example_ids']):
                 outputs = []
                 beam = beams[i]
-                sequence = beam.best_hypothesis.sequence[self.span - 1:]
+                sequence = beam.best_hypothesis.sequence[self.config['span_size'] - 1:]
                 decoded = ' '.join(sequence)
                 outputs.append(f'{decoded}\n')
                 ordered_outputs.append((example_id, outputs))
