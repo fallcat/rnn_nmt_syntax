@@ -89,6 +89,7 @@ def save_predictions(preds, evaluate_path, detokenize):
             if '<EOS>' in pred:
                 pred = pred[:pred.index('<EOS>')]
             if detokenize:
+                print("pred", pred)
                 output = md.detokenize(' '.join(pred).replace('@@ ', '').split())
             else:
                 output = ' '.join(pred)
