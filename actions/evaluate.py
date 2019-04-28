@@ -40,6 +40,7 @@ class Evaluator(object):
             self.decoder.eval()
 
             batch_size = len(batch_inputs)
+            print([self.dataloader.dataset.index2word[w.item()] for w in batch_inputs[0]])
 
             encoder_outputs, encoder_hidden, encoder_cell = self.encoder(batch_inputs.to(device=DEVICE),
                                                                          batch_input_lens,
