@@ -288,7 +288,7 @@ class BatchAttnKspanDecoderRNN(nn.Module):
 
         output = self.attn_combine(output)
 
-        output = F.relu(output)
+        # output = F.relu(output)
         output = self.out(output).view(bsz, self.span_size, -1)
         output = F.log_softmax(output, dim=2)
 
