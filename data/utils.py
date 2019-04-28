@@ -18,6 +18,7 @@ def get_dataloader(dataset, config, split, worker_init_fn=None, pin_memory=True,
     #         [tuple(len(p) for p in s) for s in dataset.pairs],
     #         shuffle=shuffle
     #     )
+
     if config['batch_method'] == 'token':
         batch_sampler = SequenceLengthSampler(
             dataset,
