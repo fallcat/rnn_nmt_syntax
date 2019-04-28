@@ -94,7 +94,7 @@ class Evaluator(object):
                 outputs = []
                 beam = beams[i]
                 sequence = beam.best_hypothesis.sequence[self.config['span_size'] - 1:]
-                decoded = ' '.join(sequence)
+                decoded = ' '.join([self.dataloader.dataset.index2word[w.item()] for w in sequence])
                 outputs.append(f'{decoded}\n')
                 ordered_outputs.append((example_id, outputs))
 
