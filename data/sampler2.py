@@ -51,8 +51,10 @@ class SequenceLengthSampler3(Sampler):
         self.shuffle = shuffle
         # print("len(datasource)", len(datasource))
         # print("datasource[0]", datasource[0])
+        print("shuffle", shuffle)
 
         data_indices = [i[0] for i in sorted(enumerate(datasource), key=lambda x: len(x[1][0]), reverse=True)]
+        print("data_indices", data_indices)
         # print("data_indices[0]", data_indices[0])
         # print("datasource[data_indices[0]][0]", len(datasource[data_indices[0]][1]))
         # print("datasource[data_indices[0]][1]", len(datasource[data_indices[0]][2]))
@@ -99,7 +101,8 @@ class SequenceLengthSampler3(Sampler):
             np.random.shuffle(batch_indices)
 
         for idx in batch_indices:
-            # print("idx", idx)
+            print("idx", idx)
+            print("batches[idx]", self.batches[idx])
             yield self.batches[idx]
 
 

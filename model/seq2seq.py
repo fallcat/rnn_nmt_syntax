@@ -11,17 +11,18 @@ class BatchEncoderRNN(nn.Module):
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.num_layers = num_layers
-        self.dropout = dropout
+        self.dropout_p = dropout
+        # self.dropout = nn.Dropout(self.dropout_p)
 
         self.embedding = nn.Embedding(input_size, hidden_size)
         self.rnn_type = rnn_type
         if rnn_type == "GRU":
-            self.gru = nn.GRU(hidden_size, hidden_size, num_layers, dropout=self.dropout, batch_first=True)
+            self.gru = nn.GRU(hidden_size, hidden_size, num_layers, dropout=self.dropout_p, batch_first=True)
             for name, param in self.gru.named_parameters():
                 if 'bias' or 'weight' in name:
                     nn.init.uniform_(param, -0.1, 0.1)
         else:
-            self.lstm = nn.LSTM(hidden_size, hidden_size, num_layers, dropout=self.dropout, batch_first=True)
+            self.lstm = nn.LSTM(hidden_size, hidden_size, num_layers, dropout=self.dropout_p, batch_first=True)
             for name, param in self.lstm.named_parameters():
                 if 'bias' or 'weight' in name:
                     nn.init.uniform_(param, -0.1, 0.1)
@@ -39,6 +40,7 @@ class BatchEncoderRNN(nn.Module):
         cell = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=DEVICE)
         # hidden = input_seqs.new_zeros(self.num_layers, batch_size, self.hidden_size)
         embedded = self.embedding(input_seqs)
+        # embedded = self.dropout(embedded)
         # print("embedded", embedded)
         # print("emb size", embedded.size())
         packed = torch.nn.utils.rnn.pack_padded_sequence(embedded, input_lengths, batch_first=True)
@@ -122,8 +124,8 @@ class BatchDecoderRNN(nn.Module):
             # print("cell", cell.size())
             rnn_output, (hidden, cell) = self.lstm(embeddeds, (hidden, cell))
 
-        output = F.relu(rnn_output)
-        output = self.out(output)
+        # output = F.relu(rnn_output)
+        output = self.out(rnn_output)
         output = F.log_softmax(output, dim=2)
 
         attn_weight = 0
