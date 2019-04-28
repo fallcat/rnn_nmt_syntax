@@ -93,9 +93,9 @@ class Evaluator(object):
             for i, example_id in enumerate(batch['example_ids']):
                 outputs = []
                 beam = beams[i]
-                sequence = beam.best_hypothesis.sequence[self.config['span_size'] - 1:]
-                decoded = ' '.join([self.dataloader.dataset.index2word[w.item()] for w in sequence])
-                outputs.append(f'{decoded}\n')
+                sequence = beam.best_hypothesis.sequence[self.config['span_size']:]
+                decoded = [self.dataloader.dataset.index2word[w.item()] for w in sequence]
+                outputs.append(decoded)
                 ordered_outputs.append((example_id, outputs))
 
         print("Evaluate with beam time:", time.time() - start)
