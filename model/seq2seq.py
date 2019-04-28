@@ -234,6 +234,7 @@ class BatchAttnKspanDecoderRNN(nn.Module):
         # self.attn = nn.Linear(self.hidden_size * 2, 1)
         self.attn_combine = nn.Linear(self.hidden_size * 2, self.hidden_size)
         self.dropout = nn.Dropout(self.dropout_p)
+        rnn_type = "GRU"
         self.rnn_type = rnn_type
         if rnn_type == "GRU":
             self.gru = nn.GRU(self.hidden_size, self.hidden_size, self.num_layers, dropout=self.dropout_p, batch_first=True)
