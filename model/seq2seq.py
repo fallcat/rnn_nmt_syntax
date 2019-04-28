@@ -271,9 +271,9 @@ class BatchAttnKspanDecoderRNN(nn.Module):
             # print("cell", cell.size())
             rnn_output, (hidden, cell) = self.lstm(embeddeds, (hidden, cell))
 
-        print("rnn_output", rnn_output.size())
-        print("rnn_output.expand((rnn_output.size()[0], encoder_seq_len, rnn_output.size()[2]))", rnn_output.expand((rnn_output.size()[0], encoder_seq_len, rnn_output.size()[2])).size())
-        print("encoder_outputs", encoder_outputs.size())
+        # print("rnn_output", rnn_output.size())
+        # print("rnn_output.expand((rnn_output.size()[0], encoder_seq_len, rnn_output.size()[2]))", rnn_output.expand((rnn_output.size()[0], encoder_seq_len, rnn_output.size()[2])).size())
+        # print("encoder_outputs", encoder_outputs.size())
         concatted = torch.cat((
             rnn_output.expand((rnn_output.size()[0], encoder_seq_len, rnn_output.size()[2])),
             encoder_outputs), 2)
