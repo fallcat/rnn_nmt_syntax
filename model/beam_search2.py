@@ -68,6 +68,15 @@ class BeamSearchDecoder(object):
 
         return beams
 
+    def normalized_score(self, score, length):
+        """
+        Calculate the normalized score of the hypothesis
+
+        https://arxiv.org/abs/1609.08144
+        See equation #14
+        """
+        return score * ((5 + 1) / (5 + length)) ** self.config['length_penalty']
+
     def search_all(self, sequences, topv, topi, scores, hiddens):
         new_scores = scores
 

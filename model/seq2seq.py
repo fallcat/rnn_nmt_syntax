@@ -12,7 +12,7 @@ class BatchEncoderRNN(nn.Module):
         self.hidden_size = hidden_size
         self.num_layers = num_layers
         self.dropout_p = dropout
-        # self.dropout = nn.Dropout(self.dropout_p)
+        self.dropout = nn.Dropout(self.dropout_p)
 
         self.embedding = nn.Embedding(input_size, hidden_size)
         self.rnn_type = rnn_type
@@ -40,7 +40,7 @@ class BatchEncoderRNN(nn.Module):
         cell = torch.zeros(self.num_layers, batch_size, self.hidden_size, device=DEVICE)
         # hidden = input_seqs.new_zeros(self.num_layers, batch_size, self.hidden_size)
         embedded = self.embedding(input_seqs)
-        # embedded = self.dropout(embedded)
+        embedded = self.dropout(embedded)
         # print("embedded", embedded)
         # print("emb size", embedded.size())
         packed = torch.nn.utils.rnn.pack_padded_sequence(embedded, input_lengths, batch_first=True)
@@ -234,7 +234,7 @@ class BatchAttnKspanDecoderRNN(nn.Module):
         # self.attn = nn.Linear(self.hidden_size * 2, 1)
         self.attn_combine = nn.Linear(self.hidden_size * 2, self.hidden_size)
         self.dropout = nn.Dropout(self.dropout_p)
-        rnn_type = "GRU"
+        # rnn_type = "GRU"
         self.rnn_type = rnn_type
         if rnn_type == "GRU":
             self.gru = nn.GRU(self.hidden_size, self.hidden_size, self.num_layers, dropout=self.dropout_p, batch_first=True)
@@ -291,7 +291,7 @@ class BatchAttnKspanDecoderRNN(nn.Module):
 
         output = self.attn_combine(output)
 
-        output = F.relu(output)
+        # output = F.relu(output)
         output = self.out(output).view(bsz, self.span_size, -1)
         output = F.log_softmax(output, dim=2)
 
