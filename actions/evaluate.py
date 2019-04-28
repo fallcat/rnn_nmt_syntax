@@ -128,6 +128,10 @@ class Evaluator(object):
             if os.path.isfile(restore_path):
                 print("=> loading checkpoint '{}'".format(restore_path))
                 checkpoint = torch.load(restore_path)
+                print("encoder=======")
+                for state in checkpoint['encoder_state']:
+                    print(state, checkpoint['encoder_state'][state].shape)
+                print("decoder=======")
                 for state in checkpoint['decoder_state']:
                     print(state, checkpoint['decoder_state'][state].shape)
                 self.encoder.load_state_dict(checkpoint['encoder_state'])
