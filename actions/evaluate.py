@@ -101,7 +101,7 @@ class Evaluator(object):
         print("Evaluate with beam time:", time.time() - start)
         preds = []
         for _, outputs in sorted(ordered_outputs, key=lambda x: x[0]):  # pylint:disable=consider-using-enumerate
-            preds.append(outputs)
+            preds.extend(outputs)
         return preds
 
     def evaluate_greedy(self):
