@@ -133,7 +133,7 @@ class BeamSearchDecoder(object):
                     print("new_candidates[rowsi[i]][1]", new_candidates[rowsi[i]][1])
                     print("topi[rowsi[i], s, colsi[i]]", topi[new_candidates[rowsi[i]][0], s, colsi[i]])
                     print("topi[rowsi[i], s, colsi[i]].to('cpu').unsqueeze(0)", topi[new_candidates[rowsi[i]][0], s, colsi[i]].to('cpu').unsqueeze(0))
-                    print("torch.cat((new_candidates[rowsi[i]][1], topi[rowsi[i], s, colsi[i]].to('cpu').unsqueeze(0)))", torch.cat((new_candidates[rowsi[i]][1], topi[rowsi[i], s, colsi[i]].to('cpu').unsqueeze(0))))
+                    print("torch.cat((new_candidates[rowsi[i]][1], topi[rowsi[i], s, colsi[i]].to('cpu').unsqueeze(0)))", torch.cat((new_candidates[rowsi[i]][1], topi[new_candidates[rowsi[i]][0], s, colsi[i]].to('cpu').unsqueeze(0))))
                     print("topsv[i]", topsv[i])
                     print("new_candidates[rowsi[i]][3]", new_candidates[rowsi[i]][3])
                 new_candidates = [(new_candidates[rowsi[i]][0],
