@@ -118,6 +118,8 @@ class BeamSearchDecoder(object):
                 new_candidates = [(nc[0], nc[1], self.normalized_score(nc[2], len(nc[1][:nc[1].numpy().tolist().index(EOS_token)])),
                                    nc[3]) if EOS_token in nc[1] else nc for nc in new_candidates]
             else:
+                print("rowsi", rowsi)
+                print("colsi", colsi)
                 # print("new_candidates[rowsi[i]][0]", new_candidates[rowsi[0]][0].size())
                 # print("torch.cat((new_candidates[rowsi[i]][1], topi[rowsi[i], colsi[i], topsi[i]].unsqueeze(0)))", torch.cat((new_candidates[rowsi[0]][1], topi[rowsi[0], colsi[0], topsi[0]].unsqueeze(0))).size())
                 # print("topsv[i]", topsv[0].size())
