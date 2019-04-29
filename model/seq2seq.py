@@ -268,11 +268,11 @@ class Decoder(nn.Module):
         self.embedding = nn.Embedding(output_size, hidden_size)
 
         if rnn_type == "GRU":
-            self.rnn = nn.GRU(hidden_size * 2, hidden_size, batch_first=True)
+            self.rnn = nn.GRU(hidden_size, hidden_size, batch_first=True)
         else:
-            self.rnn = nn.LSTM(hidden_size * 2, hidden_size, batch_first=True)
+            self.rnn = nn.LSTM(hidden_size, hidden_size, batch_first=True)
 
-        self.out = nn.Linear(hidden_size * 3, output_size)
+        self.out = nn.Linear(hidden_size, output_size)
 
         self.dropout = nn.Dropout(dropout_p)
         self.rnn_type = rnn_type
