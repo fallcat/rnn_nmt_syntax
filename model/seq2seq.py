@@ -275,6 +275,7 @@ class Decoder(nn.Module):
         self.out = nn.Linear(hidden_size * 3, output_size)
 
         self.dropout = nn.Dropout(dropout_p)
+        self.rnn_type = rnn_type
 
     def forward(self, inputs, hidden, cell, encoder_outputs):
         # input = [batch size]
