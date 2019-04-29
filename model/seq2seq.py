@@ -5,12 +5,12 @@ from model import PAD_token, SOS_token, EOS_token, MAX_LENGTH, SPAN_SIZE, DEVICE
 
 
 class Encoder(nn.Module):
-    def __init__(self, input_size, hidden_size, num_layers=1, dropout=0.1, rnn_type="GRU"):
+    def __init__(self, input_size, hidden_size, num_layers=1, dropout_p=0.1, rnn_type="GRU"):
         super().__init__()
 
         self.input_size = input_size
         self.hidden_size = hidden_size
-        self.dropout = dropout
+        self.dropout = dropout_p
 
         self.embedding = nn.Embedding(input_size, hidden_size)  # no dropout as only one layer!
 
@@ -21,7 +21,7 @@ class Encoder(nn.Module):
         else:
             self.rnn = nn.LSTM(hidden_size, hidden_size, batch_first=True)
 
-        self.dropout = nn.Dropout(dropout)
+        self.dropout = nn.Dropout(dropout_p)
 
     def forward(self, input_seqs, input_lengths, total_length):
         # src = [src sent len, batch size]
@@ -258,12 +258,12 @@ class BatchKspanDecoderRNN(nn.Module):
 
 
 class Decoder(nn.Module):
-    def __init__(self, hidden_size, output_size, num_layers=4, dropout=0.1, max_length=MAX_LENGTH, span_size=SPAN_SIZE, rnn_type="GRU"):
+    def __init__(self, hidden_size, output_size, num_layers=4, dropout_p=0.1, max_length=MAX_LENGTH, span_size=SPAN_SIZE, rnn_type="GRU"):
         super().__init__()
 
         self.hidden_size = hidden_size
         self.output_size = output_size
-        self.dropout = dropout
+        self.dropout = dropout_p
 
         self.embedding = nn.Embedding(output_size, hidden_size)
 
@@ -274,7 +274,7 @@ class Decoder(nn.Module):
 
         self.out = nn.Linear(hidden_size * 3, output_size)
 
-        self.dropout = nn.Dropout(dropout)
+        self.dropout = nn.Dropout(dropout_p)
 
     def forward(self, inputs, hidden, cell, encoder_outputs):
         # input = [batch size]
