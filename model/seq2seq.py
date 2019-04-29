@@ -236,12 +236,16 @@ class BatchAttnKspanDecoderRNN(nn.Module):
         self.dropout = nn.Dropout(self.dropout_p)
         # rnn_type = "GRU"
         self.rnn_type = rnn_type
+        print("inside decoder init")
+        print("rnn_type", rnn_type)
         if rnn_type == "GRU":
+            print("GRU here")
             self.gru = nn.GRU(self.hidden_size, self.hidden_size, self.num_layers, dropout=self.dropout_p, batch_first=True)
             for name, param in self.gru.named_parameters():
                 if 'bias' or 'weight' in name:
                     nn.init.uniform_(param, -0.1, 0.1)
         else:
+            print("LSTM here")
             self.lstm = nn.LSTM(self.hidden_size, self.hidden_size, self.num_layers, dropout=self.dropout_p,
                                 batch_first=True)
             for name, param in self.lstm.named_parameters():

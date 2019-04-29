@@ -151,12 +151,6 @@ def add_data_args(parser):
     )
 
     group.add_argument(
-        '--sort-data',
-        action='store_false',
-        help='Whether or not to sort the data when making the dataset'
-    )
-
-    group.add_argument(
         '--filter',
         action='store_false',
         help='Whether or not filter data by length'

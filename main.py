@@ -56,7 +56,6 @@ def main():
         'beam_search_all': args.beam_search_all,
         'clip': args.clip,
         'search_method': args.search_method,
-        'sort_data': args.sort_data,
         'eval_when_train': args.eval_when_train,
         'filter': args.filter,
         'detokenize': args.detokenize,

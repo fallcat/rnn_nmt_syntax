@@ -13,8 +13,8 @@ class IWSLTDataset(TextDataset):
     """
     Prepare data from IWSLTDataset
     """
-    def __init__(self, max_length, span_size, sort, filter, split="train", reverse=False):
-        super(IWSLTDataset, self).__init__(max_length, span_size, sort, filter, split, reverse)
+    def __init__(self, max_length, span_size, filter, split="train", reverse=False):
+        super(IWSLTDataset, self).__init__(max_length, span_size, filter, split, reverse)
 
     def read_vocab(self):
         vocab = open(IWSLTDataset.DIR_PATH + IWSLTDataset.VOCAB_FILE, 'r').read().strip().split('\n')

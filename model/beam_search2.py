@@ -106,28 +106,9 @@ class BeamSearchDecoder(object):
             else:
                 newscores = torch.cat([nc[2] + topv[nc[0], s, :] for nc in new_candidates])
             topsv, topsi = newscores.view(-1).topk(self.config['beam_width'])
-            rows, cols = topv[:, s, :].size()
             rowsi = topsi // self.config['beam_width']  # indices of the topk beams
             colsi = topsi.remainder_(self.config['beam_width'])
-            # colsi = topsi // self.config['beam_width']
-            # topsi.remainder_(self.config['beam_width'])
             if s == 0:
-                # each candiate has a tuple of (idx of previously decoded sequence, sequence including this new word,
-                # the new word, corresponding hidden layer)
-                # print("rowsi", rowsi)
-                # print("colsi", colsi)
-                # print("topsi", topsi.size())
-                # print("topsv", topsv.size())
-                # print("hiddens[0]", hiddens[0].size())
-                # print("hiddens[1]", hiddens[1].size())
-                # print("topi", topi.size())
-                # print(",,,,,,,,,,,,,,,")
-                # print("rowsi[i]", rowsi[0].size())
-                # print("torch.cat((sequences[rowsi[i]], topi[rowsi[i], colsi[i], topsi[i]].to('cpu').unsqueeze(0)))", torch.cat((sequences[rowsi[0]], topi[rowsi[0], colsi[0], topsi[0]].to('cpu').unsqueeze(0))).size())
-                # print("topsv[i]", topsv[0].size())
-                # print("hiddens[0]", hiddens[0].size())
-                # print("hiddens[0][rowsi[i]]", hiddens[0][:, rowsi[0]].size())
-                # print("hiddens[1][rowsi[i]]", hiddens[1][:, rowsi[0]].size())
                 new_candidates = [(rowsi[i],
                                    torch.cat((sequences[rowsi[i]], topi[rowsi[i], s, colsi[i]].to('cpu').unsqueeze(0))),
                                    topsv[i],
@@ -139,7 +120,7 @@ class BeamSearchDecoder(object):
                 print("topsv[i]", topsv[0].size())
                 print("new_candidates[rowsi[i]][3]", new_candidates[rowsi[0]][3].size())
                 new_candidates = [(new_candidates[rowsi[i]][0],
-                                   torch.cat((new_candidates[rowsi[i]][1], topi[rowsi[i], colsi[i], topsi[i]].unsqueeze(0))),
+                                   torch.cat((new_candidates[rowsi[i]][1], topi[rowsi[i], s, colsi[i]].to('cpu').unsqueeze(0))),
                                    topsv[i],
                                    new_candidates[rowsi[i]][3]) for i in range(self.config['beam_width'])]
         return [BeamHypothesis(candidate[1], candidate[2], candidate[3]) for candidate in new_candidates]
