@@ -4,6 +4,51 @@ import torch.nn.functional as F
 from model import PAD_token, SOS_token, EOS_token, MAX_LENGTH, SPAN_SIZE, DEVICE
 
 
+class Encoder(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers=1, dropout=0.1, rnn_type="GRU"):
+        super().__init__()
+
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.dropout = dropout
+
+        self.embedding = nn.Embedding(input_size, hidden_size)  # no dropout as only one layer!
+
+        self.rnn_type = rnn_type
+
+        if rnn_type == "GRU":
+            self.rnn = nn.GRU(hidden_size, hidden_size, batch_first=True)
+        else:
+            self.rnn = nn.LSTM(hidden_size, hidden_size, batch_first=True)
+
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, input_seqs, input_lengths, total_length):
+        # src = [src sent len, batch size]
+
+        embedded = self.dropout(self.embedding(input_seqs))
+        packed = torch.nn.utils.rnn.pack_padded_sequence(embedded, input_lengths, batch_first=True)
+
+        # embedded = [src sent len, batch size, emb dim]
+        outputs, hidden = self.rnn(packed)  # no cell state!
+
+        outputs, _ = torch.nn.utils.rnn.pad_packed_sequence(outputs, batch_first=True, total_length=total_length)
+
+        if self.rnn_type == "GRU":
+            cell = torch.zeros(self.num_layers, input_seqs.size()[0], self.hidden_size, device=DEVICE)
+        else:
+            cell = hidden[1]
+            hidden = hidden[0]
+
+
+        # outputs = [src sent len, batch size, hid dim * n directions]
+        # hidden = [n layers * n directions, batch size, hid dim]
+
+        # outputs are always from the top hidden layer
+
+        return outputs, hidden, cell
+
+
 class BatchEncoderRNN(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers=1, dropout=0.1, rnn_type="GRU"):
         super(BatchEncoderRNN, self).__init__()
@@ -206,6 +251,68 @@ class BatchKspanDecoderRNN(nn.Module):
         output = F.relu(rnn_output)
         output = self.out(output).view(bsz, self.span_size, -1)
         output = F.log_softmax(output, dim=2)
+
+        attn_weight = 0
+
+        return output, hidden, cell, attn_weight
+
+
+class Decoder(nn.Module):
+    def __init__(self, hidden_size, output_size, num_layers=4, dropout=0.1, max_length=MAX_LENGTH, span_size=SPAN_SIZE, rnn_type="GRU"):
+        super().__init__()
+
+        self.hidden_size = hidden_size
+        self.output_size = output_size
+        self.dropout = dropout
+
+        self.embedding = nn.Embedding(output_size, hidden_size)
+
+        if rnn_type == "GRU":
+            self.rnn = nn.GRU(hidden_size * 2, hidden_size, batch_first=True)
+        else:
+            self.rnn = nn.LSTM(hidden_size * 2, hidden_size, batch_first=True)
+
+        self.out = nn.Linear(hidden_size * 3, output_size)
+
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, inputs, hidden, cell, encoder_outputs):
+        # input = [batch size]
+        # hidden = [n layers * n directions, batch size, hid dim]
+        # context = [n layers * n directions, batch size, hid dim]
+
+        # n layers and n directions in the decoder will both always be 1, therefore:
+        # hidden = [1, batch size, hid dim]
+        # context = [1, batch size, hid dim]
+
+
+        # input = [1, batch size]
+
+        embedded = self.dropout(self.embedding(inputs))
+
+        # embedded = [1, batch size, emb dim]
+
+
+        # emb_con = [1, batch size, emb dim + hid dim]
+
+        if self.rnn_type == "GRU":
+            output, hidden = self.rnn(embedded, hidden)
+        else:
+            output, (hidden, cell) = self.rnn(embedded, (hidden, cell))
+
+        # output = [sent len, batch size, hid dim * n directions]
+        # hidden = [n layers * n directions, batch size, hid dim]
+
+        # sent len, n layers and n directions will always be 1 in the decoder, therefore:
+        # output = [1, batch size, hid dim]
+        # hidden = [1, batch size, hid dim]
+
+        # output = [batch size, emb dim + hid dim * 2]
+
+        output = self.out(output)
+        output = F.log_softmax(output, dim=2)
+
+        # prediction = [batch size, output dim]
 
         attn_weight = 0
 

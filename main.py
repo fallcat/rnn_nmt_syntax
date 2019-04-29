@@ -12,7 +12,8 @@ from data.wmt import WMTDataset
 from data.iwslt import IWSLTDataset
 from actions.train import Trainer
 from actions.evaluate import Evaluator
-from model.seq2seq import BatchEncoderRNN, BatchAttnKspanDecoderRNN3, BatchAttnKspanDecoderRNN, BatchBahdanauAttnKspanDecoderRNN, BatchKspanDecoderRNN
+from model.seq2seq import BatchEncoderRNN, BatchAttnKspanDecoderRNN3, BatchAttnKspanDecoderRNN, \
+    BatchBahdanauAttnKspanDecoderRNN, BatchKspanDecoderRNN, Encoder, Decoder
 from model import DEVICE, NUM_DEVICES
 
 # config: max_length, span_size, teacher_forcing_ratio, learning_rate, num_iters, print_every, plot_every, save_path,
@@ -91,9 +92,9 @@ def main():
 
     torch.cuda.empty_cache()
 
-    encoder1 = BatchEncoderRNN(dataloader_train.dataset.num_words, args.hidden_size, num_layers=args.num_layers,
+    encoder1 = Encoder(dataloader_train.dataset.num_words, args.hidden_size, num_layers=args.num_layers,
                                rnn_type=args.rnn_type).to(DEVICE)
-    attn_decoder1 = BatchAttnKspanDecoderRNN(args.hidden_size, dataloader_train.dataset.num_words, num_layers=args.num_layers,
+    attn_decoder1 = Decoder(args.hidden_size, dataloader_train.dataset.num_words, num_layers=args.num_layers,
                                              dropout_p=args.dropout, max_length=args.max_length,
                                              span_size=args.span_size, rnn_type=args.rnn_type).to(DEVICE)
     # attn_decoder1 = BatchBahdanauAttnKspanDecoderRNN(args.hidden_size, dataloader_train.dataset.num_words,
