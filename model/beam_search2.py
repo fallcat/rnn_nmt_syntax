@@ -1,5 +1,5 @@
 import torch
-from model import utils, DEVICE
+from model import utils, DEVICE, EOS_token
 
 
 class BeamHypothesis(object):
@@ -7,6 +7,7 @@ class BeamHypothesis(object):
         self.sequence = sequence
         self.score = score
         self.hidden = hidden
+        self.finish = False
 
     def __len__(self):
         """ The length of the hypothesis is the length of the sequence """
@@ -114,6 +115,8 @@ class BeamSearchDecoder(object):
                                    topsv[i],
                                    (hiddens[0][:, rowsi[i]], hiddens[1][:, rowsi[i]]))
                                   for i in range(self.config['beam_width'])]
+                new_candidates = [(nc[0], nc[1], self.normalized_score(nc[2], len(nc[1][:nc[1].index(EOS_token)])),
+                                   nc[3]) for nc in new_candidates]
             else:
                 print("new_candidates[rowsi[i]][0]", new_candidates[rowsi[0]][0].size())
                 print("torch.cat((new_candidates[rowsi[i]][1], topi[rowsi[i], colsi[i], topsi[i]].unsqueeze(0)))", torch.cat((new_candidates[rowsi[0]][1], topi[rowsi[0], colsi[0], topsi[0]].unsqueeze(0))).size())
@@ -123,6 +126,8 @@ class BeamSearchDecoder(object):
                                    torch.cat((new_candidates[rowsi[i]][1], topi[rowsi[i], s, colsi[i]].to('cpu').unsqueeze(0))),
                                    topsv[i],
                                    new_candidates[rowsi[i]][3]) for i in range(self.config['beam_width'])]
+                new_candidates = [(nc[0], nc[1], self.normalized_score(nc[2], len(nc[1][:nc[1].index(EOS_token)])),
+                                   nc[3]) for nc in new_candidates]
         return [BeamHypothesis(candidate[1], candidate[2], candidate[3]) for candidate in new_candidates]
 
     def decode(self, encoder_outputs, encoder_hidden, start_sequences):
@@ -139,23 +144,10 @@ class BeamSearchDecoder(object):
                                                        len(encoder_outputs))
             beams = []
             for i, row in enumerate(encoded_hidden_list):
-                # print("i", i)
-                # print("==========")
-                # print("row[1]", row[1].size())
-                # print("row[2]", row[2].size())
-                # print("start_sequences[i]", start_sequences[i])
                 beam = Beam(start_sequences[i], (row[1].transpose(0, 1), row[2].transpose(0, 1)), self.initial_score,
                             self.config['max_length'], self.config['beam_width'])
                 for l in range(int(self.config['max_length']/self.config['span_size'])):
-                    # print("l", l)
-                    # print("------------")
                     sequences, scores, hiddens = beam.collate()
-                    # print("sequences", sequences.size())
-                    # print("scores", scores.size())
-                    # print("hiddens", hiddens.size())
-                    # print("hiddens[0]", hiddens[0].view(self.config['num_layers'], len(sequences), -1).size())
-                    # print("hiddens[1]", hiddens[1].size())
-                    # print("row[0]", row[0].size())
                     decoder_output, decoder_hidden, decoder_cell, decoder_attn = self.decoder(sequences[:, -self.config['span_size']:],
                                                                                               hiddens[0].view(
                                                                                                   self.config[
