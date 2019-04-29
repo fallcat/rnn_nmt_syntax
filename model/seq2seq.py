@@ -372,7 +372,7 @@ class BatchAttnKspanDecoderRNNSmall(nn.Module):
         # print("bsz", bsz)
         # print("encoder_seq_len", encoder_seq_len)
         embeddeds = self.embedding(inputs)  # B x S -> B x S x H
-        embeddeds = embeddeds.view(bsz, -1)  # B x (S x H)
+        embeddeds = embeddeds.view(bsz, 1, -1)  # B x (S x H)
         embeddeds = self.dropout(embeddeds)  # B x (S x H)
 
         # embeddeds = self.cat_embeddings(embeddeds).unsqueeze(1)
