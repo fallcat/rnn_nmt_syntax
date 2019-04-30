@@ -342,7 +342,7 @@ class BatchAttnKspanDecoderRNNSmall(nn.Module):
         # self.cat_embeddings = nn.Linear(self.hidden_size * self.span_size, self.hidden_size)
         # self.attn = nn.Linear(self.hidden_size * 2, self.hidden_size)
         # self.v = nn.Linear(self.hidden_size, 1)
-        self.attn = nn.Parameter(torch.Tensor(self.hidden_size * (num_directions + span_size), self.hidden_size))
+        self.attn = nn.Parameter(torch.Tensor(self.hidden_size * (num_directions + 1), self.hidden_size))
         self.v = nn.Parameter(torch.Tensor(self.hidden_size, 1))
         gain = nn.init.calculate_gain('linear')
         nn.init.xavier_uniform_(self.attn, gain)
