@@ -12,7 +12,7 @@ from data.wmt import WMTDataset
 from data.iwslt import IWSLTDataset
 from actions.train import Trainer
 from actions.evaluate import Evaluator
-from model.seq2seq import BatchEncoderRNN, BatchAttnKspanDecoderRNN, \
+from model.seq2seq import BatchEncoderRNN, BatchAttnKspanDecoderRNN, BatchAttnKspanDecoderRNNSmall, \
     BatchBahdanauAttnKspanDecoderRNN, BatchKspanDecoderRNN, Encoder, Decoder
 from model import DEVICE, NUM_DEVICES
 
@@ -98,7 +98,7 @@ def main():
                                num_layers=args.num_layers,
                                rnn_type=args.rnn_type,
                                num_directions= args.num_directions).to(DEVICE)
-    attn_decoder1 = BatchAttnKspanDecoderRNN(args.hidden_size,
+    attn_decoder1 = BatchAttnKspanDecoderRNNSmall(args.hidden_size,
                                              dataloader_train.dataset.num_words,
                                              num_layers=args.num_layers,
                                              dropout_p=args.dropout,
