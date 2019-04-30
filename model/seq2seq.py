@@ -400,6 +400,10 @@ class BatchAttnKspanDecoderRNNSmall(nn.Module):
 
         concatted_size = concatted.size()
 
+        print("concatted.view(-1, concatted.size()[2])", concatted.view(-1, concatted.size()[2]).size())
+        print("self.attn", self.attn.size())
+        print("self.v", self.v.size())
+
         attn_weight = F.softmax(torch.chain_matmul(concatted.view(-1, concatted.size()[2]), self.attn, self.v).view(concatted_size[0], concatted_size[1], -1), dim=1)
 
         attn_applied = torch.bmm(attn_weight.transpose(1, 2), encoder_outputs) # B x 1 x H
