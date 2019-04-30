@@ -20,7 +20,7 @@ class TextDataset(Dataset):
     """
     Prepare data from WMTDataset
     """
-    def __init__(self, max_length, span_size, filter, split="train", reverse=False):
+    def __init__(self, max_length, span_size, filter, split="train", reverse=False, trim=False):
         self.word2index = {PAD: 0, SOS: 1, EOS: 2, UNK: 3}
         self.word2count = {}
         self.index2word = {0: PAD, 1: SOS, 2: EOS, 3: UNK}
@@ -31,6 +31,7 @@ class TextDataset(Dataset):
         self.span_size = span_size
         self.reverse = reverse
         self.max_length = max_length
+        self.trim = trim
 
         self.pairs = []
         self.prepare_data()
@@ -98,6 +99,9 @@ class TextDataset(Dataset):
 
     def filter_pairs(self, pairs):
         return [pair for pair in pairs if self.filter_pair(pair)]
+
+    def trim_pairs(self, pairs):
+        return [[pair[0][:self.max_length], pair[1][:self.max_length]] for pair in pairs]
 
     def indexes_from_sentence(self, sentence):
         return [self.word2index[word] if word in self.word2index else UNK_token

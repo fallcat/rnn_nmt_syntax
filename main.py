@@ -63,7 +63,8 @@ def main():
         'rnn_type': args.rnn_type,
         'num_layers': args.num_layers,
         'teacher_forcing_ratio': args.teacher_forcing_ratio,
-        'num_directions': args.num_directions
+        'num_directions': args.num_directions,
+        'trim': args.trim
     }
 
     # config dataloader

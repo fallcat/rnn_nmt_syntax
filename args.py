@@ -128,6 +128,9 @@ def add_data_args(parser):
     group.add_argument('--shuffle', action='store_false',
                             help='Shuffle the dataloader')
 
+    group.add_argument('--trim', action='store_true',
+                       help='Trim the dataset to max length')
+
     group.add_argument('--dataset', action='store', type=str, default="WMT",
                             help='Specify which data to use')
 

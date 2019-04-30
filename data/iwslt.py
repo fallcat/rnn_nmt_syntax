@@ -13,8 +13,8 @@ class IWSLTDataset(TextDataset):
     """
     Prepare data from IWSLTDataset
     """
-    def __init__(self, max_length, span_size, filter, split="train", reverse=False):
-        super(IWSLTDataset, self).__init__(max_length, span_size, filter, split, reverse)
+    def __init__(self, max_length, span_size, filter, split="train", reverse=False, trim=False):
+        super(IWSLTDataset, self).__init__(max_length, span_size, filter, split, reverse, trim)
 
     def read_vocab(self):
         vocab = open(IWSLTDataset.DIR_PATH + IWSLTDataset.VOCAB_FILE, 'r').read().strip().split('\n')
@@ -33,14 +33,14 @@ class IWSLTDataset(TextDataset):
         else:
             pairs = [[s1, (SOS + ' ') * self.span_size + s2] for s1, s2 in zip(de_lines, en_lines)]
 
-        # Reverse pairs, make Lang instances
-        if self.reverse:
-            pairs = [list(reversed(p)) for p in pairs]
-
         print("Read %s sentence pairs in %s" % (len(pairs), self.split))
 
         if self.filter:
             pairs = self.filter_pairs(pairs)
+
+        if self.trim:
+            pairs = self.trim_pairs(pairs)
+
         print("Trimmed to %s sentence pairs" % len(pairs))
         # pairs = sorted(pairs, key=lambda x: len(x[1]))
 
