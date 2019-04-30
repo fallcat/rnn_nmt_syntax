@@ -171,7 +171,7 @@ class Trainer(object):
             'encoder_state': self.encoder.state_dict(),
             'decoder_state': self.decoder.state_dict(),
             'optimizer': self.optimizer.state_dict(),
-            'lr_scheduler': self.lr_scheduler.state_dict()
+            'lr_scheduler': self.lr_scheduler.state_dict(),
             # 'encoder_optimizer': self.encoder_optimizer.state_dict(),
             # 'decoder_optimizer': self.decoder_optimizer.state_dict(),
             # 'encoder_lr_scheduler': self.encoder_lr_scheduler.state_dict(),

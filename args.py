@@ -14,6 +14,9 @@ def add_rnn_args(parser):
     group.add_argument('-l', '--num-layers', action='store', type=int, default=4,
                             help='Specify the number of GRU layers of the model')
 
+    group.add_argument('--num-directions', action='store', type=int, default=1, choices=[1, 2],
+                       help='Specify whether or not use bidirectional encoder')
+
     group.add_argument('--rnn-type', action='store', type=str, default='GRU', choices=['GRU', 'LSTM'],
                        help='Specify the number of GRU layers of the model')
 
