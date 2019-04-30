@@ -368,7 +368,7 @@ class BatchAttnKspanDecoderRNNSmall(nn.Module):
                 if 'bias' or 'weight' in name:
                     nn.init.uniform_(param, -0.1, 0.1)
         # self.grus = nn.ModuleList([nn.GRU(self.hidden_size, self.hidden_size) for _ in range(num_layers)])
-        self.out = nn.Linear(self.hidden_size * span_size, self.output_size * span_size)
+        self.out = nn.Linear(self.hidden_size, self.output_size * span_size)
 
     def forward(self, inputs, hidden, cell, encoder_outputs):
         # Assume inputs is padded to max length, max_length is multiple of span_size
