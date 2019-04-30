@@ -59,6 +59,7 @@ class BatchEncoderRNN(nn.Module):
         self.num_directions = num_directions
         self.dropout_p = dropout
         self.dropout = nn.Dropout(self.dropout_p)
+        self.convert = nn.Linear(2, 1)
 
         self.embedding = nn.Embedding(input_size, hidden_size)
         self.rnn_type = rnn_type
