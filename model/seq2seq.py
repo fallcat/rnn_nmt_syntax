@@ -339,21 +339,14 @@ class BatchAttnKspanDecoderRNNSmall(nn.Module):
         self.num_directions = num_directions
 
         self.embedding = nn.Embedding(self.output_size, self.hidden_size)
-        # self.cat_embeddings = nn.Linear(self.hidden_size * self.span_size, self.hidden_size)
-        # self.attn = nn.Linear(self.hidden_size * 2, self.hidden_size)
-        # self.v = nn.Linear(self.hidden_size, 1)
         self.attn = nn.Parameter(torch.Tensor(self.hidden_size * (num_directions + 1), self.hidden_size))
         self.v = nn.Parameter(torch.Tensor(self.hidden_size, 1))
         gain = nn.init.calculate_gain('linear')
         nn.init.xavier_uniform_(self.attn, gain)
         nn.init.xavier_uniform_(self.v, gain)
-        # self.attn = nn.Linear(self.hidden_size * 2, 1)
         self.attn_combine = nn.Linear(self.hidden_size * (1 + num_directions), self.hidden_size)
         self.dropout = nn.Dropout(self.dropout_p)
-        # rnn_type = "GRU"
         self.rnn_type = rnn_type
-        print("inside decoder init")
-        print("rnn_type", rnn_type)
         if rnn_type == "GRU":
             print("GRU here")
             self.gru = nn.GRU(self.hidden_size * self.span_size, self.hidden_size, self.num_layers, dropout=self.dropout_p, batch_first=True)
@@ -376,22 +369,15 @@ class BatchAttnKspanDecoderRNNSmall(nn.Module):
 
         bsz = inputs.size()[0]
         encoder_seq_len = encoder_outputs.size()[1]
-        # print("bsz", bsz)
-        # print("encoder_seq_len", encoder_seq_len)
         embeddeds = self.embedding(inputs)  # B x S -> B x S x H
         embeddeds = embeddeds.view(bsz, 1, -1)  # B x (S x H)
         embeddeds = self.dropout(embeddeds)  # B x (S x H)
-
-        # embeddeds = self.cat_embeddings(embeddeds).unsqueeze(1)
 
         if self.rnn_type == "GRU":
             self.gru.flatten_parameters()
             rnn_output, hidden = self.gru(embeddeds, hidden)
         else:
             self.lstm.flatten_parameters()
-            # print("embeddeds", embeddeds.size())
-            # print("hidden", hidden.size())
-            # print("cell", cell.size())
             rnn_output, (hidden, cell) = self.lstm(embeddeds, (hidden, cell))
 
         concatted = torch.cat((
@@ -399,10 +385,6 @@ class BatchAttnKspanDecoderRNNSmall(nn.Module):
             encoder_outputs), 2)
 
         concatted_size = concatted.size()
-
-        print("concatted.view(-1, concatted.size()[2])", concatted.view(-1, concatted.size()[2]).size())
-        print("self.attn", self.attn.size())
-        print("self.v", self.v.size())
 
         attn_weight = F.softmax(torch.chain_matmul(concatted.view(-1, concatted.size()[2]), self.attn, self.v).view(concatted_size[0], concatted_size[1], -1), dim=1)
 
