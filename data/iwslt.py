@@ -38,11 +38,11 @@ class IWSLTDataset(TextDataset):
         if self.filter:
             pairs = self.filter_pairs(pairs)
 
-        if self.trim:
-            print("Trimmed to max_length")
-            pairs = self.trim_pairs(pairs)
+        # if self.trim:
+        #     print("Trimmed to max_length")
+        #     pairs = self.trim_pairs(pairs)
 
         print("Trimmed to %s sentence pairs" % len(pairs))
-        print(len(sorted(pairs, key=lambda x: len(x[1]))[-1][0]))
+        # print(len(sorted(pairs, key=lambda x: len(x[1]))[-1][0].split(" ")))
 
         self.pairs = pairs
