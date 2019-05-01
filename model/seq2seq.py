@@ -50,14 +50,14 @@ class Encoder(nn.Module):
 
 
 class BatchEncoderRNN(nn.Module):
-    def __init__(self, input_size, hidden_size, num_layers=1, dropout=0.1, rnn_type="GRU", num_directions=1):
+    def __init__(self, input_size, hidden_size, num_layers=1, dropout_p=0.1, rnn_type="GRU", num_directions=1):
         super(BatchEncoderRNN, self).__init__()
 
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.num_layers = num_layers
         self.num_directions = num_directions
-        self.dropout_p = dropout
+        self.dropout_p = dropout_p
         self.dropout = nn.Dropout(self.dropout_p)
         self.convert = nn.Linear(2, 1)
 
