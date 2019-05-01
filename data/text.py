@@ -94,8 +94,8 @@ class TextDataset(Dataset):
         raise NotImplementedError('Subclasses must implement preprocess!')
 
     def filter_pair(self, p):
-        return len(p[0].split(' ')) < self.max_length - (self.span_size + 1) and \
-               len(p[1].split(' ')) < self.max_length - (self.span_size + 1)
+        return len(p[0].split(' ')) < self.max_length and \
+               len(p[1].split(' ')) < self.max_length
 
     def filter_pairs(self, pairs):
         return [pair for pair in pairs if self.filter_pair(pair)]
