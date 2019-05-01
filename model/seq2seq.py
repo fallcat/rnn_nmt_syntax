@@ -390,8 +390,12 @@ class BatchBahdanauAttnKspanDecoderRNN(nn.Module):
 
         embeddeds = F.relu(embeddeds)
 
-        self.gru.flatten_parameters()
-        rnn_output, hidden = self.gru(embeddeds, hidden)
+        if self.rnn_type == "GRU":
+            self.gru.flatten_parameters()
+            rnn_output, hidden = self.gru(embeddeds, hidden)
+        else:
+            self.lstm.flatten_parameters()
+            rnn_output, (hidden, cell) = self.lstm(embeddeds, (hidden, cell))
 
         output = self.out(rnn_output).view(bsz, self.span_size, -1)
         output = F.log_softmax(output, dim=2)
