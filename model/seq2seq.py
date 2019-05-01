@@ -518,8 +518,10 @@ class BatchBahdanauAttnKspanDecoderRNN2(nn.Module):
         print("hidden[-1]", hidden[-1].size())
         attn_weights = F.softmax(
             self.attn(torch.cat((embeddeds, hidden[-1]), 1)), dim=1)
+        print("attn_weights", attn_weights.size())
         attn_applied = torch.bmm(attn_weights.unsqueeze(1),
                                  encoder_outputs)
+        print("attn_applied", attn_applied.size())
         embeddeds = torch.cat((embeddeds, attn_applied), 2)
         embeddeds = self.attn_combine(embeddeds).unsqueeze(0)
 
