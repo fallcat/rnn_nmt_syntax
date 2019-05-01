@@ -116,6 +116,7 @@ class TextDataset(Dataset):
         if self.trim:
             input_tensor = self.tensor_from_sentence(pair[0])[:self.max_length]
             target_tensor = self.tensor_from_sentence(pair[1])[:self.max_length]
+            print("input_len", input_tensor.size())
         else:
             input_tensor = self.tensor_from_sentence(pair[0])
             target_tensor = self.tensor_from_sentence(pair[1])
