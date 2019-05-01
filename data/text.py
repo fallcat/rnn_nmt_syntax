@@ -113,8 +113,12 @@ class TextDataset(Dataset):
         return torch.tensor(indexes, dtype=torch.long) #.view(-1, 1)
 
     def tensors_from_pair(self, pair):
-        input_tensor = self.tensor_from_sentence(pair[0])
-        target_tensor = self.tensor_from_sentence(pair[1])
+        if self.trim:
+            input_tensor = self.tensor_from_sentence(pair[0])[:self.max_length]
+            target_tensor = self.tensor_from_sentence(pair[1])[:self.max_length]
+        else:
+            input_tensor = self.tensor_from_sentence(pair[0])
+            target_tensor = self.tensor_from_sentence(pair[1])
         return input_tensor, target_tensor
 
     def collate(self, data, sort=False):
