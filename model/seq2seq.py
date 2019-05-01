@@ -523,7 +523,7 @@ class BatchBahdanauAttnKspanDecoderRNN2(nn.Module):
                                  encoder_outputs)
         print("attn_applied", attn_applied.size())
         embeddeds = torch.cat((embeddeds.unsqueeze(1), attn_applied), 2)
-        embeddeds = self.attn_combine(embeddeds).unsqueeze(0)
+        embeddeds = self.attn_combine(embeddeds)
 
         embeddeds = F.relu(embeddeds)
 
