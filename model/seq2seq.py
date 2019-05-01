@@ -511,7 +511,7 @@ class BatchBahdanauAttnKspanDecoderRNN2(nn.Module):
         embeddeds = embeddeds.view(bsz, -1)  # B x (S x H)
         embeddeds = self.dropout(embeddeds)  # B x (S x H)
 
-        embeddeds = self.cat_embeddings(embeddeds).unsqueeze(1)
+        embeddeds = self.cat_embeddings(embeddeds)
         # print("embeddeds", embeddeds.size())
 
         print("embeddeds", embeddeds.size())
