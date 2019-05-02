@@ -703,7 +703,7 @@ class BatchAttnFirstKspanDecoderRNNSmall(nn.Module):
         gain = nn.init.calculate_gain('linear')
         nn.init.xavier_uniform_(self.attn, gain)
         nn.init.xavier_uniform_(self.v, gain)
-        self.attn_combine = nn.Linear(self.hidden_size * (2 + num_directions), self.hidden_size)
+        self.attn_combine = nn.Linear(self.hidden_size * (1 + num_directions), self.hidden_size)
         self.dropout = nn.Dropout(self.dropout_p)
         self.rnn_type = rnn_type
         if rnn_type == "GRU":
