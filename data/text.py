@@ -101,7 +101,7 @@ class TextDataset(Dataset):
         return [pair for pair in pairs if self.filter_pair(pair)]
 
     def trim_pairs(self, pairs):
-        return [[' '.join(pair[0].split(' ')[:self.max_length]), ' '.join(pair[1].split(' ')[:self.max_length])] for pair in pairs]
+        return [[' '.join(pair[0].split(' ')[:self.max_length - 1]), ' '.join(pair[1].split(' ')[:self.max_length - 1])] for pair in pairs]
 
     def indexes_from_sentence(self, sentence):
         return [self.word2index[word] if word in self.word2index else UNK_token
@@ -109,7 +109,7 @@ class TextDataset(Dataset):
 
     def tensor_from_sentence(self, sentence):
         indexes = self.indexes_from_sentence(sentence)
-        # indexes.append(EOS_token)
+        indexes.append(EOS_token)
         return torch.tensor(indexes, dtype=torch.long) #.view(-1, 1)
 
     def tensors_from_pair(self, pair):
