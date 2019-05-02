@@ -7,7 +7,7 @@ from torch.utils.data.sampler import BatchSampler, RandomSampler, SequentialSamp
 
 def get_dataloader(dataset, config, split, worker_init_fn=None, pin_memory=True, num_devices=1, shuffle=False):
     ''' Utility function that gets a data loader '''
-    dataset = dataset(config['max_length'], config['span_size'], config['filter'], split, config['trim'])
+    dataset = dataset(config['max_length'], config['span_size'], config['filter'], split, trim=config['trim'])
     # if config['batch_method'] == 'token':
     #     # Calculate batch sizes for each device. Potentially reduce the batch size on device 0 as
     #     # the optimization step (all the gradients from all devices) happens on device 0.
