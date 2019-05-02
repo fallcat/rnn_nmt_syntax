@@ -29,9 +29,9 @@ class IWSLTDataset(TextDataset):
 
         # Split every line into pairs
         if self.reverse:
-            pairs = [[s2, (SOS + ' ') * self.span_size + s1] for s1, s2 in zip(de_lines, en_lines)]
+            pairs = [[s2 + ' EOS', (SOS + ' ') * self.span_size + s1 + ' EOS'] for s1, s2 in zip(de_lines, en_lines)]
         else:
-            pairs = [[s1, (SOS + ' ') * self.span_size + s2] for s1, s2 in zip(de_lines, en_lines)]
+            pairs = [[s1 + ' EOS', (SOS + ' ') * self.span_size + s2 + ' EOS'] for s1, s2 in zip(de_lines, en_lines)]
 
         print("Read %s sentence pairs in %s" % (len(pairs), self.split))
 
