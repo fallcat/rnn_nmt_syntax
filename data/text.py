@@ -101,6 +101,9 @@ class TextDataset(Dataset):
         return [pair for pair in pairs if self.filter_pair(pair)]
 
     def trim_pairs(self, pairs):
+        pairs = [[' '.join(pair[0].split(' ')[:self.max_length]), ' '.join(pair[1].split(' ')[:self.max_length])] for pair in pairs]
+        for pair in pairs:
+            print(len(pair[0].split(' ')))
         return [[' '.join(pair[0].split(' ')[:self.max_length]), ' '.join(pair[1].split(' ')[:self.max_length])] for pair in pairs]
 
     def indexes_from_sentence(self, sentence):
