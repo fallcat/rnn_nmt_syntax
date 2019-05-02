@@ -14,7 +14,7 @@ from actions.train import Trainer
 from actions.evaluate import Evaluator
 from model.seq2seq import BatchEncoderRNN, BatchAttnKspanDecoderRNN, BatchAttnKspanDecoderRNNSmall, \
     BatchBahdanauAttnKspanDecoderRNN, BatchBahdanauAttnKspanDecoderRNN2, BatchKspanDecoderRNN, Encoder, Decoder, \
-    BatchBahdanauEncoderRNN, BatchAttnKspanDecoderRNNSmallResidual
+    BatchBahdanauEncoderRNN, BatchAttnKspanDecoderRNNSmallResidual, BatchAttnKspanDecoderRNNSmallResidualDropout
 from model import DEVICE, NUM_DEVICES
 
 # config: max_length, span_size, teacher_forcing_ratio, learning_rate, num_iters, print_every, plot_every, save_path,
@@ -102,7 +102,7 @@ def main():
                                #max_length=args.max_length,
                                rnn_type=args.rnn_type,
                                num_directions= args.num_directions).to(DEVICE)
-    attn_decoder1 = BatchAttnKspanDecoderRNNSmallResidual(args.hidden_size,
+    attn_decoder1 = BatchAttnKspanDecoderRNNSmallResidualDropout(args.hidden_size,
                                              dataloader_train.dataset.num_words,
                                              num_layers=args.num_layers,
                                              dropout_p=args.dropout,

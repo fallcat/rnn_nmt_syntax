@@ -686,6 +686,81 @@ class BatchAttnKspanDecoderRNNSmallResidual(nn.Module):
         return output, hidden, cell, attn_weight
 
 
+class BatchAttnKspanDecoderRNNSmallResidualDropout(nn.Module):
+    def __init__(self, hidden_size, output_size, num_layers=4, dropout_p=0.1, max_length=MAX_LENGTH, span_size=SPAN_SIZE, rnn_type="GRU", num_directions=1):
+        super(BatchAttnKspanDecoderRNNSmallResidualDropout, self).__init__()
+        self.hidden_size = hidden_size
+        self.output_size = output_size
+        self.num_layers = num_layers
+        self.dropout_p = dropout_p
+        self.max_length = max_length
+        self.span_size = span_size
+        self.num_directions = num_directions
+
+        self.embedding = nn.Embedding(self.output_size, self.hidden_size)
+        self.attn = nn.Parameter(torch.Tensor(self.hidden_size * (num_directions + 1), self.hidden_size))
+        self.v = nn.Parameter(torch.Tensor(self.hidden_size, 1))
+        gain = nn.init.calculate_gain('linear')
+        nn.init.xavier_uniform_(self.attn, gain)
+        nn.init.xavier_uniform_(self.v, gain)
+        self.attn_combine = nn.Linear(self.hidden_size * (2 + num_directions), self.hidden_size)
+        self.dropout = nn.Dropout(self.dropout_p)
+        self.dropout2 = nn.Dropout(self.dropout_p)
+        self.rnn_type = rnn_type
+        if rnn_type == "GRU":
+            print("GRU here")
+            self.gru = nn.GRU(self.hidden_size * self.span_size, self.hidden_size, self.num_layers, dropout=self.dropout_p, batch_first=True)
+            for name, param in self.gru.named_parameters():
+                if 'bias' or 'weight' in name:
+                    nn.init.uniform_(param, -0.1, 0.1)
+        else:
+            print("LSTM here")
+            self.lstm = nn.LSTM(self.hidden_size * self.span_size, self.hidden_size, self.num_layers, dropout=self.dropout_p,
+                                batch_first=True)
+            for name, param in self.lstm.named_parameters():
+                if 'bias' or 'weight' in name:
+                    nn.init.uniform_(param, -0.1, 0.1)
+        # self.grus = nn.ModuleList([nn.GRU(self.hidden_size, self.hidden_size) for _ in range(num_layers)])
+        self.out = nn.Linear(self.hidden_size, self.output_size * span_size)
+
+    def forward(self, inputs, hidden, cell, encoder_outputs):
+        # Assume inputs is padded to max length, max_length is multiple of span_size
+        # ==========================================================================
+
+        bsz = inputs.size()[0]
+        encoder_seq_len = encoder_outputs.size()[1]
+        embeddeds = self.embedding(inputs)  # B x S -> B x S x H
+        embeddeds = embeddeds.view(bsz, 1, -1)  # B x (S x H)
+        embeddeds = self.dropout(embeddeds)  # B x (S x H)
+
+        if self.rnn_type == "GRU":
+            self.gru.flatten_parameters()
+            rnn_output, hidden = self.gru(embeddeds, hidden)
+        else:
+            self.lstm.flatten_parameters()
+            rnn_output, (hidden, cell) = self.lstm(embeddeds, (hidden, cell))
+
+        concatted = torch.cat((
+            rnn_output.expand((rnn_output.size()[0], encoder_seq_len, rnn_output.size()[2])),
+            encoder_outputs), 2)
+
+        concatted_size = concatted.size()
+
+        attn_weight = F.softmax(torch.chain_matmul(concatted.view(-1, concatted.size()[2]), self.attn, self.v).view(concatted_size[0], concatted_size[1], -1), dim=1)
+
+        attn_applied = torch.bmm(attn_weight.transpose(1, 2), encoder_outputs) # B x 1 x H
+
+        output = torch.cat((embeddeds, rnn_output, attn_applied), 2)
+
+        output = self.attn_combine(output)
+        output = self.dropout2(output)
+
+        output = self.out(output).view(bsz, self.span_size, -1)
+        output = F.log_softmax(output, dim=2)
+
+        return output, hidden, cell, attn_weight
+
+
 class BatchAttnKspanDecoderRNN(nn.Module):
     def __init__(self, hidden_size, output_size, num_layers=4, dropout_p=0.1, max_length=MAX_LENGTH, span_size=SPAN_SIZE, rnn_type="GRU", num_directions=1):
         super(BatchAttnKspanDecoderRNN, self).__init__()
