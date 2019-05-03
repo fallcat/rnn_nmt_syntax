@@ -139,6 +139,7 @@ class TextDataset(Dataset):
 
             inputs = nn.utils.rnn.pad_sequence(
                 inputs, batch_first=True, padding_value=self.padding_idx)
+            print("inside collate", [self.dataloader.dataset.index2word[w.item()] for w in inputs[0]])
             targets = nn.utils.rnn.pad_sequence(
                 [dummy_data] + list(targets), batch_first=True, padding_value=self.padding_idx)[1:]
 
@@ -157,15 +158,15 @@ class TextDataset(Dataset):
                 isinstance(d[0], collections.Sequence)
                 for d in data
         ):
-            if sort:
-                # Sort within each chunk
-                data = [sorted(d, key=lambda x: len(x[1]), reverse=True) for d in data]
+            # if sort:
+            #     # Sort within each chunk
+            #     data = [sorted(d, key=lambda x: len(x[1]), reverse=True) for d in data]
 
             batch = make_batch(*zip(*list(itertools.chain.from_iterable(data))))
             batch['chunk_sizes'] = [len(l) for l in data]
             return batch
         else:
-            if sort:
-                data = sorted(data, key=lambda x: len(x[1]), reverse=True)
+            # if sort:
+            #     data = sorted(data, key=lambda x: len(x[1]), reverse=True)
 
             return make_batch(*zip(*data))
