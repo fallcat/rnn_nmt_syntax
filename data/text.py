@@ -158,15 +158,15 @@ class TextDataset(Dataset):
                 isinstance(d[0], collections.Sequence)
                 for d in data
         ):
-            # if sort:
-            #     # Sort within each chunk
-            #     data = [sorted(d, key=lambda x: len(x[1]), reverse=True) for d in data]
+            if sort:
+                # Sort within each chunk
+                data = [sorted(d, key=lambda x: len(x[1]), reverse=True) for d in data]
 
             batch = make_batch(*zip(*list(itertools.chain.from_iterable(data))))
             batch['chunk_sizes'] = [len(l) for l in data]
             return batch
         else:
-            # if sort:
-            #     data = sorted(data, key=lambda x: len(x[1]), reverse=True)
+            if sort:
+                data = sorted(data, key=lambda x: len(x[1]), reverse=True)
 
             return make_batch(*zip(*data))
