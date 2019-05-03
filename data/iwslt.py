@@ -33,7 +33,7 @@ class IWSLTDataset(TextDataset):
         else:
             pairs = [[s1, (SOS + ' ') * self.span_size + s2] for s1, s2 in zip(de_lines, en_lines)]
 
-        print("pairs[0]", pairs[0])
+        # print("pairs[0]", pairs[0])
 
         print("Read %s sentence pairs in %s" % (len(pairs), self.split))
 

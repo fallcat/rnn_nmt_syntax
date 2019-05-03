@@ -109,11 +109,16 @@ class Evaluator(object):
         batches = self.dataloader
         start = time.time()
         preds = []
+        ordered_outputs = []
         for i, batch in enumerate(batches, 1):
             print("batch", [self.dataloader.dataset.index2word[w.item()] for w in batch['inputs'][0]])
             pred = self.generate_batch_greedy(batch['inputs'], batch['input_lens'])
-            preds.extend(pred)
+            for i, example_id in enumerate(batch['example_ids']):
+                ordered_outputs.append((example_id, pred[i]))
+            # preds.extend(pred)
         print("Evaluation time for {} sentences is {}".format(len(self.dataloader.dataset.pairs), time.time() - start))
+        for _, outputs in sorted(ordered_outputs, key=lambda x: x[0]):  # pylint:disable=consider-using-enumerate
+            preds.extend(outputs)
         return preds
 
     def evaluate(self, method):
