@@ -42,14 +42,12 @@ class TextDataset(Dataset):
 
     def __getitem__(self, index):
         ''' Get the story/stories at the specified index/indices '''
-        # print("index", index)
         if isinstance(index, collections.Sequence):
             return tuple(
                 tuple([i]) + tuple(self.tensors_from_pair(self.pairs[i])) for i in index
                 # tuple([i]) + tuple(torch.LongTensor(s) for s in self.pairs[i]) for i in index
             )
         else:
-            print(self.pairs[index])
             return tuple([index]) + tuple(self.tensors_from_pair(self.pairs[index]))
 
     @property
@@ -139,7 +137,6 @@ class TextDataset(Dataset):
 
             inputs = nn.utils.rnn.pad_sequence(
                 inputs, batch_first=True, padding_value=self.padding_idx)
-            # print("inside collate", [self.index2word[w.item()] for w in inputs[0]])
             targets = nn.utils.rnn.pad_sequence(
                 [dummy_data] + list(targets), batch_first=True, padding_value=self.padding_idx)[1:]
 
