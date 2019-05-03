@@ -96,21 +96,21 @@ def main():
 
     torch.cuda.empty_cache()
 
-    encoder1 = BatchEncoderRNN(dataloader_train.dataset.num_words,
-                               args.hidden_size,
-                               num_layers=args.num_layers,
-                               dropout_p=args.dropout,
-                               #max_length=args.max_length,
-                               rnn_type=args.rnn_type,
-                               num_directions= args.num_directions).to(DEVICE)
-    attn_decoder1 = BatchAttnKspanDecoderRNNSmall(args.hidden_size,
-                                             dataloader_train.dataset.num_words,
-                                             num_layers=args.num_layers,
-                                             dropout_p=args.dropout,
-                                             max_length=args.max_length,
-                                             span_size=args.span_size,
-                                             rnn_type=args.rnn_type,
-                                             num_directions=args.num_directions).to(DEVICE)
+    encoder1 = BatchBahdanauEncoderRNN(dataloader_train.dataset.num_words,
+                                       args.hidden_size,
+                                       num_layers=args.num_layers,
+                                       dropout_p=args.dropout,
+                                       max_length=args.max_length,
+                                       rnn_type=args.rnn_type,
+                                       num_directions= args.num_directions).to(DEVICE)
+    attn_decoder1 = BatchBahdanauAttnKspanDecoderRNN2(args.hidden_size,
+                                                      dataloader_train.dataset.num_words,
+                                                      num_layers=args.num_layers,
+                                                      dropout_p=args.dropout,
+                                                      max_length=args.max_length,
+                                                      span_size=args.span_size,
+                                                      rnn_type=args.rnn_type,
+                                                      num_directions=args.num_directions).to(DEVICE)
     models = {'encoder': encoder1, 'decoder': attn_decoder1}
 
     if args.track:
