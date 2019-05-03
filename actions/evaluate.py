@@ -110,6 +110,8 @@ class Evaluator(object):
         start = time.time()
         preds = []
         for i, batch in enumerate(batches, 1):
+            print("batch")
+            print([self.dataloader.dataset.index2word[w.item()] for w in batch['inputs'][0]])
             pred = self.generate_batch_greedy(batch['inputs'], batch['input_lens'])
             preds.extend(pred)
         print("Evaluation time for {} sentences is {}".format(len(self.dataloader.dataset.pairs), time.time() - start))

@@ -49,6 +49,7 @@ class TextDataset(Dataset):
                 # tuple([i]) + tuple(torch.LongTensor(s) for s in self.pairs[i]) for i in index
             )
         else:
+            print(self.pairs[index])
             return tuple([index]) + tuple(self.tensors_from_pair(self.pairs[index]))
 
     @property
