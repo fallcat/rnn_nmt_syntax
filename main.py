@@ -12,10 +12,8 @@ from data.wmt import WMTDataset
 from data.iwslt import IWSLTDataset
 from actions.train import Trainer
 from actions.evaluate import Evaluator
-from model.seq2seq import BatchEncoderRNN, BatchAttnKspanDecoderRNN, BatchAttnKspanDecoderRNNSmall, \
-    BatchBahdanauAttnKspanDecoderRNN, BatchBahdanauAttnKspanDecoderRNN2, BatchKspanDecoderRNN, Encoder, Decoder, \
-    BatchBahdanauEncoderRNN, BatchAttnKspanDecoderRNNSmallResidual, BatchAttnKspanDecoderRNNSmallResidualDropout, \
-    BatchAttnFirstKspanDecoderRNNSmall
+from model.seq2seq import BatchEncoderRNN, BatchBahdanauAttnKspanDecoderRNN2, BatchKspanDecoderRNN, Encoder, Decoder, \
+    BatchBahdanauEncoderRNN
 from model import DEVICE, NUM_DEVICES
 
 # config: max_length, span_size, teacher_forcing_ratio, learning_rate, num_iters, print_every, plot_every, save_path,
@@ -66,7 +64,8 @@ def main():
         'num_layers': args.num_layers,
         'teacher_forcing_ratio': args.teacher_forcing_ratio,
         'num_directions': args.num_directions,
-        'trim': args.trim
+        'trim': args.trim,
+        'init_rnn': args.init_rnn
     }
 
     # config dataloader
@@ -111,6 +110,10 @@ def main():
                                                       span_size=args.span_size,
                                                       rnn_type=args.rnn_type,
                                                       num_directions=args.num_directions).to(DEVICE)
+    if args.init_rnn:
+        encoder1.init_rnn()
+        attn_decoder1.init_rnn()
+
     models = {'encoder': encoder1, 'decoder': attn_decoder1}
 
     if args.track:

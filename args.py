@@ -18,7 +18,10 @@ def add_rnn_args(parser):
                        help='Specify whether or not use bidirectional encoder')
 
     group.add_argument('--rnn-type', action='store', type=str, default='GRU', choices=['GRU', 'LSTM'],
-                       help='Specify the number of GRU layers of the model')
+                       help='Specify to use GRU or LSTM')
+
+    group.add_argument('--init-rnn', action='store_true',
+                       help='Initialize RNN to have uniform parameter between -0.1 and 0.1')
 
     return group
 
