@@ -103,7 +103,7 @@ def main():
                                #max_length=args.max_length,
                                rnn_type=args.rnn_type,
                                num_directions= args.num_directions).to(DEVICE)
-    attn_decoder1 = BatchAttnFirstKspanDecoderRNNSmall(args.hidden_size,
+    attn_decoder1 = BatchAttnKspanDecoderRNNSmall(args.hidden_size,
                                              dataloader_train.dataset.num_words,
                                              num_layers=args.num_layers,
                                              dropout_p=args.dropout,
