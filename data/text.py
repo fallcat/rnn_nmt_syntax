@@ -139,7 +139,7 @@ class TextDataset(Dataset):
 
             inputs = nn.utils.rnn.pad_sequence(
                 inputs, batch_first=True, padding_value=self.padding_idx)
-            print("inside collate", [self.dataloader.dataset.index2word[w.item()] for w in inputs[0]])
+            print("inside collate", [self.index2word[w.item()] for w in inputs[0]])
             targets = nn.utils.rnn.pad_sequence(
                 [dummy_data] + list(targets), batch_first=True, padding_value=self.padding_idx)[1:]
 
