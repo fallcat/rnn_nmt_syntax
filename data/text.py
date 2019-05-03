@@ -42,6 +42,7 @@ class TextDataset(Dataset):
 
     def __getitem__(self, index):
         ''' Get the story/stories at the specified index/indices '''
+        print("index", index)
         if isinstance(index, collections.Sequence):
             return tuple(
                 tuple([i]) + tuple(self.tensors_from_pair(self.pairs[i])) for i in index
