@@ -265,7 +265,6 @@ class Trainer(object):
                 print("=> loading checkpoint '{}'".format(restore_path))
                 checkpoint = torch.load(restore_path)
                 self.epoch = checkpoint['epoch']
-                self.step = checkpoint['step']
                 self.encoder.load_state_dict(checkpoint['encoder_state'])
                 self.decoder.load_state_dict(checkpoint['decoder_state'])
                 try:
