@@ -93,6 +93,56 @@ class BatchEncoderRNN(nn.Module):
         return output, hidden, cell
 
 
+class BatchEncoderRNN2(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers=1, dropout_p=0.1, rnn_type="GRU", num_directions=1):
+        super(BatchEncoderRNN2, self).__init__()
+
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.num_directions = num_directions
+        self.dropout_p = dropout_p
+        self.dropout = nn.Dropout(self.dropout_p)
+        self.convert = nn.Linear(2, 1)
+
+        self.embedding = nn.Embedding(input_size, hidden_size)
+        self.rnn_type = rnn_type
+        if rnn_type == "GRU":
+            self.gru = nn.GRU(hidden_size, hidden_size, num_layers, dropout=self.dropout_p, batch_first=True,
+                              bidirectional=(num_directions == 2))
+            for name, param in self.gru.named_parameters():
+                if 'bias' or 'weight' in name:
+                    nn.init.uniform_(param, -0.1, 0.1)
+        else:
+            self.lstm = nn.LSTM(hidden_size, hidden_size, num_layers, dropout=self.dropout_p, batch_first=True,
+                                bidirectional=(num_directions == 2))
+            for name, param in self.lstm.named_parameters():
+                if 'bias' or 'weight' in name:
+                    nn.init.uniform_(param, -0.1, 0.1)
+
+    def forward(self, input_seqs, input_lengths, total_length, hidden=None):
+        batch_size = input_seqs.size()[0]
+
+        hidden = torch.zeros(self.num_layers * self.num_directions, batch_size, self.hidden_size, device=DEVICE)
+        cell = torch.zeros(self.num_layers * self.num_directions, batch_size, self.hidden_size, device=DEVICE)
+        embedded = self.embedding(input_seqs)
+        embedded = self.dropout(embedded)
+        packed = torch.nn.utils.rnn.pack_padded_sequence(embedded, input_lengths, batch_first=True)
+
+        if self.rnn_type == "GRU":
+            self.gru.flatten_parameters()
+            output, hidden = self.gru(packed, hidden)
+        else:
+            self.lstm.flatten_parameters()
+            output, (hidden, cell) = self.lstm(packed, (hidden, cell))
+        # print("output", output.data.size())
+        output, _ = torch.nn.utils.rnn.pad_packed_sequence(output, batch_first=True, total_length=total_length)  # unpack (back to padded)
+        if self.num_directions == 2:
+            hidden = self.convert(hidden.view(self.num_layers, 2, batch_size, self.hidden_size)
+                                  .transpose(1, 3)).transpose(1,3).squeeze(1)
+        return output, hidden, cell
+
+
 class BatchBahdanauEncoderRNN(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers=1, dropout_p=0.1, max_length=MAX_LENGTH, rnn_type="GRU", num_directions=1):
         super(BatchBahdanauEncoderRNN, self).__init__()
