@@ -102,7 +102,7 @@ def main():
                                        args.hidden_size,
                                        num_layers=args.num_layers,
                                        dropout_p=args.dropout,
-                                       max_length=args.max_length,
+                                       # max_length=args.max_length,
                                        rnn_type=args.rnn_type,
                                        num_directions= args.num_directions).to(DEVICE)
     attn_decoder1 = BatchBahdanauAttnKspanDecoderRNN4(args.hidden_size,
