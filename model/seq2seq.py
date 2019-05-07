@@ -149,6 +149,62 @@ class BatchBahdanauEncoderRNN(nn.Module):
                     nn.init.uniform_(param, -0.1, 0.1)
 
 
+class BatchBahdanauEncoderRNN2(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers=1, dropout_p=0.1, max_length=MAX_LENGTH, rnn_type="GRU", num_directions=1):
+        super(BatchBahdanauEncoderRNN2, self).__init__()
+
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.num_directions = num_directions
+        self.dropout_p = dropout_p
+        self.dropout = nn.Dropout(self.dropout_p)
+        self.convert = nn.Linear(2 * self.hidden_size, self.hidden_size)
+        self.max_length = max_length
+
+        self.embedding = nn.Embedding(input_size, hidden_size)
+        self.rnn_type = rnn_type
+        if rnn_type == "GRU":
+            self.gru = nn.GRU(hidden_size, hidden_size, num_layers, dropout=self.dropout_p, batch_first=True,
+                              bidirectional=(num_directions == 2))
+
+        else:
+            self.lstm = nn.LSTM(hidden_size, hidden_size, num_layers, dropout=self.dropout_p, batch_first=True,
+                                bidirectional=(num_directions == 2))
+
+    def forward(self, input_seqs, input_lengths, total_length, hidden=None):
+        batch_size = input_seqs.size()[0]
+
+        hidden = torch.zeros(self.num_layers * self.num_directions, batch_size, self.hidden_size, device=DEVICE)
+        cell = torch.zeros(self.num_layers * self.num_directions, batch_size, self.hidden_size, device=DEVICE)
+        embedded = self.embedding(input_seqs)
+        embedded = self.dropout(embedded)
+        packed = torch.nn.utils.rnn.pack_padded_sequence(embedded, input_lengths, batch_first=True)
+
+        if self.rnn_type == "GRU":
+            self.gru.flatten_parameters()
+            output, hidden = self.gru(packed, hidden)
+        else:
+            self.lstm.flatten_parameters()
+            output, (hidden, cell) = self.lstm(packed, (hidden, cell))
+        # print("output", output.data.size())
+        output, _ = torch.nn.utils.rnn.pad_packed_sequence(output, batch_first=True, total_length=self.max_length)  # unpack (back to padded)
+        if self.num_directions == 2:
+            hidden = self.convert(hidden.view(self.num_layers, 2, batch_size, self.hidden_size)
+                                  .transpose(2, 3).view(self.num_layers, batch_size, 2 * self.hidden_size))
+        return output, hidden, cell
+
+    def init_rnn(self):
+        if self.rnn_type == "GRU":
+            for name, param in self.gru.named_parameters():
+                if 'bias' or 'weight' in name:
+                    nn.init.uniform_(param, -0.1, 0.1)
+        else:
+            for name, param in self.lstm.named_parameters():
+                if 'bias' or 'weight' in name:
+                    nn.init.uniform_(param, -0.1, 0.1)
+
+
 class BatchDecoderRNN(nn.Module):
     def __init__(self, hidden_size, output_size, num_layers=4, dropout_p=0.1, max_length=MAX_LENGTH, span_size=SPAN_SIZE, rnn_type="GRU", num_directions=1):
         super(BatchDecoderRNN, self).__init__()
@@ -468,3 +524,82 @@ class BatchBahdanauAttnKspanDecoderRNN3(nn.Module):
                 if 'bias' or 'weight' in name:
                     nn.init.uniform_(param, -0.1, 0.1)
 
+
+class BatchBahdanauAttnKspanDecoderRNN4(nn.Module):
+    def __init__(self, hidden_size, output_size, num_layers=4, dropout_p=0.1, max_length=MAX_LENGTH, span_size=SPAN_SIZE,
+                 rnn_type="GRU", num_directions=1):
+        super(BatchBahdanauAttnKspanDecoderRNN4, self).__init__()
+        self.hidden_size = hidden_size
+        self.output_size = output_size
+        self.num_layers = num_layers
+        self.dropout_p = dropout_p
+        self.max_length = max_length
+        self.span_size = span_size
+        self.rnn_type = rnn_type
+        self.num_directions = num_directions
+
+        self.embedding = nn.Embedding(self.output_size, self.hidden_size)
+        self.cat_embeddings = nn.Linear(self.hidden_size * self.span_size, self.hidden_size)
+        # self.attn = nn.Linear(self.hidden_size * 2, self.max_length)
+        self.cat_attn = nn.Linear(self.hidden_size * 2, self.hidden_size * 1)
+        self.attn = nn.Parameter(torch.Tensor(self.hidden_size * (num_directions + 1), self.hidden_size))
+        self.v = nn.Parameter(torch.Tensor(self.hidden_size, 1))
+        self.attn_combine = nn.Linear(self.hidden_size * (num_directions + 1), self.hidden_size)
+        self.dropout = nn.Dropout(self.dropout_p)
+        self.dropout2 = nn.Dropout(self.dropout_p)
+        if rnn_type == "GRU":
+            self.gru = nn.GRU(self.hidden_size, self.hidden_size, self.num_layers, dropout=self.dropout_p, batch_first=True)
+        else:
+            self.lstm = nn.LSTM(self.hidden_size, self.hidden_size, self.num_layers, dropout=self.dropout_p, batch_first=True)
+        self.out = nn.Linear(self.hidden_size, self.output_size * span_size)
+
+    def forward(self, inputs, hidden, cell, encoder_outputs):
+        # Assume inputs is padded to max length, max_length is multiple of span_size
+        # ==========================================================================
+
+        bsz = inputs.size()[0]
+        encoder_seq_len = encoder_outputs.size()[1]
+        embeddeds = self.embedding(inputs)  # B x S -> B x S x H
+        embeddeds = embeddeds.view(bsz, -1)  # B x (S x H)
+        embeddeds = self.dropout(embeddeds)  # B x (S x H)
+        embeddeds = self.cat_embeddings(embeddeds)
+        # attn_weights = F.softmax(
+        #     self.attn(torch.cat((embeddeds, hidden[-1]), 1)), dim=1)
+        concatted = self.cat_attn(torch.cat((embeddeds, hidden[-1]), 1))
+        concatted = torch.cat((
+            concatted.unsqueeze(1).expand((concatted.size()[0], encoder_seq_len, concatted.size()[1])),
+            encoder_outputs), 2)
+        attn_weights = F.softmax(
+            torch.chain_matmul(concatted.view(-1, concatted.size()[2]), self.attn, self.v).view(concatted.size()[0],
+                                                                                                concatted.size()[1], -1),
+            dim=1)
+
+        attn_applied = torch.bmm(attn_weights.unsqueeze(1),
+                                 encoder_outputs)
+        embeddeds = torch.cat((embeddeds.unsqueeze(1), attn_applied), 2)
+        embeddeds = self.attn_combine(embeddeds)
+
+        embeddeds = F.relu(embeddeds)
+
+        if self.rnn_type == "GRU":
+            self.gru.flatten_parameters()
+            rnn_output, hidden = self.gru(embeddeds, hidden)
+        else:
+            self.lstm.flatten_parameters()
+            rnn_output, (hidden, cell) = self.lstm(embeddeds, (hidden, cell))
+
+        output = self.dropout2(rnn_output)
+        output = self.out(output).view(bsz, self.span_size, -1)
+        output = F.log_softmax(output, dim=2)
+
+        return output, hidden, cell, attn_weights
+
+    def init_rnn(self):
+        if self.rnn_type =="GRU":
+            for name, param in self.gru.named_parameters():
+                if 'bias' or 'weight' in name:
+                    nn.init.uniform_(param, -0.1, 0.1)
+        else:
+            for name, param in self.lstm.named_parameters():
+                if 'bias' or 'weight' in name:
+                    nn.init.uniform_(param, -0.1, 0.1)
