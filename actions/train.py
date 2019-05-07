@@ -177,8 +177,6 @@ class Trainer(object):
             #         print(message)
             #         return -1
 
-        self.lr_scheduler.step()
-
         print("now save")
         self.save_checkpoint({
             'epoch': epoch,
@@ -204,7 +202,8 @@ class Trainer(object):
         for epoch in range(self.epoch + 1, self.config['num_epochs']):
             self.train_epoch(epoch)
             if self.config['eval_when_train']:
-                self.evaluate_nll()
+                valid_nll = self.evaluate_nll()
+                self.lr_scheduler.step(valid_nll)
 
     def evaluate_nll(self):
         batches = self.dataloader
@@ -237,6 +236,7 @@ class Trainer(object):
         if self.experiment is not None:
             self.experiment.log_metric("valid_nll", valid_nll)
         print("Validation NLL:", valid_nll)
+        return valid_nll
 
     def evaluate_nll_batch(self, batch):
         """
