@@ -61,7 +61,7 @@ def add_train_args(parser):
     group.add_argument('--lr-milestone', action='store', type=int, default=20,
                        help='Decay the learning rate at which epoch')
 
-    group.add_argument('--lr-scheduler-type', action='store', type=float, default="ExponentialLR",
+    group.add_argument('--lr-scheduler-type', action='store', type=str, default="ExponentialLR",
                        choices=["ExponentialLR", "MultiStepLR", "ReduceLROnPlateau"],
                        help='Specify which type of lr scheduler to use')
 
