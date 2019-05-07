@@ -191,7 +191,7 @@ class BatchBahdanauEncoderRNN2(nn.Module):
         output, _ = torch.nn.utils.rnn.pad_packed_sequence(output, batch_first=True, total_length=self.max_length)  # unpack (back to padded)
         if self.num_directions == 2:
             hidden = self.convert(hidden.view(self.num_layers, 2, batch_size, self.hidden_size)
-                                  .transpose(2, 3).view(self.num_layers, batch_size, 2 * self.hidden_size))
+                                  .transpose(2, 3).contiguous().view(self.num_layers, batch_size, 2 * self.hidden_size))
         return output, hidden, cell
 
     def init_rnn(self):
