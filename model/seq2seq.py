@@ -281,16 +281,10 @@ class BatchDecoderRNN(nn.Module):
         if rnn_type == "GRU":
             self.gru = nn.GRU(self.hidden_size, self.hidden_size, self.num_layers, dropout=self.dropout_p,
                               batch_first=True)
-            for name, param in self.gru.named_parameters():
-                if 'bias' or 'weight' in name:
-                    nn.init.uniform(param, -0.1, 0.1)
 
         else:
             self.lstm = nn.LSTM(self.hidden_size, self.hidden_size, self.num_layers, dropout=self.dropout_p,
                                 batch_first=True)
-            for name, param in self.lstm.named_parameters():
-                if 'bias' or 'weight' in name:
-                    nn.init.uniform(param, -0.1, 0.1)
         # self.grus = nn.ModuleList([nn.GRU(self.hidden_size, self.hidden_size) for _ in range(num_layers)])
         self.out = nn.Linear(self.hidden_size, self.output_size * span_size)
 
@@ -326,6 +320,16 @@ class BatchDecoderRNN(nn.Module):
         attn_weight = 0
 
         return output, hidden, cell, attn_weight
+
+    def init_rnn(self):
+        if self.rnn_type == "GRU":
+            for name, param in self.gru.named_parameters():
+                if 'bias' or 'weight' in name:
+                    nn.init.uniform_(param, -0.1, 0.1)
+        else:
+            for name, param in self.lstm.named_parameters():
+                if 'bias' or 'weight' in name:
+                    nn.init.uniform_(param, -0.1, 0.1)
 
 
 class BatchKspanDecoderRNN(nn.Module):
