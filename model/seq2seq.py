@@ -574,8 +574,6 @@ class BatchBahdanauAttnKspanDecoderRNN4(nn.Module):
                                                                                                 concatted.size()[1], -1),
             dim=1)
 
-        print("attn_weights", attn_weights.size())
-        print("encoder_outputs", encoder_outputs.size())
         attn_applied = torch.bmm(attn_weights.transpose(1, 2),
                                  encoder_outputs)
         embeddeds = torch.cat((embeddeds.unsqueeze(1), attn_applied), 2)
