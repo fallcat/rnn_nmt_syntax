@@ -13,7 +13,8 @@ from data.iwslt import IWSLTDataset
 from actions.train import Trainer
 from actions.evaluate import Evaluator
 from model.seq2seq import BatchEncoderRNN, BatchBahdanauAttnKspanDecoderRNN2, BatchKspanDecoderRNN, Encoder, Decoder, \
-    BatchBahdanauEncoderRNN, BatchBahdanauAttnKspanDecoderRNN3, BatchBahdanauAttnKspanDecoderRNN4, BatchBahdanauEncoderRNN2
+    BatchBahdanauEncoderRNN, BatchBahdanauAttnKspanDecoderRNN3, BatchBahdanauAttnKspanDecoderRNN4, BatchBahdanauEncoderRNN2, \
+    BatchEncoderRNN2
 from model import DEVICE, NUM_DEVICES
 
 # config: max_length, span_size, teacher_forcing_ratio, learning_rate, num_iters, print_every, plot_every, save_path,
@@ -97,7 +98,7 @@ def main():
 
     torch.cuda.empty_cache()
 
-    encoder1 = BatchBahdanauEncoderRNN2(dataloader_train.dataset.num_words,
+    encoder1 = BatchEncoderRNN2(dataloader_train.dataset.num_words,
                                        args.hidden_size,
                                        num_layers=args.num_layers,
                                        dropout_p=args.dropout,
