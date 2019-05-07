@@ -203,7 +203,10 @@ class Trainer(object):
             self.train_epoch(epoch)
             if self.config['eval_when_train']:
                 valid_nll = self.evaluate_nll()
-                self.lr_scheduler.step(valid_nll)
+                if self.config['lr_scheduler_type'] == "ReduceLROnPlateau":
+                    self.lr_scheduler.step(valid_nll)
+                else:
+                    self.lr_scheduler.step()
 
     def evaluate_nll(self):
         batches = self.dataloader
