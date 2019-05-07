@@ -58,6 +58,13 @@ def add_train_args(parser):
     group.add_argument('--lr-decay', action='store', type=float, default=1,
                        help='Multiplicative factor of learning rate decay.')
 
+    group.add_argument('--lr-milestone', action='store', type=int, default=20,
+                       help='Decay the learning rate at which epoch')
+
+    group.add_argument('--lr-scheduler-type', action='store', type=float, default="ExponentialLR",
+                       choices=["ExponentialLR", "MultiStepLR", "ReduceLROnPlateau"],
+                       help='Specify which type of lr scheduler to use')
+
     group.add_argument('--teacher-forcing-ratio', action='store', type=float, default=0.5,
                        help='Teacher forcing ratio during training')
 

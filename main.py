@@ -65,7 +65,9 @@ def main():
         'teacher_forcing_ratio': args.teacher_forcing_ratio,
         'num_directions': args.num_directions,
         'trim': args.trim,
-        'init_rnn': args.init_rnn
+        'init_rnn': args.init_rnn,
+        'lr_milestone': args.lr_milestone,
+        'lr_scheduler_type': args.lr_scheduler_type
     }
 
     # config dataloader

@@ -29,10 +29,22 @@ class Trainer(object):
                                                               lr=self.config['learning_rate'],
                                                               weight_decay=self.config['weight_decay'])
 
-        self.lr_scheduler = optim.lr_scheduler.ExponentialLR(
-            self.optimizer,
-            config['lr_decay']
-        )
+        if self.config['lr_scheduler_type'] == "ExponentialLR":
+            self.lr_scheduler = optim.lr_scheduler.ExponentialLR(
+                self.optimizer,
+                config['lr_decay']
+            )
+        elif self.config['lr_scheduler_type'] == "MultiStepLR":
+            self.lr_scheduler = optim.lr_scheduler.MultiStepLR(
+                self.optimizer,
+                milestones=[self.config['lr_milestone']],
+                gamma=config['lr_decay']
+            )
+        else:
+            self.lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+                self.optimizer,
+                'min'
+            )
         self.criterion = nn.NLLLoss(ignore_index=0)
         self.epoch = -1
         self.step = -1
@@ -98,7 +110,7 @@ class Trainer(object):
         loss.backward()
         torch.nn.utils.clip_grad_norm_(self.encoder.parameters(), self.config['clip'])
         torch.nn.utils.clip_grad_norm_(self.decoder.parameters(), self.config['clip'])
-        self.lr_scheduler.step()
+        # self.lr_scheduler.step()
         self.optimizer.step()
         return loss.item()
 
@@ -164,6 +176,8 @@ class Trainer(object):
             #         message = template.format(type(rte).__name__, rte.args)
             #         print(message)
             #         return -1
+
+        self.lr_scheduler.step()
 
         print("now save")
         self.save_checkpoint({
