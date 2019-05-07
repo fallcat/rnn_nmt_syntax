@@ -110,15 +110,9 @@ class BatchEncoderRNN2(nn.Module):
         if rnn_type == "GRU":
             self.gru = nn.GRU(hidden_size, hidden_size, num_layers, dropout=self.dropout_p, batch_first=True,
                               bidirectional=(num_directions == 2))
-            for name, param in self.gru.named_parameters():
-                if 'bias' or 'weight' in name:
-                    nn.init.uniform_(param, -0.1, 0.1)
         else:
             self.lstm = nn.LSTM(hidden_size, hidden_size, num_layers, dropout=self.dropout_p, batch_first=True,
                                 bidirectional=(num_directions == 2))
-            for name, param in self.lstm.named_parameters():
-                if 'bias' or 'weight' in name:
-                    nn.init.uniform_(param, -0.1, 0.1)
 
     def forward(self, input_seqs, input_lengths, total_length, hidden=None):
         batch_size = input_seqs.size()[0]
@@ -141,6 +135,16 @@ class BatchEncoderRNN2(nn.Module):
             hidden = self.convert(hidden.view(self.num_layers, 2, batch_size, self.hidden_size)
                                   .transpose(1, 3)).transpose(1,3).squeeze(1)
         return output, hidden, cell
+
+    def init_rnn(self):
+        if self.rnn_type == "GRU":
+            for name, param in self.gru.named_parameters():
+                if 'bias' or 'weight' in name:
+                    nn.init.uniform_(param, -0.1, 0.1)
+        else:
+            for name, param in self.lstm.named_parameters():
+                if 'bias' or 'weight' in name:
+                    nn.init.uniform_(param, -0.1, 0.1)
 
 
 class BatchBahdanauEncoderRNN(nn.Module):
