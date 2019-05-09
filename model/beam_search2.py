@@ -183,7 +183,7 @@ class BeamSearchDecoder(object):
                         new_hypotheses = self.search_sequential(sequences, topv, topi, scores, (decoder_hidden, decoder_cell))
                     beam.hypotheses = new_hypotheses
                     for h in new_hypotheses:
-                        print("sequence", [index2word[w.item()] for w in h.sequence])
+                        print("sequence", [index2word[w.item()] for w in h.sequence], "score", h.score)
                 beams.append(beam)
 
             return beams
