@@ -108,7 +108,7 @@ class BeamSearchDecoder(object):
                 newscores = torch.cat([nc[2] + topv[nc[0], s, :] for nc in new_candidates])
             topsv, topsi = newscores.view(-1).topk(self.config['beam_width'])
             rowsi = topsi // self.config['beam_width']  # indices of the topk beams
-            colsi = topsi.remainder_(self.config['beam_width'])
+            colsi = topsi.remainder(self.config['beam_width'])
             if s == 0:
                 # print("rowsi", rowsi)
                 # print("colsi", colsi)
