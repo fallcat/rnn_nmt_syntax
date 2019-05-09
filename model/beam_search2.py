@@ -101,9 +101,9 @@ class BeamSearchDecoder(object):
     def search_sequential(self, sequences, topv, topi, scores, hiddens):
         for s in range(self.config['span_size']):
             if s == 0:
-                # print("scores", scores.view(-1, 1).dtype)
-                # print("topv", topv[:, s, :].dtype)
-                newscores = topv[:, s, :] # scores.view(-1, 1) + topv[:, s, :]
+                print("scores", scores.size())
+                print("topv", topv[:, s, :].size())
+                newscores = scores.view(-1, 1) + topv[:, s, :]
             else:
                 newscores = torch.cat([nc[2] + topv[nc[0], s, :] for nc in new_candidates])
             topsv, topsi = newscores.view(-1).topk(self.config['beam_width'])
