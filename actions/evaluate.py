@@ -89,6 +89,8 @@ class Evaluator(object):
         start = time.time()
         ordered_outputs = []
         for batch in batches:
+            print("batch inputs", [self.dataloader.dataset.index2word[w.item()] for w in batch['inputs'][0]])
+            print("batch targets", [self.dataloader.dataset.index2word[w.item()] for w in batch['targets'][0]])
             beams = self.generate_batch_beam(batch['inputs'], batch['input_lens'])
             # targets = batch['targets']
             # target_lens = batch['target_lens']
