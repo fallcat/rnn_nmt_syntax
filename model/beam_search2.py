@@ -103,7 +103,7 @@ class BeamSearchDecoder(object):
             if s == 0:
                 # print("scores", scores.view(-1, 1).dtype)
                 # print("topv", topv[:, s, :].dtype)
-                newscores = scores.view(-1, 1) + topv[:, s, :]
+                newscores = topv[:, s, :] # scores.view(-1, 1) + topv[:, s, :]
             else:
                 newscores = torch.cat([nc[2] + topv[nc[0], s, :] for nc in new_candidates])
             topsv, topsi = newscores.view(-1).topk(self.config['beam_width'])
