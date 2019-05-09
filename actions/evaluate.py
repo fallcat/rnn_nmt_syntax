@@ -58,6 +58,7 @@ class Evaluator(object):
                 decoder_output, decoder_hidden, decoder_cell, decoder_attn = self.decoder(decoder_input,
                                                                             decoder_hidden, decoder_cell, encoder_outputs)
                 topv, topi = decoder_output.topk(1, dim=2)
+                print("scores", topv.squeeze(2))
                 decoder_input = topi.squeeze(2)
                 decoder_outputs[:, i:i + self.config['span_size']] = topi.squeeze(2)
 
