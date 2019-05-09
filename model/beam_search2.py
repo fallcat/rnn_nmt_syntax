@@ -109,6 +109,8 @@ class BeamSearchDecoder(object):
             topsv, topsi = newscores.view(-1).topk(self.config['beam_width'])
             rowsi = topsi // self.config['beam_width']  # indices of the topk beams
             colsi = topsi.remainder(self.config['beam_width'])
+            print("rowsi", rowsi)
+            print("colsi", colsi)
             print("new scores", newscores)
             if s == 0:
                 # print("rowsi", rowsi)
