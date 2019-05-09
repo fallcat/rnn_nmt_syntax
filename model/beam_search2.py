@@ -171,14 +171,8 @@ class BeamSearchDecoder(object):
                     sequences, scores, hiddens = beam.collate()
                     print("hiddens", hiddens[0].size())
                     decoder_output, decoder_hidden, decoder_cell, decoder_attn = self.decoder(sequences[:, -self.config['span_size']:],
-                                                                                              hiddens[0].view(
-                                                                                                  self.config[
-                                                                                                      'num_layers'],
-                                                                                                  len(sequences), -1),
-                                                                                              hiddens[1].view(
-                                                                                                  self.config[
-                                                                                                      'num_layers'],
-                                                                                                  len(sequences), -1),
+                                                                                              hiddens[0].transpose(0, 1),
+                                                                                              hiddens[1].transpose(0, 1),
                                                                                               row[0].expand(len(sequences),
                                                                                                             row[0].size()[1],
                                                                                                             row[0].size()[2]))
