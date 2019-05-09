@@ -118,8 +118,8 @@ class BeamSearchDecoder(object):
                                    topsv[i],
                                    (hiddens[0][:, rowsi[i]], hiddens[1][:, rowsi[i]]))
                                   for i in range(self.config['beam_width'])]
-                new_candidates = [(nc[0], nc[1], self.normalized_score(nc[2], len(nc[1][:nc[1].numpy().tolist().index(EOS_token)])),
-                                   nc[3]) if EOS_token in nc[1] else nc for nc in new_candidates]
+                # new_candidates = [(nc[0], nc[1], self.normalized_score(nc[2], len(nc[1][:nc[1].numpy().tolist().index(EOS_token)])),
+                #                    nc[3]) if EOS_token in nc[1] else nc for nc in new_candidates]
             else:
                 # print("rowsi", rowsi)
                 # print("colsi", colsi)
@@ -140,8 +140,8 @@ class BeamSearchDecoder(object):
                                    torch.cat((new_candidates[rowsi[i]][1], topi[new_candidates[rowsi[i]][0], s, colsi[i]].to('cpu').unsqueeze(0))),
                                    topsv[i],
                                    new_candidates[rowsi[i]][3]) for i in range(self.config['beam_width'])]
-                new_candidates = [(nc[0], nc[1], self.normalized_score(nc[2], len(nc[1][:nc[1].numpy().tolist().index(EOS_token)])),
-                                   nc[3]) if EOS_token in nc[1] else nc for nc in new_candidates]
+                # new_candidates = [(nc[0], nc[1], self.normalized_score(nc[2], len(nc[1][:nc[1].numpy().tolist().index(EOS_token)])),
+                #                    nc[3]) if EOS_token in nc[1] else nc for nc in new_candidates]
         return [BeamHypothesis(candidate[1], candidate[2], candidate[3]) for candidate in new_candidates]
 
     def decode(self, encoder_outputs, encoder_hidden, start_sequences):
