@@ -158,9 +158,11 @@ class BeamSearchDecoder(object):
                                                        len(encoder_outputs))
             beams = []
             for i, row in enumerate(encoded_hidden_list):
+                print("i", i)
                 beam = Beam(start_sequences[i], (row[1].transpose(0, 1), row[2].transpose(0, 1)), self.initial_score,
                             self.config['max_length'], self.config['beam_width'])
                 for l in range(int(self.config['max_length']/self.config['span_size'])):
+                    print("l", l)
                     sequences, scores, hiddens = beam.collate()
                     decoder_output, decoder_hidden, decoder_cell, decoder_attn = self.decoder(sequences[:, -self.config['span_size']:],
                                                                                               hiddens[0].view(
@@ -180,6 +182,8 @@ class BeamSearchDecoder(object):
                     else:
                         new_hypotheses = self.search_sequential(sequences, topv, topi, scores, (decoder_hidden, decoder_cell))
                     beam.hypotheses = new_hypotheses
+                    for h in new_hypotheses:
+                        print("sequence", [self.dataloader.dataset.index2word[w.item()] for w in h.sequence])
                 beams.append(beam)
 
             return beams
