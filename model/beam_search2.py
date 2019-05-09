@@ -144,7 +144,7 @@ class BeamSearchDecoder(object):
                 #                    nc[3]) if EOS_token in nc[1] else nc for nc in new_candidates]
         return [BeamHypothesis(candidate[1], candidate[2], candidate[3]) for candidate in new_candidates]
 
-    def decode(self, encoder_outputs, encoder_hidden, start_sequences):
+    def decode(self, encoder_outputs, encoder_hidden, start_sequences, index2word):
         self.decoder.eval()
         with torch.no_grad():
             # print("encoder_outputs", encoder_outputs.size())
@@ -183,7 +183,7 @@ class BeamSearchDecoder(object):
                         new_hypotheses = self.search_sequential(sequences, topv, topi, scores, (decoder_hidden, decoder_cell))
                     beam.hypotheses = new_hypotheses
                     for h in new_hypotheses:
-                        print("sequence", [self.dataloader.dataset.index2word[w.item()] for w in h.sequence])
+                        print("sequence", [index2word[w.item()] for w in h.sequence])
                 beams.append(beam)
 
             return beams
