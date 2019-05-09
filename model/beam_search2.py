@@ -182,6 +182,8 @@ class BeamSearchDecoder(object):
                                                                                                             row[0].size()[1],
                                                                                                             row[0].size()[2]))
                     topv, topi = decoder_output.topk(self.config['beam_width'], dim=2)
+                    print("topv outside", topv)
+                    print("topi outside", topi)
                     if self.config['beam_search_all']:
                         new_hypotheses = self.search_all(sequences, topv, topi, scores, (decoder_hidden, decoder_cell))
                     else:
