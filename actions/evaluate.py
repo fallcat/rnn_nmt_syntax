@@ -98,8 +98,7 @@ class Evaluator(object):
                 decoded = [self.dataloader.dataset.index2word[w.item()] for w in sequence]
                 outputs.append(decoded)
                 ordered_outputs.append((example_id, outputs))
-
-        print("Evaluate with beam time:", time.time() - start)
+        print("Evaluation time for {} sentences is {}".format(len(self.dataloader.dataset.pairs), time.time() - start))
         preds = []
         for _, outputs in sorted(ordered_outputs, key=lambda x: x[0]):  # pylint:disable=consider-using-enumerate
             preds.extend(outputs)
