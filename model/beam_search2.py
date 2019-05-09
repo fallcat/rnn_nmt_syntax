@@ -156,8 +156,8 @@ class BeamSearchDecoder(object):
             # print("encoder_hidden", encoder_hidden.transpose(0, 1).size())
             decoder_cell = torch.zeros(self.config['num_layers'], len(encoder_outputs), self.config['hidden_size'],
                                        device=DEVICE)
-            # print("encoder_hidden", encoder_hidden.size())
-            # print("decoder_cell", decoder_cell.size())
+            print("encoder_hidden", encoder_hidden.size())
+            print("decoder_cell", decoder_cell.size())
             encoded_hidden_list = utils.split_or_chunk((encoder_outputs, encoder_hidden.transpose(0, 1),
                                                         decoder_cell.transpose(0, 1)),
                                                        len(encoder_outputs))
