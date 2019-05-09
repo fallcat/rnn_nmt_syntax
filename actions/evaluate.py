@@ -58,7 +58,6 @@ class Evaluator(object):
                 decoder_output, decoder_hidden, decoder_cell, decoder_attn = self.decoder(decoder_input,
                                                                             decoder_hidden, decoder_cell, encoder_outputs)
                 topv, topi = decoder_output.topk(1, dim=2)
-                print("scores", topv.squeeze(2))
                 decoder_input = topi.squeeze(2)
                 decoder_outputs[:, i:i + self.config['span_size']] = topi.squeeze(2)
 
@@ -82,16 +81,13 @@ class Evaluator(object):
             # print("outside encoder_hidden", encoder_hidden.size())
 
             return self.beam_search_decoder.decode(encoder_outputs, encoder_hidden,
-                                                   torch.LongTensor([[self.sos_idx] * self.config['span_size'] * batch_size]).view(batch_size, -1),
-                                                   self.dataloader.dataset.index2word)
+                                                   torch.LongTensor([[self.sos_idx] * self.config['span_size'] * batch_size]).view(batch_size, -1))
 
     def evaluate_beam(self):
         batches = self.dataloader
         start = time.time()
         ordered_outputs = []
         for batch in batches:
-            print("batch inputs", [self.dataloader.dataset.index2word[w.item()] for w in batch['inputs'][0]])
-            print("batch targets", [self.dataloader.dataset.index2word[w.item()] for w in batch['targets'][0]])
             beams = self.generate_batch_beam(batch['inputs'], batch['input_lens'])
             # targets = batch['targets']
             # target_lens = batch['target_lens']
