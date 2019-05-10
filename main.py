@@ -94,18 +94,23 @@ def main():
         NUM_DEVICES, shuffle=args.shuffle
     )
 
+    dataloader_test = get_dataloader(
+        dataset, config, "test", args.seed_fn, pin_memory,
+        NUM_DEVICES, shuffle=args.shuffle
+    )
+
     # define the models
 
     torch.cuda.empty_cache()
 
-    encoder1 = BatchEncoderRNN2(dataloader_train.dataset.num_words,
+    encoder1 = BatchBahdanauEncoderRNN2(dataloader_train.dataset.num_words,
                                        args.hidden_size,
                                        num_layers=args.num_layers,
                                        dropout_p=args.dropout,
-                                       # max_length=args.max_length,
+                                       max_length=args.max_length,
                                        rnn_type=args.rnn_type,
                                        num_directions= args.num_directions).to(DEVICE)
-    attn_decoder1 = BatchBahdanauAttnKspanDecoderRNN4(args.hidden_size,
+    attn_decoder1 = BatchBahdanauAttnKspanDecoderRNN3(args.hidden_size,
                                                       dataloader_train.dataset.num_words,
                                                       num_layers=args.num_layers,
                                                       dropout_p=args.dropout,
@@ -150,6 +155,12 @@ def main():
         save_predictions(preds, args.evaluate_path, args.detokenize)
     elif args.mode == "evaluate_train":
         evaluator = Evaluator(config=config, models=models, dataloader=dataloader_train, experiment=experiment)
+        if args.restore is not None:
+            evaluator.restore_checkpoint(args.experiment_path + args.restore)
+        preds = evaluator.evaluate(args.search_method)
+        save_predictions(preds, args.evaluate_path, args.detokenize)
+    elif args.mode == "test":
+        evaluator = Evaluator(config=config, models=models, dataloader=dataloader_test, experiment=experiment)
         if args.restore is not None:
             evaluator.restore_checkpoint(args.experiment_path + args.restore)
         preds = evaluator.evaluate(args.search_method)

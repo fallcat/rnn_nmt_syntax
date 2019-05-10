@@ -7,7 +7,8 @@ class IWSLTDataset(TextDataset):
     VOCAB_FILE = 'vocab.bpe.37000'
     SPLITS = {
         'valid': 'dev.tok.bpe.37000',
-        'train': 'train.tok.bpe.37000'
+        'train': 'train.tok.bpe.37000',
+        'test': 'test.tok.bpe.37000'
     }
 
     """
@@ -23,15 +24,18 @@ class IWSLTDataset(TextDataset):
 
     def read_langs(self):
         print("Reading lines...")
-
-        en_lines = open(IWSLTDataset.DIR_PATH + '%s.en' % (IWSLTDataset.SPLITS[self.split])).read().strip().split('\n')
+        if self.split != "test":
+            en_lines = open(IWSLTDataset.DIR_PATH + '%s.en' % (IWSLTDataset.SPLITS[self.split])).read().strip().split('\n')
         de_lines = open(IWSLTDataset.DIR_PATH + '%s.de' % (IWSLTDataset.SPLITS[self.split])).read().strip().split('\n')
 
         # Split every line into pairs
-        if self.reverse:
-            pairs = [[s2, (SOS + ' ') * self.span_size + s1] for s1, s2 in zip(de_lines, en_lines)]
+        if self.split != "test":
+            if self.reverse:
+                pairs = [[s2, (SOS + ' ') * self.span_size + s1] for s1, s2 in zip(de_lines, en_lines)]
+            else:
+                pairs = [[s1, (SOS + ' ') * self.span_size + s2] for s1, s2 in zip(de_lines, en_lines)]
         else:
-            pairs = [[s1, (SOS + ' ') * self.span_size + s2] for s1, s2 in zip(de_lines, en_lines)]
+            pairs = [[s, ""]for s in de_lines]
 
         # print("pairs[0]", pairs[0])
 
