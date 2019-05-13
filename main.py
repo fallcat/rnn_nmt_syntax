@@ -68,7 +68,9 @@ def main():
         'trim': args.trim,
         'init_rnn': args.init_rnn,
         'lr_milestone': args.lr_milestone,
-        'lr_scheduler_type': args.lr_scheduler_type
+        'lr_scheduler_type': args.lr_scheduler_type,
+        'eps': args.eps,
+        'label_smoothing': args.label_smoothing
     }
 
     # config dataloader

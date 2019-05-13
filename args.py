@@ -38,6 +38,16 @@ def add_train_args(parser):
     group.add_argument('--weight-decay', action='store', type=float, default=1e-5,
                        help='Specify the weight decay')
 
+    group.add_argument('--eps', action='store', type=float, default=1e-6,
+                       help='Specify eps for Adam optimizer')
+
+    group.add_argument(
+        '--label-smoothing',
+        type=float,
+        default=0.1,
+        help='The amount of label smoothing'
+    )
+
     group.add_argument('--print-every', action='store', type=int, default=40,
                        help='Specify the number of batches to report loss')
 

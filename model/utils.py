@@ -11,11 +11,59 @@ import shutil
 import random
 import collections, gc, torch
 import numpy as np
+import torch.nn as nn
+import torch.nn.functional as F
 from sacremoses import MosesDetokenizer
 
 import matplotlib.pyplot as plt
 plt.switch_backend('agg')
 import matplotlib.ticker as ticker
+
+
+class LabelSmoothingLoss(nn.Module):
+    '''
+    Implements the label smoothing loss as defined in
+    https://arxiv.org/abs/1512.00567
+
+    The API for this loss is modeled after nn..CrossEntropyLoss:
+
+    1) The inputs and targets are expected to be (B x C x ...), where B is the batch dimension, and
+    C is the number of classes
+    2) You can pass in an index to ignore
+    '''
+    def __init__(self, smoothing=0.0, ignore_index=-1, reduction='sum'):
+        ''' Initialize the label smoothing loss '''
+        super(LabelSmoothingLoss, self).__init__()
+
+        self.reduction = reduction
+        self.smoothing = smoothing
+        self.ignore_index = ignore_index
+
+    def forward(self, inputs, targets): # pylint:disable=arguments-differ
+        ''' The implements the actual label smoothing loss '''
+        num_classes = inputs.shape[1]
+        smoothed = inputs.new_full(inputs.shape, self.smoothing / num_classes)
+        smoothed.scatter_(1, targets.unsqueeze(1), 1 - self.smoothing)
+
+        if self.ignore_index >= 0 and self.ignore_index < num_classes:
+            smoothed[:, self.ignore_index] = 0.
+
+            mask = targets == self.ignore_index
+            smoothed.masked_fill_(mask.unsqueeze(1), 0.)
+
+        return F.kl_div(inputs.log_softmax(1), smoothed, reduction=self.reduction)
+
+
+class Parallel(nn.Sequential):
+    '''
+    A container similar to torch.nn.Sequential, but returns a tuple of outputs from the modules
+    added to the container, rather than return the output of sequentially applying the modules.
+    '''
+    def forward(self, *args, **kwargs): # pylint:disable=arguments-differ
+        outputs = []
+        for module in self._modules.values():
+            outputs.append(module(*args, **kwargs))
+        return outputs
 
 
 def as_minutes(s):

@@ -9,8 +9,8 @@ import GPUtil
 import psutil
 from torch import nn, optim
 from torch.autograd import Variable
-from model import SOS_token, EOS_token, DEVICE
-from model.utils import save_plot, time_since, debug_memory, tqdm_wrap_stdout
+from model import SOS_token, EOS_token, DEVICE, PAD_token
+from model.utils import save_plot, time_since, debug_memory, tqdm_wrap_stdout, Parallel, LabelSmoothingLoss
 from actions.evaluate import Evaluator
 
 # config: max_length, span_size, teacher_forcing_ratio, learning_rate, num_iters, print_every, plot_every, save_path,
@@ -24,10 +24,16 @@ class Trainer(object):
         self.decoder = models['decoder']
         optimizers = {"SGD": optim.SGD, "Adadelta": optim.Adadelta, "Adagrad": optim.Adagrad,
                       "RMSprop": optim.RMSprop, "Adam": optim.Adam}
-        self.optimizer = optimizers[self.config['optimizer']](list(self.encoder.parameters()) +
-                                                              list(self.decoder.parameters()),
-                                                              lr=self.config['learning_rate'],
-                                                              weight_decay=self.config['weight_decay'])
+        if self.config['optimizer'] != "Adam":
+            self.optimizer = optimizers[self.config['optimizer']](list(self.encoder.parameters()) +
+                                                                  list(self.decoder.parameters()),
+                                                                  lr=self.config['learning_rate'],
+                                                                  weight_decay=self.config['weight_decay'])
+        else:
+            self.optimizer = optim.Adam(list(self.encoder.parameters()) + list(self.decoder.parameters()),
+                                        lr=self.config['learning_rate'],
+                                        weight_decay=self.config['weight_decay'],
+                                        eps=self.config['eps'])
 
         if self.config['lr_scheduler_type'] == "ExponentialLR":
             self.lr_scheduler = optim.lr_scheduler.ExponentialLR(
@@ -45,7 +51,16 @@ class Trainer(object):
                 self.optimizer,
                 'min'
             )
-        self.criterion = nn.NLLLoss(ignore_index=0)
+        self.criterion = Parallel(
+            LabelSmoothingLoss(
+                self.config['label_smoothing'],
+                ignore_index=PAD_token,
+                reduction='sum'
+            ),
+            nn.NLLLoss(
+                ignore_index=PAD_token,
+                reduction='sum'
+            ))
         self.epoch = -1
         self.step = -1
         self.dataloader = dataloader
