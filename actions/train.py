@@ -118,16 +118,17 @@ class Trainer(object):
 
         # print("decoder_outputs", decoder_outputs.size())
         # print("targets", batch['targets'].size())
-        loss = self.criterion(decoder_outputs.view(-1, self.dataset.num_words),
+        smoothed_nll, nll = self.criterion(decoder_outputs.view(-1, self.dataset.num_words),
                               batch['targets'][:, self.config['span_size']:].contiguous().view(-1))
 
-        loss = loss #.sum()
-        loss.backward()
+        nll = nll.sum()
+        smoothed_nll = smoothed_nll.sum()
+        smoothed_nll.backward()
         torch.nn.utils.clip_grad_norm_(self.encoder.parameters(), self.config['clip'])
         torch.nn.utils.clip_grad_norm_(self.decoder.parameters(), self.config['clip'])
         # self.lr_scheduler.step()
         self.optimizer.step()
-        return loss.item()
+        return smoothed_nll.item()
 
     def train_epoch(self, epoch):
         self.encoder.train()
