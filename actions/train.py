@@ -128,7 +128,7 @@ class Trainer(object):
         torch.nn.utils.clip_grad_norm_(self.decoder.parameters(), self.config['clip'])
         # self.lr_scheduler.step()
         self.optimizer.step()
-        return smoothed_nll.item()
+        return smoothed_nll.item(), torch.sum(batch['target_lens']).item()
 
     def train_epoch(self, epoch):
         self.encoder.train()
@@ -160,11 +160,10 @@ class Trainer(object):
             try:
                 # print("train now")
                 torch.cuda.empty_cache()
-                loss = self.train_batch3(batch)
+                loss, total_length = self.train_batch3(batch)
                 # GPUtil.showUtilization()
-                total_length = sum(batch['input_lens']).item() + sum(batch['target_lens']).item()
                 epoch_loss += loss
-                accumulated_loss += loss * total_length
+                accumulated_loss += loss
                 accumulated_loss_n += total_length
 
                 if self.experiment is not None and (i % self.config['save_loss_every'] == 0 or i == len_batches):
