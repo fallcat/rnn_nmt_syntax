@@ -233,10 +233,9 @@ class Trainer(object):
         for i, batch in enumerate(batches, 1):
             # loss = self.train_batch3(batch)
             try:
-                loss = self.evaluate_nll_batch(batch)
+                loss, total_length = self.evaluate_nll_batch(batch)
                 # GPUtil.showUtilization()
-                total_length = sum(batch['input_lens']).item() + sum(batch['target_lens']).item()
-                accumulated_loss += loss * total_length
+                accumulated_loss += loss
                 accumulated_loss_n += total_length
 
                 # print("time for batch {} is {}".format(i, time.time()-start_step))
@@ -283,10 +282,10 @@ class Trainer(object):
                                                                             decoder_hidden, decoder_cell, encoder_outputs)
                 decoder_outputs.append(decoder_output)
             decoder_outputs = torch.cat(decoder_outputs, dim=1)
-            loss = self.criterion(decoder_outputs[:, :-self.config['span_size']].contiguous().view(-1, self.dataset.num_words),
+            smoothed_nll, nll = self.criterion(decoder_outputs[:, :-self.config['span_size']].contiguous().view(-1, self.dataset.num_words),
                                    batch['targets'][:, self.config['span_size']:].contiguous().view(-1))
 
-            loss = loss #.sum()
+            loss = smoothed_nll, torch.sum(batch['target_lens']).item()
             self.encoder.train()
             self.decoder.train()
             return loss.item()
