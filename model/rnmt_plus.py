@@ -100,6 +100,7 @@ class RNMTPlusDecoderRNN(nn.Module):
                  rnn_type="GRU", num_directions=1, num_heads=4):
         super(RNMTPlusDecoderRNN, self).__init__()
         self.hidden_size = hidden_size
+        self.output_size = output_size
         self.num_layers = num_layers
         self.dropout_p = dropout_p
         self.span_size = span_size
