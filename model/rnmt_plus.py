@@ -120,9 +120,9 @@ class RNMTPlusDecoderRNN(nn.Module):
         self.attn_combine = nn.Linear(self.hidden_size * 2, self.hidden_size)
         self.dropout = nn.Dropout(self.dropout_p)
         if rnn_type == "GRU":
-            self.gru = nn.GRU(self.hidden_size, self.hidden_size, self.num_layers, dropout=self.dropout_p, batch_first=True)
+            self.gru = nn.GRU(self.hidden_size, self.hidden_size, 1, dropout=self.dropout_p, batch_first=True)
         else:
-            self.lstm = nn.LSTM(self.hidden_size, self.hidden_size, self.num_layers, dropout=self.dropout_p, batch_first=True)
+            self.lstm = nn.LSTM(self.hidden_size, self.hidden_size, 1, dropout=self.dropout_p, batch_first=True)
         self.out = nn.Linear(self.hidden_size, self.output_size * span_size)
 
     def forward(self, inputs, hiddens, cells, encoder_outputs):
