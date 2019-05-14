@@ -151,7 +151,7 @@ class RNMTPlusDecoderRNN(nn.Module):
         for i, decoder_layer in enumerate(self.decoder_layers):
             rnn_output, hiddens[i+1], cells[i+1] = decoder_layer(rnn_output, hiddens[i+1], cells[i+1], attn_output)
 
-        output = self.attn_combine(torch.cat(rnn_output, attn_output), 2)
+        output = self.attn_combine(torch.cat((rnn_output, attn_output), 2))
         output = self.attn_combine(output)
         output = self.out(output).view(bsz, self.span_size, -1)
         output = F.log_softmax(output, dim=2)
