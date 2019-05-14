@@ -191,10 +191,7 @@ class RNMTPlusDecoderLayer(nn.Module):
     def forward(self, inputs, hidden, cell, attn_outputs):
         # Assume inputs is padded to max length, max_length is multiple of span_size
         # ==========================================================================
-        print("inputs", inputs.size())
-        print("attn_outputs", attn_outputs.size())
         embeddeds = torch.cat((inputs, attn_outputs), 2)
-        print("embeddeds", embeddeds.size())
         embeddeds = self.attn_combine(embeddeds)
 
         if self.rnn_type == "GRU":
