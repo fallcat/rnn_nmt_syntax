@@ -60,6 +60,7 @@ class RNMTPlusEncoderLayer(nn.Module):
 
     def forward(self, inputs, input_lengths):
         batch_size = inputs.size()[0]
+        input_length = inputs.size()[1]
 
         hidden = torch.zeros(self.num_layers * self.num_directions, batch_size, self.hidden_size, device=DEVICE)
         cell = torch.zeros(self.num_layers * self.num_directions, batch_size, self.hidden_size, device=DEVICE)
@@ -73,7 +74,7 @@ class RNMTPlusEncoderLayer(nn.Module):
             self.lstm.flatten_parameters()
             output, (hidden, cell) = self.lstm(packed, (hidden, cell))
         # print("output", output.data.size())
-        output, _ = torch.nn.utils.rnn.pad_packed_sequence(output, batch_first=True, total_length=input_lengths)  # unpack (back to padded)
+        output, _ = torch.nn.utils.rnn.pad_packed_sequence(output, batch_first=True, total_length=input_length)  # unpack (back to padded)
         output = self.layer_norm(output)
         if self.num_directions == 2:
             hidden = self.convert(hidden.view(self.num_layers, self.num_directions, batch_size, self.hidden_size)
