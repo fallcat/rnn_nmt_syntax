@@ -134,7 +134,7 @@ class RNMTPlusDecoderRNN(nn.Module):
         embeddeds = embeddeds.view(bsz, -1)  # B x (S x H)
         embeddeds = self.dropout(embeddeds)  # B x (S x H)
 
-        embeddeds = self.cat_embeddings(embeddeds)
+        embeddeds = self.cat_embeddings(embeddeds).unsqueeze(1)
 
         if self.rnn_type == "GRU":
             self.gru.flatten_parameters()
