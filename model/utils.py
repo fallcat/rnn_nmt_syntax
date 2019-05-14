@@ -14,6 +14,7 @@ import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 from sacremoses import MosesDetokenizer
+# from torch.optim.lr_scheduler import _LRScheduler
 
 import matplotlib.pyplot as plt
 plt.switch_backend('agg')
@@ -64,6 +65,21 @@ class Parallel(nn.Sequential):
         for module in self._modules.values():
             outputs.append(module(*args, **kwargs))
         return outputs
+
+
+# class WarmUpConstantCoolDownLR(_LRScheduler):
+#
+#     def __init__(self, optimizer, p, s, e, last_epoch=-1):
+#         self.p = p
+#         self.s = s
+#         self.e = e
+#         super(WarmUpConstantCoolDownLR, self).__init__(optimizer, last_epoch)
+#
+#     def get_lr(self):
+#         if self.last_epoch == 0:
+#             return [group['lr'] for group in self.optimizer.param_groups]
+#         return [group['lr'] * torch.min(1, 1)
+#                 for group in self.optimizer.param_groups]
 
 
 def as_minutes(s):

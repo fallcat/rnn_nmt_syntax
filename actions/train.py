@@ -285,10 +285,10 @@ class Trainer(object):
             smoothed_nll, nll = self.criterion(decoder_outputs[:, :-self.config['span_size']].contiguous().view(-1, self.dataset.num_words),
                                    batch['targets'][:, self.config['span_size']:].contiguous().view(-1))
 
-            loss = smoothed_nll, torch.sum(batch['target_lens']).item()
+            loss = smoothed_nll
             self.encoder.train()
             self.decoder.train()
-            return loss.item()
+            return loss.item(), torch.sum(batch['target_lens']).item()
 
     def restore_checkpoint(self, restore_path):
         if restore_path is not None:
