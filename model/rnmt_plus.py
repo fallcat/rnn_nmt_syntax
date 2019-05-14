@@ -147,6 +147,7 @@ class RNMTPlusDecoderRNN(nn.Module):
                                                                encoder_outputs.transpose(0, 1),
                                                                encoder_outputs.transpose(0, 1))
 
+        attn_output = attn_output.transpose(0, 1)
         for i, decoder_layer in enumerate(self.decoder_layers):
             rnn_output, hiddens[i+1], cells[i+1] = decoder_layer(rnn_output, hiddens[i+1], cells[i+1], attn_output)
 
