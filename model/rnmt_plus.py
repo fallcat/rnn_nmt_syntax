@@ -259,10 +259,11 @@ class RNMTPlusDecoderRNNBase(nn.Module):
 
         if self.rnn_type == "GRU":
             self.gru.flatten_parameters()
-            rnn_output, hiddens[0] = self.gru(embeddeds, hiddens[0].unsqueeze(0))
+            rnn_output, hiddens[0] = self.gru(embeddeds, hiddens[0].clone().unsqueeze(0))
         else:
             self.lstm.flatten_parameters()
-            rnn_output, (hiddens[0], cells[0]) = self.lstm(embeddeds, (hiddens[0].unsqueeze(0), cells[0].unsqueeze(0)))
+            rnn_output, (hiddens[0], cells[0]) = self.lstm(embeddeds, (hiddens[0].clone().unsqueeze(0),
+                                                                       cells[0].clone().unsqueeze(0)))
 
         attn_output, attn_output_weights = self.multihead_attn(rnn_output.transpose(0, 1),
                                                                encoder_outputs.transpose(0, 1),
@@ -270,7 +271,7 @@ class RNMTPlusDecoderRNNBase(nn.Module):
 
         attn_output = attn_output.transpose(0, 1)
         for i, decoder_layer in enumerate(self.decoder_layers):
-            rnn_output, hiddens[i+1], cells[i+1] = decoder_layer(rnn_output, hiddens[i+1], cells[i+1], attn_output)
+            rnn_output, hiddens[i+1], cells[i+1] = decoder_layer(rnn_output, hiddens[i+1].clone(), cells[i+1].clone(), attn_output)
 
         output = torch.cat((rnn_output, attn_output), 2)
         output = self.attn_combine(output)
