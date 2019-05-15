@@ -1,8 +1,10 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from model import PAD_token, SOS_token, EOS_token, MAX_LENGTH, SPAN_SIZE, DEVICE
+from model import PAD_token, SOS_token, EOS_token, DEVICE
 
+MAX_LENGTH = 60
+SPAN_SIZE = 1
 
 class Encoder(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers=1, dropout_p=0.1, rnn_type="GRU", num_directions=1):

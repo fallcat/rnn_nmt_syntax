@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from model import PAD_token, SOS_token, EOS_token, MAX_LENGTH, SPAN_SIZE, DEVICE
+from model import PAD_token, SOS_token, EOS_token, DEVICE
 
 
 class RNMTPlusEncoderRNN(nn.Module):
@@ -97,7 +97,7 @@ class RNMTPlusEncoderLayer(nn.Module):
 
 
 class RNMTPlusDecoderRNN(nn.Module):
-    def __init__(self, hidden_size, output_size, num_layers=4, dropout_p=0.1, span_size=SPAN_SIZE,
+    def __init__(self, hidden_size, output_size, num_layers=4, dropout_p=0.1, span_size=1,
                  rnn_type="GRU", num_directions=1, num_heads=4):
         super(RNMTPlusDecoderRNN, self).__init__()
         self.hidden_size = hidden_size
@@ -218,7 +218,7 @@ class RNMTPlusDecoderLayer(nn.Module):
 
 
 class RNMTPlusDecoderRNNBase(nn.Module):
-    def __init__(self, hidden_size, output_size, num_layers=4, dropout_p=0.1, span_size=SPAN_SIZE,
+    def __init__(self, hidden_size, output_size, num_layers=4, dropout_p=0.1, span_size=1,
                  rnn_type="GRU", num_directions=1, num_heads=4):
         super(RNMTPlusDecoderRNNBase, self).__init__()
         self.hidden_size = hidden_size
