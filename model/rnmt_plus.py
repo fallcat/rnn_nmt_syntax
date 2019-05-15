@@ -138,10 +138,10 @@ class RNMTPlusDecoderRNN(nn.Module):
 
         if self.rnn_type == "GRU":
             self.gru.flatten_parameters()
-            rnn_output, hiddens[0] = self.gru(embeddeds, hiddens[0])
+            rnn_output, hiddens[0] = self.gru(embeddeds, hiddens[0].unsqueeze(0))
         else:
             self.lstm.flatten_parameters()
-            rnn_output, (hiddens[0], cells[0]) = self.lstm(embeddeds, (hiddens[0], cells[0]))
+            rnn_output, (hiddens[0], cells[0]) = self.lstm(embeddeds, (hiddens[0].unsqueeze(0), cells[0].unsqueeze(0)))
 
         attn_output, attn_output_weights = self.multihead_attn(rnn_output.transpose(0, 1),
                                                                encoder_outputs.transpose(0, 1),
