@@ -11,7 +11,6 @@ from torch import nn, optim
 from torch.autograd import Variable
 from model import SOS_token, EOS_token, DEVICE, PAD_token
 from model.utils import save_plot, time_since, debug_memory, tqdm_wrap_stdout, Parallel, LabelSmoothingLoss
-from actions.evaluate import Evaluator
 
 # config: max_length, span_size, teacher_forcing_ratio, learning_rate, num_iters, print_every, plot_every, save_path,
 #         restore_path, best_save_path, plot_path, minibatch_size, optimizer
@@ -75,7 +74,7 @@ class Trainer(object):
             self.criterion.should_unsqueeze = True
             self.criterion = nn.DataParallel(self.criterion)
 
-    def train_batch3(self, batch):
+    def train_batch(self, batch):
         """
         train a batch of tensors
         :param batch: batch of sentences
@@ -124,8 +123,8 @@ class Trainer(object):
         nll = nll.sum()
         smoothed_nll = smoothed_nll.sum()
         smoothed_nll.backward()
-        torch.nn.utils.clip_grad_norm_(self.encoder.parameters(), self.config['clip'])
-        torch.nn.utils.clip_grad_norm_(self.decoder.parameters(), self.config['clip'])
+        nn.utils.clip_grad_norm_(self.encoder.parameters(), self.config['clip'])
+        nn.utils.clip_grad_norm_(self.decoder.parameters(), self.config['clip'])
         # self.lr_scheduler.step()
         self.optimizer.step()
         return smoothed_nll.item(), torch.sum(batch['target_lens']).item()
@@ -157,40 +156,40 @@ class Trainer(object):
             if self.experiment is not None:
                 self.experiment.set_step(self.experiment.curr_step + 1)
             # loss = self.train_batch3(batch)
-            try:
-                # print("train now")
-                torch.cuda.empty_cache()
-                loss, total_length = self.train_batch3(batch)
-                # GPUtil.showUtilization()
-                epoch_loss += loss
-                accumulated_loss += loss
-                accumulated_loss_n += total_length
+            # try:
+            # print("train now")
+            torch.cuda.empty_cache()
+            loss, total_length = self.train_batch(batch)
+            # GPUtil.showUtilization()
+            epoch_loss += loss
+            accumulated_loss += loss
+            accumulated_loss_n += total_length
 
-                if self.experiment is not None and (i % self.config['save_loss_every'] == 0 or i == len_batches):
-                    self.experiment.log_metric("train_nll", accumulated_loss/accumulated_loss_n)
-                    # self.experiment.log_metric("learning_rate", self.encoder_optimizer.param_groups['lr'])
-                    accumulated_loss = 0
-                    accumulated_loss_n = 0
-                    vm = psutil.virtual_memory()
-                    # print("virtual_memory", vm)
-                    vm = dict(vm._asdict())
-                    self.experiment.log_metric("available_memory", vm['available'])
-                    self.experiment.log_metric("total_memory", vm['total'])
-                    self.experiment.log_metric("used_memory", vm['used'])
-                    self.experiment.log_metric("free_memory", vm['free'])
-                    # print("time for batch {} is {}".format(i, time.time()-start_step))
-
-            except RuntimeError as rte:
-                if 'out of memory' in str(rte):
-                    torch.cuda.empty_cache()
-                    oom += 1
-                    self.experiment.log_metric('oom', oom)
-                    print("Out of memory")
-                else:
-                    template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-                    message = template.format(type(rte).__name__, rte.args)
-                    print(message)
-                    return -1
+            if self.experiment is not None and (i % self.config['save_loss_every'] == 0 or i == len_batches):
+                self.experiment.log_metric("train_nll", accumulated_loss/accumulated_loss_n)
+                # self.experiment.log_metric("learning_rate", self.encoder_optimizer.param_groups['lr'])
+                accumulated_loss = 0
+                accumulated_loss_n = 0
+                vm = psutil.virtual_memory()
+                # print("virtual_memory", vm)
+                vm = dict(vm._asdict())
+                self.experiment.log_metric("available_memory", vm['available'])
+                self.experiment.log_metric("total_memory", vm['total'])
+                self.experiment.log_metric("used_memory", vm['used'])
+                self.experiment.log_metric("free_memory", vm['free'])
+                # print("time for batch {} is {}".format(i, time.time()-start_step))
+            #
+            # except RuntimeError as rte:
+            #     if 'out of memory' in str(rte):
+            #         torch.cuda.empty_cache()
+            #         oom += 1
+            #         self.experiment.log_metric('oom', oom)
+            #         print("Out of memory")
+            #     else:
+            #         template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            #         message = template.format(type(rte).__name__, rte.args)
+            #         print(message)
+            #         return -1
 
         print("now save")
         self.save_checkpoint({
