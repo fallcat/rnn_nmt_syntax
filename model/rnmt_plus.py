@@ -216,3 +216,76 @@ class RNMTPlusDecoderLayer(nn.Module):
                 if 'bias' or 'weight' in name:
                     nn.init.uniform_(param, -0.1, 0.1)
 
+
+class RNMTPlusDecoderRNNBase(nn.Module):
+    def __init__(self, hidden_size, output_size, num_layers=4, dropout_p=0.1, span_size=SPAN_SIZE,
+                 rnn_type="GRU", num_directions=1, num_heads=4):
+        super(RNMTPlusDecoderRNNBase, self).__init__()
+        self.hidden_size = hidden_size
+        self.output_size = output_size
+        self.num_layers = num_layers
+        self.dropout_p = dropout_p
+        self.span_size = span_size
+        self.rnn_type = rnn_type
+        self.num_directions = num_directions
+        self.num_heads = num_heads
+
+        self.embedding = nn.Embedding(self.output_size, self.hidden_size)
+        # self.cat_embeddings = nn.Linear(self.hidden_size * self.span_size, self.hidden_size)
+        self.multihead_attn = nn.MultiheadAttention(self.hidden_size, self.num_heads)
+        args = [hidden_size, dropout_p, rnn_type, num_heads]
+        self.decoder_layers = nn.ModuleList([
+            RNMTPlusDecoderLayer(*args)
+            for _ in range(num_layers)
+        ])
+        self.attn_combine = nn.Linear(self.hidden_size * 2, self.hidden_size)
+        self.dropout = nn.Dropout(self.dropout_p)
+        if rnn_type == "GRU":
+            self.gru = nn.GRU(self.hidden_size, self.hidden_size, 1, dropout=self.dropout_p, batch_first=True)
+        else:
+            self.lstm = nn.LSTM(self.hidden_size, self.hidden_size, 1, dropout=self.dropout_p, batch_first=True)
+        self.out = nn.Linear(self.hidden_size, self.output_size)
+
+    def forward(self, inputs, hiddens, cells, encoder_outputs):
+        # Assume inputs is padded to max length, max_length is multiple of span_size
+        # ==========================================================================
+
+        bsz = inputs.size()[0]
+        embeddeds = self.embedding(inputs)  # B x S -> B x S x H
+        # embeddeds = embeddeds.view(bsz, -1)  # B x (S x H)
+        embeddeds = self.dropout(embeddeds)  # B x (S x H)
+
+        # embeddeds = self.cat_embeddings(embeddeds).unsqueeze(1)
+
+        if self.rnn_type == "GRU":
+            self.gru.flatten_parameters()
+            rnn_output, hiddens[0] = self.gru(embeddeds, hiddens[0].unsqueeze(0))
+        else:
+            self.lstm.flatten_parameters()
+            rnn_output, (hiddens[0], cells[0]) = self.lstm(embeddeds, (hiddens[0].unsqueeze(0), cells[0].unsqueeze(0)))
+
+        attn_output, attn_output_weights = self.multihead_attn(rnn_output.transpose(0, 1),
+                                                               encoder_outputs.transpose(0, 1),
+                                                               encoder_outputs.transpose(0, 1))
+
+        attn_output = attn_output.transpose(0, 1)
+        for i, decoder_layer in enumerate(self.decoder_layers):
+            rnn_output, hiddens[i+1], cells[i+1] = decoder_layer(rnn_output, hiddens[i+1], cells[i+1], attn_output)
+
+        output = torch.cat((rnn_output, attn_output), 2)
+        output = self.attn_combine(output)
+        output = self.out(output)
+        output = F.log_softmax(output, dim=2)
+
+        return output, hiddens, cells, attn_output_weights
+
+    def init_rnn(self):
+        if self.rnn_type =="GRU":
+            for name, param in self.gru.named_parameters():
+                if 'bias' or 'weight' in name:
+                    nn.init.uniform_(param, -0.1, 0.1)
+        else:
+            for name, param in self.lstm.named_parameters():
+                if 'bias' or 'weight' in name:
+                    nn.init.uniform_(param, -0.1, 0.1)
+
