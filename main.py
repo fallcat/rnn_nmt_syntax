@@ -112,14 +112,14 @@ def main():
                                        # max_length=args.max_length,
                                        rnn_type=args.rnn_type,
                                        num_directions= args.num_directions).to(DEVICE)
-    attn_decoder1 = RNMTPlusDecoderRNNBase(args.hidden_size,
-                                                      dataloader_train.dataset.num_words,
-                                                      num_layers=args.num_layers,
-                                                      dropout_p=args.dropout,
-                                                      # max_length=args.max_length,
-                                                      span_size=args.span_size,
-                                                      rnn_type=args.rnn_type,
-                                                      num_directions=args.num_directions).to(DEVICE)
+    attn_decoder1 = RNMTPlusDecoderRNN(args.hidden_size,
+                                       dataloader_train.dataset.num_words,
+                                       num_layers=args.num_layers,
+                                       dropout_p=args.dropout,
+                                       # max_length=args.max_length,
+                                       span_size=args.span_size,
+                                       rnn_type=args.rnn_type,
+                                       num_directions=args.num_directions).to(DEVICE)
     if args.init_rnn:
         encoder1.init_rnn()
         attn_decoder1.init_rnn()

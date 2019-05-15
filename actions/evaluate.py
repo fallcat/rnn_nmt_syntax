@@ -78,8 +78,10 @@ class Evaluator(object):
                                                                          batch_input_lens,
                                                                          batch_inputs.size()[1])
 
-            return self.beam_search_decoder.decode(encoder_outputs, encoder_hidden,
-                                                   torch.LongTensor([[self.sos_idx] * self.config['span_size'] * batch_size]).view(batch_size, -1))
+            return self.beam_search_decoder.decode_batch(encoder_outputs, encoder_hidden,
+                                                         torch.tensor([[self.sos_idx] * self.config['span_size'] *
+                                                                       batch_size], dtype=torch.long)
+                                                         .view(batch_size, -1))
 
     def evaluate_beam(self):
         batches = self.dataloader

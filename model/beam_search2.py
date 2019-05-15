@@ -39,7 +39,6 @@ class Beam(object):
             # print("sequence", hypothesis.sequence)
             # print("sequence type", type(hypothesis.sequence))
             scores.append(hypothesis.score)
-            print("hidden[0]", hypothesis.hidden[0].size())
             hiddens.append(hypothesis.hidden[0].unsqueeze(0))
             cells.append(hypothesis.hidden[1].unsqueeze(0))
         # print("lists")
