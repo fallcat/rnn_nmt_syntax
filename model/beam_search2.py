@@ -46,7 +46,8 @@ class Beam(object):
         # print("scores", scores[0])
         # print("hiddens", len(hiddens), hiddens[0].size())
 
-        return torch.cat(sequences, 0), torch.FloatTensor(scores).to(DEVICE), (torch.cat(hiddens, 0), torch.cat(cells, 0))
+        return torch.cat(sequences, 0), torch.tensor(scores, dtype=torch.float32).to(DEVICE), \
+               (torch.cat(hiddens, 0), torch.cat(cells, 0))
 
 
 class BeamSearchDecoder(object):
@@ -116,14 +117,21 @@ class BeamSearchDecoder(object):
                                    topsv[i],
                                    (hiddens[0][:, rowsi[i]], hiddens[1][:, rowsi[i]]))
                                   for i in range(self.config['beam_width'])]
-                new_candidates = [(nc[0], nc[1], self.normalized_score(nc[2], len(nc[1][:nc[1].numpy().tolist().index(EOS_token)])),
+                new_candidates = [(nc[0],
+                                   nc[1],
+                                   self.normalized_score(nc[2],
+                                                         nc[1][:nc[1].numpy().tolist().index(EOS_token)].size()[0]),
                                    nc[3]) if EOS_token in nc[1] else nc for nc in new_candidates]
             else:
                 new_candidates = [(new_candidates[rowsi[i]][0],
-                                   torch.cat((new_candidates[rowsi[i]][1], topi[new_candidates[rowsi[i]][0], s, colsi[i]].to('cpu').unsqueeze(0))),
+                                   torch.cat((new_candidates[rowsi[i]][1],
+                                              topi[new_candidates[rowsi[i]][0], s, colsi[i]].to('cpu').unsqueeze(0))),
                                    topsv[i],
                                    new_candidates[rowsi[i]][3]) for i in range(self.config['beam_width'])]
-                new_candidates = [(nc[0], nc[1], self.normalized_score(nc[2], len(nc[1][:nc[1].numpy().tolist().index(EOS_token)])),
+                new_candidates = [(nc[0],
+                                   nc[1],
+                                   self.normalized_score(nc[2],
+                                                         nc[1][:nc[1].numpy().tolist().index(EOS_token)].size()[0]),
                                    nc[3]) if EOS_token in nc[1] else nc for nc in new_candidates]
         return [BeamHypothesis(candidate[1], candidate[2], candidate[3]) for candidate in new_candidates]
 

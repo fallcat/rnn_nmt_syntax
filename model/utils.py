@@ -67,21 +67,6 @@ class Parallel(nn.Sequential):
         return outputs
 
 
-# class WarmUpConstantCoolDownLR(_LRScheduler):
-#
-#     def __init__(self, optimizer, p, s, e, last_epoch=-1):
-#         self.p = p
-#         self.s = s
-#         self.e = e
-#         super(WarmUpConstantCoolDownLR, self).__init__(optimizer, last_epoch)
-#
-#     def get_lr(self):
-#         if self.last_epoch == 0:
-#             return [group['lr'] for group in self.optimizer.param_groups]
-#         return [group['lr'] * torch.min(1, 1)
-#                 for group in self.optimizer.param_groups]
-
-
 def as_minutes(s):
     m = math.floor(s / 60)
     s -= m * 60
