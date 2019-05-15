@@ -48,18 +48,14 @@ class Evaluator(object):
 
             span_seq_len = int(self.config['max_length'] / self.config['span_size'])
 
-            # decoder_hidden = encoder_hidden
-            # decoder_hidden = [torch.zeros(1, batch_inputs.size()[0], self.config['hidden_size'], device=DEVICE)
-            #                   for _ in range(self.config['num_layers'] + 1)]  # encoder_hidden
-            # decoder_cell = [torch.zeros(1, batch_inputs.size()[0], self.config['hidden_size'], device=DEVICE)
-            #                 for _ in range(self.config['num_layers'] + 1)]
-            decoder_hidden = torch.zeros(self.config['num_layers'] + 1, batch_inputs.size()[0], self.config['hidden_size'], device=DEVICE)
-            decoder_cell = torch.zeros(self.config['num_layers'] + 1, batch_inputs.size()[0], self.config['hidden_size'], device=DEVICE)
+            decoder_hidden = torch.zeros(self.config['num_layers'] + 1 + self.config['more_decoder_layers'],
+                                         batch_inputs.size()[0], self.config['hidden_size'], device=DEVICE)
+            decoder_cell = torch.zeros(self.config['num_layers'] + 1 + self.config['more_decoder_layers'],
+                                       batch_inputs.size()[0], self.config['hidden_size'], device=DEVICE)
             decoder_input = torch.tensor([SOS_token] * self.config['span_size'] * batch_size, device=DEVICE).view(
                 batch_size, -1)
             decoder_outputs = torch.zeros((batch_size, self.config['max_length']), dtype=torch.long, device=DEVICE)
-            # decoder_cell = torch.zeros(self.config['num_layers'], batch_inputs.size()[0], self.config['hidden_size'],
-            #                            device=DEVICE)
+
             for i in range(0, span_seq_len * self.config['span_size'], self.config['span_size']):
                 decoder_output, decoder_hidden, decoder_cell, decoder_attn = self.decoder(decoder_input,
                                                                             decoder_hidden, decoder_cell, encoder_outputs)
@@ -78,13 +74,8 @@ class Evaluator(object):
 
             batch_size = len(batch_inputs)
 
-            length_basis = [0] * len(batch_inputs)
-
             encoder_outputs, encoder_hidden, encoder_cell = self.encoder(batch_inputs.to(device=DEVICE), batch_input_lens,
                                                             batch_inputs.size()[1])
-
-            # print("outside encoder_outputs", encoder_outputs.size())
-            # print("outside encoder_hidden", encoder_hidden.size())
 
             return self.beam_search_decoder.decode(encoder_outputs, encoder_hidden,
                                                    torch.LongTensor([[self.sos_idx] * self.config['span_size'] * batch_size]).view(batch_size, -1))
@@ -95,8 +86,6 @@ class Evaluator(object):
         ordered_outputs = []
         for batch in batches:
             beams = self.generate_batch_beam(batch['inputs'], batch['input_lens'])
-            # targets = batch['targets']
-            # target_lens = batch['target_lens']
             for i, example_id in enumerate(batch['example_ids']):
                 outputs = []
                 beam = beams[i]

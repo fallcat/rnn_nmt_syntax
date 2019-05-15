@@ -69,7 +69,8 @@ def main():
         'lr_milestone': args.lr_milestone,
         'lr_scheduler_type': args.lr_scheduler_type,
         'eps': args.eps,
-        'label_smoothing': args.label_smoothing
+        'label_smoothing': args.label_smoothing,
+        'more_decoder_layers': args.more_decoder_layers
     }
 
     # config dataloader

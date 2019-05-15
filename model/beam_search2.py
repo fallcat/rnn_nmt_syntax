@@ -130,14 +130,12 @@ class BeamSearchDecoder(object):
     def decode(self, encoder_outputs, encoder_hidden, start_sequences):
         self.decoder.eval()
         with torch.no_grad():
-            # print("encoder_outputs", encoder_outputs.size())
-            # print("encoder_hidden", encoder_hidden.transpose(0, 1).size())
-            decoder_hidden = torch.zeros(self.config['num_layers'] + 1, len(encoder_outputs), self.config['hidden_size'],
+            decoder_hidden = torch.zeros(self.config['num_layers'] + 1 + self.config['more_decoder_layers'],
+                                         len(encoder_outputs), self.config['hidden_size'],
                                          device=DEVICE)
-            decoder_cell = torch.zeros(self.config['num_layers'] + 1, len(encoder_outputs), self.config['hidden_size'],
+            decoder_cell = torch.zeros(self.config['num_layers'] + 1 + self.config['more_decoder_layers'],
+                                       len(encoder_outputs), self.config['hidden_size'],
                                        device=DEVICE)
-            # print("encoder_hidden", encoder_hidden.size())
-            # print("decoder_cell", decoder_cell.size())
             encoded_hidden_list = utils.split_or_chunk((encoder_outputs, decoder_hidden.transpose(0, 1),
                                                         decoder_cell.transpose(0, 1)),
                                                        len(encoder_outputs))
@@ -147,20 +145,18 @@ class BeamSearchDecoder(object):
                             self.config['max_length'], self.config['beam_width'])
                 for l in range(int(self.config['max_length']/self.config['span_size'])):
                     sequences, scores, hiddens = beam.collate()
-                    decoder_output, decoder_hidden, decoder_cell, decoder_attn = self.decoder(sequences[:, -self.config['span_size']:],
-                                                                                              hiddens[0].view(
-                                                                                                  len(sequences),
-                                                                                                  self.config[
-                                                                                                      'num_layers'] + 1,
-                                                                                                  -1).transpose(0, 1),
-                                                                                              hiddens[1].view(
-                                                                                                  len(sequences),
-                                                                                                  self.config[
-                                                                                                      'num_layers'] + 1,
-                                                                                                  -1).transpose(0, 1),
-                                                                                              row[0].expand(len(sequences),
-                                                                                                            row[0].size()[1],
-                                                                                                            row[0].size()[2]))
+                    len_seq = sequences.size()[0]
+                    decoder_output, decoder_hidden, decoder_cell, decoder_attn \
+                        = self.decoder(sequences[:, -self.config['span_size']:],
+                                       hiddens[0].view(
+                                           len_seq,
+                                           self.config['num_layers'] + 1 + self.config['more_decoder_layers'],
+                                           -1).transpose(0, 1),
+                                       hiddens[1].view(
+                                           len_seq,
+                                           self.config['num_layers'] + 1 + self.config['more_decoder_layers'],
+                                           -1).transpose(0, 1),
+                                       row[0].expand(sequences.size()[0], row[0].size()[1], row[0].size()[2]))
                     topv, topi = decoder_output.topk(self.config['beam_width'], dim=2)
                     if self.config['beam_search_all']:
                         new_hypotheses = self.search_all(sequences, topv, topi, scores, (decoder_hidden, decoder_cell))

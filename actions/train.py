@@ -87,17 +87,11 @@ class Trainer(object):
 
         # Run words through encoder
         # Make sure inputs are all gathered to be the longest length of the input, or else error will occur
-        total_length = sum(batch['input_lens']).item() + sum(batch['target_lens']).item()
-        # print("batch input size", batch['inputs'].size())
         encoder_outputs, encoder_hidden, encoder_cell = self.encoder(batch['inputs'], batch['input_lens'], batch['inputs'].size()[1])
 
-        # decoder_hidden = [torch.zeros(1, batch['inputs'].size()[0], self.config['hidden_size'], device=DEVICE)
-        #                   for _ in range(self.config['num_layers'] + 1)]  # encoder_hidden
-        # decoder_cell = [torch.zeros(1, batch['inputs'].size()[0], self.config['hidden_size'], device=DEVICE)
-        #                 for _ in range(self.config['num_layers'] + 1)]
-        decoder_hidden = torch.zeros(self.config['num_layers'] + 1, batch['inputs'].size()[0], self.config['hidden_size'],
+        decoder_hidden = torch.zeros(self.config['num_layers'] + 1 + self.config['more_decoder_layers'], batch['inputs'].size()[0], self.config['hidden_size'],
                                      device=DEVICE)
-        decoder_cell = torch.zeros(self.config['num_layers'] + 1, batch['inputs'].size()[0], self.config['hidden_size'],
+        decoder_cell = torch.zeros(self.config['num_layers'] + 1 + self.config['more_decoder_layers'], batch['inputs'].size()[0], self.config['hidden_size'],
                                    device=DEVICE)
 
         decoder_outputs = []
@@ -204,11 +198,7 @@ class Trainer(object):
             'encoder_state': self.encoder.state_dict(),
             'decoder_state': self.decoder.state_dict(),
             'optimizer': self.optimizer.state_dict(),
-            'lr_scheduler': self.lr_scheduler.state_dict(),
-            # 'encoder_optimizer': self.encoder_optimizer.state_dict(),
-            # 'decoder_optimizer': self.decoder_optimizer.state_dict(),
-            # 'encoder_lr_scheduler': self.encoder_lr_scheduler.state_dict(),
-            # 'decoder_lr_scheduler': self.decoder_lr_scheduler.state_dict()
+            'lr_scheduler': self.lr_scheduler.state_dict()
         }, epoch)
 
         print('%s (%d %d%%) %.10f' % (
@@ -237,7 +227,6 @@ class Trainer(object):
 
         # with tqdm_wrap_stdout():
         for i, batch in enumerate(batches, 1):
-            # loss = self.train_batch3(batch)
             try:
                 loss, total_length = self.evaluate_nll_batch(batch)
                 # GPUtil.showUtilization()
@@ -271,25 +260,13 @@ class Trainer(object):
             self.encoder.eval()
             self.decoder.eval()
 
-            total_length = sum(batch['input_lens']).item() + sum(batch['target_lens']).item()
-
             # Run words through encoder
             encoder_outputs, encoder_hidden, encoder_cell = self.encoder(batch['inputs'].to(device=DEVICE), batch['input_lens'], batch['inputs'].size()[1])
-            # targets2 = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size']),  dtype=torch.long, device=DEVICE)
-            # targets2[:, :batch['targets'].size()[1]] = batch['targets']
-            # decoder_hidden = encoder_hidden
-            # decoder_cell = torch.zeros(self.config['num_layers'], batch['inputs'].size()[0], self.config['hidden_size'],
-            #                            device=DEVICE)
-            # decoder_hidden = [torch.zeros(1, batch['inputs'].size()[0], self.config['hidden_size'], device=DEVICE)
-            #                   for _ in range(self.config['num_layers'] + 1)]  # encoder_hidden
-            # decoder_cell = [torch.zeros(1, batch['inputs'].size()[0], self.config['hidden_size'], device=DEVICE)
-            #                 for _ in range(self.config['num_layers'] + 1)]
-            decoder_hidden = torch.zeros(self.config['num_layers'] + 1, batch['inputs'].size()[0],
+
+            decoder_hidden = torch.zeros(self.config['num_layers'] + 1 + self.config['more_decoder_layers'], batch['inputs'].size()[0],
                                          self.config['hidden_size'], device=DEVICE)
-            decoder_cell = torch.zeros(self.config['num_layers'] + 1, batch['inputs'].size()[0],
+            decoder_cell = torch.zeros(self.config['num_layers'] + 1 + self.config['more_decoder_layers'], batch['inputs'].size()[0],
                                        self.config['hidden_size'], device=DEVICE)
-            # decoder_outputs = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size'],
-            #                                self.dataset.num_words), dtype=torch.float, device=DEVICE)
             decoder_outputs = []
             for i in range(batch['span_seq_len']):
                 decoder_output, decoder_hidden, decoder_cell, decoder_attn = self.decoder(batch['targets'][:, i:i+self.config['span_size']],
@@ -315,10 +292,6 @@ class Trainer(object):
                 try:
                     self.optimizer.load_state_dict(checkpoint['optimizer'])
                     self.lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
-                    # self.encoder_optimizer.load_state_dict(checkpoint['encoder_optimizer'])
-                    # self.decoder_optimizer.load_state_dict(checkpoint['decoder_optimizer'])
-                    # self.encoder_lr_scheduler.load_state_dict(checkpoint['encoder_lr_scheduler'])
-                    # self.decoder_lr_scheduler.load_state_dict(checkpoint['decoder_lr_scheduler'])
                 except:
                     print("exception when loading state dict to optimizer and lr scheduler")
                 print("=> loaded checkpoint '{}' (epoch {})".format(restore_path, checkpoint['epoch']))
