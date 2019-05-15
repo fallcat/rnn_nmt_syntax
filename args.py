@@ -14,7 +14,7 @@ def add_rnn_args(parser):
     group.add_argument('-l', '--num-layers', action='store', type=int, default=4,
                             help='Specify the number of GRU/LSTM layers of the model')
 
-    group.add_argument('-l', '--more-decoder-layers', action='store', type=int, default=0,
+    group.add_argument('--more-decoder-layers', action='store', type=int, default=0,
                        help='Specify the number more layers for decoder')
 
     group.add_argument('--num-directions', action='store', type=int, default=1, choices=[1, 2],
