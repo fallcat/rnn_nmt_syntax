@@ -91,10 +91,14 @@ class Trainer(object):
         # print("batch input size", batch['inputs'].size())
         encoder_outputs, encoder_hidden, encoder_cell = self.encoder(batch['inputs'], batch['input_lens'], batch['inputs'].size()[1])
 
-        decoder_hidden = [torch.zeros(1, batch['inputs'].size()[0], self.config['hidden_size'], device=DEVICE)
-                          for _ in range(self.config['num_layers'] + 1)]  # encoder_hidden
-        decoder_cell = [torch.zeros(1, batch['inputs'].size()[0], self.config['hidden_size'], device=DEVICE)
-                        for _ in range(self.config['num_layers'] + 1)]
+        # decoder_hidden = [torch.zeros(1, batch['inputs'].size()[0], self.config['hidden_size'], device=DEVICE)
+        #                   for _ in range(self.config['num_layers'] + 1)]  # encoder_hidden
+        # decoder_cell = [torch.zeros(1, batch['inputs'].size()[0], self.config['hidden_size'], device=DEVICE)
+        #                 for _ in range(self.config['num_layers'] + 1)]
+        decoder_hidden = torch.zeros(self.config['num_layers'] + 1, batch['inputs'].size()[0], self.config['hidden_size'],
+                                     device=DEVICE)
+        decoder_cell = torch.zeros(self.config['num_layers'] + 1, batch['inputs'].size()[0], self.config['hidden_size'],
+                                   device=DEVICE)
 
         decoder_outputs = []
 
@@ -276,10 +280,14 @@ class Trainer(object):
             # decoder_hidden = encoder_hidden
             # decoder_cell = torch.zeros(self.config['num_layers'], batch['inputs'].size()[0], self.config['hidden_size'],
             #                            device=DEVICE)
-            decoder_hidden = [torch.zeros(1, batch['inputs'].size()[0], self.config['hidden_size'], device=DEVICE)
-                              for _ in range(self.config['num_layers'] + 1)]  # encoder_hidden
-            decoder_cell = [torch.zeros(1, batch['inputs'].size()[0], self.config['hidden_size'], device=DEVICE)
-                            for _ in range(self.config['num_layers'] + 1)]
+            # decoder_hidden = [torch.zeros(1, batch['inputs'].size()[0], self.config['hidden_size'], device=DEVICE)
+            #                   for _ in range(self.config['num_layers'] + 1)]  # encoder_hidden
+            # decoder_cell = [torch.zeros(1, batch['inputs'].size()[0], self.config['hidden_size'], device=DEVICE)
+            #                 for _ in range(self.config['num_layers'] + 1)]
+            decoder_hidden = torch.zeros(self.config['num_layers'] + 1, batch['inputs'].size()[0],
+                                         self.config['hidden_size'], device=DEVICE)
+            decoder_cell = torch.zeros(self.config['num_layers'] + 1, batch['inputs'].size()[0],
+                                       self.config['hidden_size'], device=DEVICE)
             # decoder_outputs = torch.zeros((batch['batch_size'], batch['span_seq_len'] * self.config['span_size'],
             #                                self.dataset.num_words), dtype=torch.float, device=DEVICE)
             decoder_outputs = []
