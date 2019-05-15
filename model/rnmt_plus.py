@@ -114,7 +114,7 @@ class RNMTPlusDecoderRNN(nn.Module):
         self.multihead_attn = nn.MultiheadAttention(self.hidden_size, self.num_heads)
         args = [hidden_size, dropout_p, rnn_type, num_heads]
         self.decoder_layers = nn.ModuleList([
-            RNMTPlusDecoderLayer(*args)
+            RNMTPlusDecoderLayer2(*args)
             for _ in range(num_layers)
         ])
         self.attn_combine = nn.Linear(self.hidden_size * 2, self.hidden_size)
@@ -205,6 +205,54 @@ class RNMTPlusDecoderLayer(nn.Module):
         output = self.dropout(output)
         output = output + inputs
         return output, hidden, cell
+
+    def init_rnn(self):
+        if self.rnn_type =="GRU":
+            for name, param in self.gru.named_parameters():
+                if 'bias' or 'weight' in name:
+                    nn.init.uniform_(param, -0.1, 0.1)
+        else:
+            for name, param in self.lstm.named_parameters():
+                if 'bias' or 'weight' in name:
+                    nn.init.uniform_(param, -0.1, 0.1)
+
+
+class RNMTPlusDecoderLayer2(nn.Module):
+    def __init__(self, hidden_size, dropout_p=0.1, rnn_type="GRU", num_heads=4):
+        super(RNMTPlusDecoderLayer2, self).__init__()
+        self.hidden_size = hidden_size
+        self.num_layers = 1
+        self.dropout_p = dropout_p
+        self.rnn_type = rnn_type
+        self.num_directions = 1
+        self.num_heads = num_heads
+
+        self.attn_combine = nn.Linear(self.hidden_size * 2, self.hidden_size)
+        self.multihead_attn = nn.MultiheadAttention(self.hidden_size, self.num_heads)
+        self.dropout = nn.Dropout(self.dropout_p)
+        if rnn_type == "GRU":
+            self.gru = nn.GRU(self.hidden_size, self.hidden_size, self.num_layers, dropout=self.dropout_p, batch_first=True)
+        else:
+            self.lstm = nn.LSTM(self.hidden_size, self.hidden_size, self.num_layers, dropout=self.dropout_p, batch_first=True)
+        self.layer_norm = nn.LayerNorm(self.num_directions * self.hidden_size)
+
+    def forward(self, inputs, hidden, cell, attn_outputs):
+        # Assume inputs is padded to max length, max_length is multiple of span_size
+        # ==========================================================================
+        embeddeds = torch.cat((inputs, attn_outputs), 2)
+        embeddeds = self.attn_combine(embeddeds)
+
+        if self.rnn_type == "GRU":
+            self.gru.flatten_parameters()
+            rnn_output, hidden = self.gru(embeddeds, hidden.unsqueeze(0))
+        else:
+            self.lstm.flatten_parameters()
+            rnn_output, (hidden, cell) = self.lstm(embeddeds, (hidden.unsqueeze(0), cell.unsqueeze(0)))
+
+        output = self.layer_norm(rnn_output)
+        output = self.dropout(output)
+        output = output + inputs
+        return output, hidden.squeeze(0), cell.squeeze(0)
 
     def init_rnn(self):
         if self.rnn_type =="GRU":
