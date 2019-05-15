@@ -48,12 +48,16 @@ class Evaluator(object):
 
             span_seq_len = int(self.config['max_length'] / self.config['span_size'])
 
-            decoder_hidden = encoder_hidden
+            # decoder_hidden = encoder_hidden
+            decoder_hidden = [torch.zeros(1, batch_inputs.size()[0], self.config['hidden_size'], device=DEVICE)
+                              for _ in range(self.config['num_layers'] + 1)]  # encoder_hidden
+            decoder_cell = [torch.zeros(1, batch_inputs.size()[0], self.config['hidden_size'], device=DEVICE)
+                            for _ in range(self.config['num_layers'] + 1)]
             decoder_input = torch.tensor([SOS_token] * self.config['span_size'] * batch_size, device=DEVICE).view(
                 batch_size, -1)
             decoder_outputs = torch.zeros((batch_size, self.config['max_length']), dtype=torch.long, device=DEVICE)
-            decoder_cell = torch.zeros(self.config['num_layers'], batch_inputs.size()[0], self.config['hidden_size'],
-                                       device=DEVICE)
+            # decoder_cell = torch.zeros(self.config['num_layers'], batch_inputs.size()[0], self.config['hidden_size'],
+            #                            device=DEVICE)
             for i in range(0, span_seq_len * self.config['span_size'], self.config['span_size']):
                 decoder_output, decoder_hidden, decoder_cell, decoder_attn = self.decoder(decoder_input,
                                                                             decoder_hidden, decoder_cell, encoder_outputs)
