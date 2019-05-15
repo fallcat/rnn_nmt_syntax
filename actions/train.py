@@ -146,6 +146,7 @@ class Trainer(object):
 
         accumulated_loss = 0
         accumulated_loss_n = 0
+        torch.autograd.set_detect_anomaly(True)
         # print("begin")
 
         # with tqdm_wrap_stdout():
