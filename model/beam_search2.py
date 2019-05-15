@@ -132,11 +132,13 @@ class BeamSearchDecoder(object):
         with torch.no_grad():
             # print("encoder_outputs", encoder_outputs.size())
             # print("encoder_hidden", encoder_hidden.transpose(0, 1).size())
-            decoder_cell = torch.zeros(self.config['num_layers'], len(encoder_outputs), self.config['hidden_size'],
+            decoder_hidden = torch.zeros(self.config['num_layers'] + 1, len(encoder_outputs), self.config['hidden_size'],
+                                         device=DEVICE)
+            decoder_cell = torch.zeros(self.config['num_layers'] + 1, len(encoder_outputs), self.config['hidden_size'],
                                        device=DEVICE)
             # print("encoder_hidden", encoder_hidden.size())
             # print("decoder_cell", decoder_cell.size())
-            encoded_hidden_list = utils.split_or_chunk((encoder_outputs, encoder_hidden.transpose(0, 1),
+            encoded_hidden_list = utils.split_or_chunk((encoder_outputs, decoder_hidden.transpose(0, 1),
                                                         decoder_cell.transpose(0, 1)),
                                                        len(encoder_outputs))
             beams = []
