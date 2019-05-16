@@ -158,7 +158,12 @@ class BeamSearchDecoder(object):
     def search_sequential_batch(self, sequences, topv, topi, scores, hiddens, batch_size):
         print("sequences", sequences.size())
         print("topv", topv.size())
+        print("topi", topi.size())
+        print("scores", scores.size())
         print("hiddens[0]", hiddens[0].size())
+        print("hiddens[1]", hiddens[1].size())
+        print("batch size", batch_size)
+        print("splitted", utils.split_or_chunk((sequences, topv, topi, scores, hiddens[0], hiddens[1]), batch_size))
         sequences_l, topv_l, topi_l, scores_l, hiddens_l, cells_l = utils.split_or_chunk((sequences, topv, topi, scores,
                                                                                           hiddens[0], hiddens[1]),
                                                                                          batch_size)
