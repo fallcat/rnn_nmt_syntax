@@ -216,14 +216,8 @@ class BeamSearchDecoder(object):
                 len_seq = sequences.size()[0]
                 decoder_output, decoder_hidden, decoder_cell, decoder_attn \
                     = self.decoder(sequences[:, -self.config['span_size']:],
-                                   hiddens[0].transpose(0, 1).view(
-                                       len_seq,
-                                       self.config['num_layers'] + 1 + self.config['more_decoder_layers'],
-                                       -1).transpose(0, 1),
-                                   hiddens[1].transpose(0, 1).view(
-                                       len_seq,
-                                       self.config['num_layers'] + 1 + self.config['more_decoder_layers'],
-                                       -1).transpose(0, 1),
+                                   hiddens[0].transpose(0, 1),
+                                   hiddens[1].transpose(0, 1),
                                    encoder_batch)
                 topv, topi = decoder_output.topk(self.config['beam_width'], dim=2)
                 if self.config['beam_search_all']:
