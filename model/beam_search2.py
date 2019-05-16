@@ -156,6 +156,9 @@ class BeamSearchDecoder(object):
         return [BeamHypothesis(candidate[1], candidate[2], candidate[3]) for candidate in new_candidates]
 
     def search_sequential_batch(self, sequences, topv, topi, scores, hiddens, batch_size):
+        print("sequences", sequences.size())
+        print("topv", topv.size())
+        print("hiddens[0]", hiddens[0].size())
         sequences_l, topv_l, topi_l, scores_l, hiddens_l, cells_l = utils.split_or_chunk((sequences, topv, topi, scores,
                                                                                           hiddens[0], hiddens[1]),
                                                                                          batch_size)
@@ -214,6 +217,7 @@ class BeamSearchDecoder(object):
             for l in range(int(self.config['max_length']/self.config['span_size'])):
                 sequences, scores, hiddens, encoder_batch = self.collate(encoder_outputs, beams)
                 len_seq = sequences.size()[0]
+                print("before decoding, hiddens[0]", hiddens[0].size())
                 decoder_output, decoder_hidden, decoder_cell, decoder_attn \
                     = self.decoder(sequences[:, -self.config['span_size']:],
                                    hiddens[0].transpose(0, 1),
