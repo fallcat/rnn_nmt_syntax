@@ -93,8 +93,8 @@ class BeamSearchDecoder(object):
             cells.append(hidden[1])
             print("encoder_outputs[i].unsqueeze(0)", encoder_outputs[i].unsqueeze(0).size())
             encoder_batch.append(encoder_outputs[i].unsqueeze(0).expand(sequence.size()[0],
-                                                                        encoder_outputs[i].size()[1],
-                                                                        encoder_outputs[i].size()[2]))
+                                                                        encoder_outputs[i].size()[0],
+                                                                        encoder_outputs[i].size()[1]))
         return torch.cat(sequences, 0), torch.cat(scores, 0), (torch.cat(hiddens, 0), torch.cat(cells, 0)), \
                torch.cat(encoder_batch, 0)
 
