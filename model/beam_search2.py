@@ -155,9 +155,11 @@ class BeamSearchDecoder(object):
 
     def search_sequential_batch(self, sequences, topv, topi, scores, hiddens, batch_size):
         print("utils.split_or_chunk((sequences, topv, topi, scores,hiddens[0], hiddens[1]),batch_size)", len(utils.split_or_chunk((sequences, topv, topi, scores,hiddens[0], hiddens[1]),batch_size)))
+        for item in utils.split_or_chunk((sequences, topv, topi, scores, hiddens[0], hiddens[1]), batch_size):
+            print("size", item.size())
         sequences_l, topv_l, topi_l, scores_l, hiddens_l, cells_l = utils.split_or_chunk((sequences, topv, topi, scores,
                                                                                           hiddens[0], hiddens[1]),
-                                                                                         batch_size)
+                                                                                          batch_size)
         for b in range(batch_size):
             for s in range(self.config['span_size']):
                 if s == 0:
