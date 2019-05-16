@@ -90,6 +90,12 @@ def add_train_args(parser):
         help='Whether or not evaluate when training'
     )
 
+    group.add_argument(
+        '--new-lr-scheduler',
+        action='store_true',
+        help='Use a new lr scheduler'
+    )
+
     return group
 
 

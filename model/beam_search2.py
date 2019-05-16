@@ -85,15 +85,15 @@ class BeamSearchDecoder(object):
         hiddens = []
         cells = []
         encoder_batch = []
-        for beam in beams:
+        for i, beam in enumerate(beams):
             sequence, score, hidden = beam.collate()
             sequences.append(sequence)
             scores.append(score)
             hiddens.append(hidden[0])
             cells.append(hidden[1])
-            encoder_batch.append(encoder_outputs.expand(sequence.size()[0],
-                                                        encoder_outputs.size()[1],
-                                                        encoder_outputs.size()[2]))
+            encoder_batch.append(encoder_outputs[i].expand(sequence.size()[0],
+                                                           encoder_outputs[i].size()[1],
+                                                           encoder_outputs[i].size()[2]))
         return torch.cat(sequences, 0), torch.cat(scores, 0), (torch.cat(hiddens, 0), torch.cat(cells, 0)), \
                torch.cat(encoder_batch, 0)
 

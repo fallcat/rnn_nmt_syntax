@@ -70,7 +70,8 @@ def main():
         'lr_scheduler_type': args.lr_scheduler_type,
         'eps': args.eps,
         'label_smoothing': args.label_smoothing,
-        'more_decoder_layers': args.more_decoder_layers
+        'more_decoder_layers': args.more_decoder_layers,
+        'new_lr_scheduler': args.new_lr_scheduler
     }
 
     # config dataloader
