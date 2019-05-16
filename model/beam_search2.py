@@ -39,6 +39,7 @@ class Beam(object):
             # print("sequence", hypothesis.sequence)
             # print("sequence type", type(hypothesis.sequence))
             scores.append(hypothesis.score)
+            print("hypothesis.hidden[0]", hypothesis.hidden[0].size())
             hiddens.append(hypothesis.hidden[0].unsqueeze(0))
             cells.append(hypothesis.hidden[1].unsqueeze(0))
         # print("lists")
@@ -89,6 +90,7 @@ class BeamSearchDecoder(object):
             sequence, score, hidden = beam.collate()
             sequences.append(sequence)
             scores.append(score)
+            print("hidden[0]", hidden[0].size())
             hiddens.append(hidden[0])
             cells.append(hidden[1])
             encoder_batch.append(encoder_outputs[i].unsqueeze(0).expand(sequence.size()[0],
@@ -154,22 +156,9 @@ class BeamSearchDecoder(object):
         return [BeamHypothesis(candidate[1], candidate[2], candidate[3]) for candidate in new_candidates]
 
     def search_sequential_batch(self, sequences, topv, topi, scores, hiddens, batch_size):
-        print("sequences", sequences.size())
-        print("topv", topv.size())
-        print("topi", topi.size())
-        print("scores", scores.size())
-        print("hiddens", hiddens[0].size())
-        print("cells", hiddens[1].size())
-        print("utils.split_or_chunk((sequences, topv, topi, scores,hiddens[0], hiddens[1]),batch_size)", len(utils.split_or_chunk((sequences, topv, topi, scores,hiddens[0], hiddens[1]),batch_size)))
-        for item in utils.split_or_chunk((sequences, topv, topi, scores, hiddens[0], hiddens[1]), batch_size):
-            print("type", type(item))
-            if isinstance(item, tuple):
-                print("len", len(item))
-            else:
-                print("size", item.size())
         sequences_l, topv_l, topi_l, scores_l, hiddens_l, cells_l = utils.split_or_chunk((sequences, topv, topi, scores,
                                                                                           hiddens[0], hiddens[1]),
-                                                                                          batch_size)
+                                                                                         batch_size)
         for b in range(batch_size):
             for s in range(self.config['span_size']):
                 if s == 0:
@@ -186,7 +175,7 @@ class BeamSearchDecoder(object):
                     new_candidates = [(rowsi[i],
                                        torch.cat((sequences_l[b][rowsi[i]], topi_l[b][rowsi[i], s, colsi[i]].to('cpu').unsqueeze(0))),
                                        topsv[i],
-                                       (hiddens_l[b][:, rowsi[i]], cells_l[b][:, rowsi[i]]))
+                                       (hiddens_l[b][rowsi[i]], cells_l[b][rowsi[i]]))
                                       for i in range(self.config['beam_width'])]
                     new_candidates = [(nc[0],
                                        nc[1],
@@ -210,16 +199,16 @@ class BeamSearchDecoder(object):
         self.decoder.eval()
         batch_size = len(encoder_outputs)
         with torch.no_grad():
-            decoder_hidden = torch.zeros(self.config['num_layers'] + 1 + self.config['more_decoder_layers'],
-                                         batch_size, self.config['hidden_size'],
+            decoder_hidden = torch.zeros(batch_size, self.config['num_layers'] + 1 + self.config['more_decoder_layers'],
+                                         self.config['hidden_size'],
                                          device=DEVICE)
-            decoder_cell = torch.zeros(self.config['num_layers'] + 1 + self.config['more_decoder_layers'],
-                                       batch_size, self.config['hidden_size'],
+            decoder_cell = torch.zeros(batch_size, self.config['num_layers'] + 1 + self.config['more_decoder_layers'],
+                                       self.config['hidden_size'],
                                        device=DEVICE)
-            encoded_hidden_list = utils.split_or_chunk((encoder_outputs, decoder_hidden.transpose(0, 1),
-                                                        decoder_cell.transpose(0, 1)),
+            encoded_hidden_list = utils.split_or_chunk((encoder_outputs, decoder_hidden,
+                                                        decoder_cell),
                                                        batch_size)
-            beams = [Beam(start_sequences[i], (row[1].transpose(0, 1), row[2].transpose(0, 1)), self.initial_score,
+            beams = [Beam(start_sequences[i], (row[1], row[2]), self.initial_score,
                             self.config['max_length'], self.config['beam_width']) for i, row in enumerate(encoded_hidden_list)]
 
             for l in range(int(self.config['max_length']/self.config['span_size'])):
@@ -227,21 +216,24 @@ class BeamSearchDecoder(object):
                 len_seq = sequences.size()[0]
                 decoder_output, decoder_hidden, decoder_cell, decoder_attn \
                     = self.decoder(sequences[:, -self.config['span_size']:],
-                                   hiddens[0].view(
+                                   hiddens[0].transpose(0, 1).view(
                                        len_seq,
                                        self.config['num_layers'] + 1 + self.config['more_decoder_layers'],
                                        -1).transpose(0, 1),
-                                   hiddens[1].view(
+                                   hiddens[1].transpose(0, 1).view(
                                        len_seq,
                                        self.config['num_layers'] + 1 + self.config['more_decoder_layers'],
                                        -1).transpose(0, 1),
                                    encoder_batch)
                 topv, topi = decoder_output.topk(self.config['beam_width'], dim=2)
                 if self.config['beam_search_all']:
-                    new_hypotheses = self.search_all(sequences, topv, topi, scores, (decoder_hidden, decoder_cell))
+                    new_hypotheses = self.search_all(sequences, topv, topi, scores,
+                                                     (decoder_hidden.transpose(0, 1), decoder_cell.transpose(0, 1)))
                 else:
                     new_hypotheses = self.search_sequential_batch(sequences, topv, topi, scores,
-                                                                  (decoder_hidden, decoder_cell), batch_size)
+                                                                  (decoder_hidden.transpose(0, 1),
+                                                                   decoder_cell.transpose(0, 1)),
+                                                                  batch_size)
                 for i, new_hypothesis in enumerate(new_hypotheses):
                     beams[i].hypotheses = new_hypothesis
 
