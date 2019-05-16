@@ -164,15 +164,14 @@ class BeamSearchDecoder(object):
         print("hiddens[1]", hiddens[1].size())
         print("batch size", batch_size)
         print("splitted", len(utils.split_or_chunk((sequences, topv, topi, scores, hiddens[0], hiddens[1]), batch_size)))
-        sequences_l, topv_l, topi_l, scores_l, hiddens_l, cells_l = utils.split_or_chunk((sequences, topv, topi, scores,
-                                                                                          hiddens[0], hiddens[1]),
-                                                                                         batch_size)
+        splitted = utils.split_or_chunk((sequences, topv, topi, scores, hiddens[0], hiddens[1]), batch_size)
         for b in range(batch_size):
+            sequences_b, topv_b, topi_b, scores_b, hiddens_b, cells_b = splitted[b]
             for s in range(self.config['span_size']):
                 if s == 0:
-                    newscores = scores_l[b].view(-1, 1) + topv_l[b][:, s, :]
+                    newscores = scores_b.view(-1, 1) + topv_b[:, s, :]
                 else:
-                    newscores = torch.cat([nc[2] + topv_l[b][nc[0], s, :] for nc in new_candidates])
+                    newscores = torch.cat([nc[2] + topv_b[nc[0], s, :] for nc in new_candidates])
                 topsv, topsi = newscores.view(-1).topk(self.config['beam_width'])
                 rowsi = topsi // self.config['beam_width']  # indices of the topk beams
                 colsi = topsi.remainder(self.config['beam_width'])
@@ -181,9 +180,9 @@ class BeamSearchDecoder(object):
                     # print("colsi", colsi)
                     # print("topi", topi.size())
                     new_candidates = [(rowsi[i],
-                                       torch.cat((sequences_l[b][rowsi[i]], topi_l[b][rowsi[i], s, colsi[i]].to('cpu').unsqueeze(0))),
+                                       torch.cat((sequences_b[rowsi[i]], topi_b[rowsi[i], s, colsi[i]].to('cpu').unsqueeze(0))),
                                        topsv[i],
-                                       (hiddens_l[b][rowsi[i]], cells_l[b][rowsi[i]]))
+                                       (hiddens_b[rowsi[i]], cells_b[rowsi[i]]))
                                       for i in range(self.config['beam_width'])]
                     new_candidates = [(nc[0],
                                        nc[1],
@@ -193,7 +192,7 @@ class BeamSearchDecoder(object):
                 else:
                     new_candidates = [(new_candidates[rowsi[i]][0],
                                        torch.cat((new_candidates[rowsi[i]][1],
-                                                  topi_l[b][new_candidates[rowsi[i]][0], s, colsi[i]].to('cpu').unsqueeze(0))),
+                                                  topi_b[new_candidates[rowsi[i]][0], s, colsi[i]].to('cpu').unsqueeze(0))),
                                        topsv[i],
                                        new_candidates[rowsi[i]][3]) for i in range(self.config['beam_width'])]
                     new_candidates = [(nc[0],
