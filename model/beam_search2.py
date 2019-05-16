@@ -155,6 +155,7 @@ class BeamSearchDecoder(object):
         return [BeamHypothesis(candidate[1], candidate[2], candidate[3]) for candidate in new_candidates]
 
     def search_sequential_batch(self, sequences, topv, topi, scores, hiddens, batch_size):
+        print("utils.split_or_chunk((sequences, topv, topi, scores,hiddens[0], hiddens[1]),batch_size)", len(utils.split_or_chunk((sequences, topv, topi, scores,hiddens[0], hiddens[1]),batch_size)))
         sequences_l, topv_l, topi_l, scores_l, hiddens_l, cells_l = utils.split_or_chunk((sequences, topv, topi, scores,
                                                                                           hiddens[0], hiddens[1]),
                                                                                          batch_size)
