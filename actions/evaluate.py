@@ -94,6 +94,7 @@ class Evaluator(object):
                 beam = beams[i]
                 sequence = beam.best_hypothesis.sequence[self.config['span_size']:]
                 decoded = [self.dataloader.dataset.index2word[w.item()] for w in sequence]
+                print("decoded:", decoded)
                 outputs.append(decoded)
                 ordered_outputs.append((example_id, outputs))
         print("Evaluation time for {} sentences is {}".format(len(self.dataloader.dataset.pairs), time.time() - start))
