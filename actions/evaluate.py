@@ -136,7 +136,7 @@ class Evaluator(object):
                     model_states = {model: state[model] for model in models}
                     count = 1
                     for epoch in range(self.config['start_epoch'] + 1, self.config['end_epoch'] + 1):
-                        path = restore_path + str(epoch) + 'pth.tar'
+                        path = restore_path + str(epoch) + '.pth.tar'
                         if os.path.isfile(path):
                             checkpoint = torch.load(path)
                             for model in models:
