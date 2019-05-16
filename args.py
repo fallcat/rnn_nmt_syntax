@@ -136,12 +136,14 @@ def add_evaluate_args(parser):
     group.add_argument(
         '--start-epoch',
         default=0,
+        type=int,
         help='The epoch to start with when averaging checkpoints'
     )
 
     group.add_argument(
         '--end-epoch',
         default=1,
+        type=int,
         help='The checkpoint to end with when averaging checkpoints'
     )
 
