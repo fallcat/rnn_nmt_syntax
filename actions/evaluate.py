@@ -144,6 +144,7 @@ class Evaluator(object):
                                 for name, param in model_states[model].items():
                                     param.mul_(count).add_(new_model_state[name]).div_(count + 1)
                             count += 1
+                            print("=> loaded checkpoint '{}' (epoch {})".format(path, checkpoint['epoch']))
                         else:
                             print("=> no checkpoint found at '{}'".format(path))
                     self.encoder.load_state_dict(model_states['encoder_state'])
