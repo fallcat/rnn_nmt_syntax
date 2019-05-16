@@ -267,13 +267,13 @@ class Trainer(object):
             decoder_cell = torch.zeros(self.config['num_layers'] + 1 + self.config['more_decoder_layers'], batch['inputs'].size()[0],
                                        self.config['hidden_size'], device=DEVICE)
             decoder_outputs = []
-            for i in range(batch['span_seq_len']):
+            for i in range(0, (batch['span_seq_len'] - 1) * self.config['span_size'], self.config['span_size']):
                 decoder_output, decoder_hidden, decoder_cell, decoder_attn = self.decoder(batch['targets'][:, i:i+self.config['span_size']],
                                                                             decoder_hidden, decoder_cell, encoder_outputs)
                 decoder_outputs.append(decoder_output)
             decoder_outputs = torch.cat(decoder_outputs, dim=1)
-            smoothed_nll, nll = self.criterion(decoder_outputs[:, :-self.config['span_size']].contiguous().view(-1, self.dataset.num_words),
-                                   batch['targets'][:, self.config['span_size']:].contiguous().view(-1))
+            smoothed_nll, nll = self.criterion(decoder_outputs.view(-1, self.dataset.num_words),
+                                               batch['targets'][:, self.config['span_size']:].contiguous().view(-1))
 
             loss = smoothed_nll
             self.encoder.train()
