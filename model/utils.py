@@ -180,9 +180,6 @@ def split_or_chunk(inputs, num_chunks_or_sections, dim=0):
     Splits tensors into approximately equal chunks or specified chunk sizes (based on the
     'num_chunks_or_sections'). Duplicates references to objects that are not tensors.
     """
-    print("inputs", len(inputs))
-    for inp in inputs:
-        print("type:", type(inp))
     def split_map(obj):
         if isinstance(obj, torch.Tensor):
             if isinstance(num_chunks_or_sections, int):
