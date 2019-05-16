@@ -128,6 +128,24 @@ def add_evaluate_args(parser):
     )
 
     group.add_argument(
+        '--average-checkpoints',
+        action='store_true',
+        help='Average instead of using a single checkpoint'
+    )
+
+    group.add_argument(
+        '--start-epoch',
+        default=0,
+        help='The epoch to start with when averaging checkpoints'
+    )
+
+    group.add_argument(
+        '--end-epoch',
+        default=1,
+        help='The checkpoint to end with when averaging checkpoints'
+    )
+
+    group.add_argument(
         '--beam-search-all',
         action='store_true',
         help='Search optimal of all combinations in the span instead of search sequentially.'

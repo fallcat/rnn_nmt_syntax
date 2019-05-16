@@ -128,17 +128,37 @@ class Evaluator(object):
 
     def restore_checkpoint(self, restore_path):
         if restore_path is not None:
-            if os.path.isfile(restore_path):
-                print("=> loading checkpoint '{}'".format(restore_path))
-                checkpoint = torch.load(restore_path)
-                print("encoder=======")
-                for state in checkpoint['encoder_state']:
-                    print(state, checkpoint['encoder_state'][state].shape)
-                print("decoder=======")
-                for state in checkpoint['decoder_state']:
-                    print(state, checkpoint['decoder_state'][state].shape)
-                self.encoder.load_state_dict(checkpoint['encoder_state'])
-                self.decoder.load_state_dict(checkpoint['decoder_state'])
-                print("=> loaded checkpoint '{}' (epoch {})".format(restore_path, checkpoint['epoch']))
+            if self.config['average_checkpoints']:
+                path = restore_path + str(self.config['start_epoch']) + 'pth.tar'
+                state = torch.load(path)
+                models = ['encoder_state', 'decoder_state']
+                model_states = {model: state[model] for model in models}
+                count = 1
+                for epoch in range(self.config['start_epoch'] + 1, self.config['end_epoch'] + 1):
+                    path = restore_path + str(epoch) + 'pth.tar'
+                    if os.path.isfile(path):
+                        checkpoint = torch.load(path)
+                        for model in models:
+                            new_model_state = checkpoint[model]
+                            for name, param in model_states[model].items():
+                                param.mul_(count).add_(new_model_state[name]).div_(count + 1)
+                        count += 1
+                    else:
+                        print("=> no checkpoint found at '{}'".format(path))
+                self.encoder.load_state_dict(model_states['encoder_state'])
+                self.decoder.load_state_dict(model_states['decoder_state'])
             else:
-                print("=> no checkpoint found at '{}'".format(restore_path))
+                if os.path.isfile(restore_path):
+                    print("=> loading checkpoint '{}'".format(restore_path))
+                    checkpoint = torch.load(restore_path)
+                    print("encoder=======")
+                    for state in checkpoint['encoder_state']:
+                        print(state, checkpoint['encoder_state'][state].shape)
+                    print("decoder=======")
+                    for state in checkpoint['decoder_state']:
+                        print(state, checkpoint['decoder_state'][state].shape)
+                    self.encoder.load_state_dict(checkpoint['encoder_state'])
+                    self.decoder.load_state_dict(checkpoint['decoder_state'])
+                    print("=> loaded checkpoint '{}' (epoch {})".format(restore_path, checkpoint['epoch']))
+                else:
+                    print("=> no checkpoint found at '{}'".format(restore_path))

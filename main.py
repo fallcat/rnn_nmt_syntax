@@ -71,7 +71,10 @@ def main():
         'eps': args.eps,
         'label_smoothing': args.label_smoothing,
         'more_decoder_layers': args.more_decoder_layers,
-        'new_lr_scheduler': args.new_lr_scheduler
+        'new_lr_scheduler': args.new_lr_scheduler,
+        'average_checkpoints': args.average_checkpoints,
+        'start_epoch': args.start_epoch,
+        'end_epoch': args.end_epoch
     }
 
     # config dataloader
