@@ -39,7 +39,6 @@ class Beam(object):
             # print("sequence", hypothesis.sequence)
             # print("sequence type", type(hypothesis.sequence))
             scores.append(hypothesis.score)
-            print("hypothesis.hidden[0]", hypothesis.hidden[0].size())
             hiddens.append(hypothesis.hidden[0])
             cells.append(hypothesis.hidden[1])
         # print("lists")
@@ -90,7 +89,6 @@ class BeamSearchDecoder(object):
             sequence, score, hidden = beam.collate()
             sequences.append(sequence)
             scores.append(score)
-            print("hidden[0]", hidden[0].size())
             hiddens.append(hidden[0])
             cells.append(hidden[1])
             encoder_batch.append(encoder_outputs[i].unsqueeze(0).expand(sequence.size()[0],
@@ -156,14 +154,6 @@ class BeamSearchDecoder(object):
         return [BeamHypothesis(candidate[1], candidate[2], candidate[3]) for candidate in new_candidates]
 
     def search_sequential_batch(self, sequences, topv, topi, scores, hiddens, batch_size):
-        print("sequences", sequences.size())
-        print("topv", topv.size())
-        print("topi", topi.size())
-        print("scores", scores.size())
-        print("hiddens[0]", hiddens[0].size())
-        print("hiddens[1]", hiddens[1].size())
-        print("batch size", batch_size)
-        print("splitted", len(utils.split_or_chunk((sequences, topv, topi, scores, hiddens[0], hiddens[1]), batch_size)))
         splitted = utils.split_or_chunk((sequences, topv, topi, scores, hiddens[0], hiddens[1]), batch_size)
         for b in range(batch_size):
             sequences_b, topv_b, topi_b, scores_b, hiddens_b, cells_b = splitted[b]
@@ -221,7 +211,6 @@ class BeamSearchDecoder(object):
             for l in range(int(self.config['max_length']/self.config['span_size'])):
                 sequences, scores, hiddens, encoder_batch = self.collate(encoder_outputs, beams)
                 len_seq = sequences.size()[0]
-                print("before decoding, hiddens[0]", hiddens[0].size())
                 decoder_output, decoder_hidden, decoder_cell, decoder_attn \
                     = self.decoder(sequences[:, -self.config['span_size']:],
                                    hiddens[0].transpose(0, 1),
