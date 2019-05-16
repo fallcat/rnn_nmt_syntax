@@ -182,7 +182,7 @@ class BeamSearchDecoder(object):
                     new_candidates = [(rowsi[i],
                                        torch.cat((sequences_b[rowsi[i]], topi_b[rowsi[i], s, colsi[i]].to('cpu').unsqueeze(0))),
                                        topsv[i],
-                                       (hiddens_b[rowsi[i]], cells_b[rowsi[i]]))
+                                       (hiddens_b[rowsi[i]].unsqueeze(0), cells_b[rowsi[i]].unsqueeze(0)))
                                       for i in range(self.config['beam_width'])]
                     new_candidates = [(nc[0],
                                        nc[1],
