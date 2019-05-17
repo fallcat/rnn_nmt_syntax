@@ -159,15 +159,17 @@ class BeamSearchDecoder(object):
             if s == 0:
                 newscores = scores.view(batch_size, -1, 1) + topv[:, s, :].view(batch_size, -1, self.config['beam_width'])
             else:
-                newscores = torch.cat([nc[2] + topv[nc[0], s, :] for nc in new_candidates]) ### to do
+                newscores = torch.cat([nc[2] + topv[nc[0], s, :] for new_candidate in new_candidates for nc in new_candidate]) ### to do
             topsv, topsi = newscores.view(batch_size, -1).topk(self.config['beam_width'], 1)
             rowsi = topsi // self.config['beam_width']  # indices of the topk beams
             colsi = topsi.remainder(self.config['beam_width'])
             if s == 0:
-                new_candidates = [[(spb * j + rowsi[j, i],
-                                   torch.cat((sequences[spb * j + rowsi[j, i]], topi[spb * j + rowsi[j, i], s, colsi[j, i]].to('cpu').unsqueeze(0))),
-                                   topsv[j, i],
-                                   (hiddens[0][spb * j + rowsi[j, i]].unsqueeze(0), hiddens[1][spb * j + rowsi[j, i]].unsqueeze(0)))
+                new_candidates = [[(spb * j + rowsi[j, i],  # row in the original topv
+                                   torch.cat((sequences[spb * j + rowsi[j, i]],
+                                              topi[spb * j + rowsi[j, i], s, colsi[j, i]].to('cpu').unsqueeze(0))),  # new sequence
+                                   topsv[j, i],  # new score
+                                   (hiddens[0][spb * j + rowsi[j, i]].unsqueeze(0),
+                                    hiddens[1][spb * j + rowsi[j, i]].unsqueeze(0)))  # copied hidden and cell
                                   for i in range(self.config['beam_width'])] for j in range(batch_size)]
                 new_candidates = [[(nc[0],
                                    nc[1],
@@ -175,16 +177,17 @@ class BeamSearchDecoder(object):
                                                          nc[1][:nc[1].numpy().tolist().index(EOS_token)].size()[0]),
                                    nc[3]) if EOS_token in nc[1] else nc for nc in new_candidate] for new_candidate in new_candidates]
             else:
-                new_candidates = [(new_candidates[rowsi[i]][0],
-                                   torch.cat((new_candidates[rowsi[i]][1],
-                                              topi_b[new_candidates[rowsi[i]][0], s, colsi[i]].to('cpu').unsqueeze(0))),
-                                   topsv[i],
-                                   new_candidates[rowsi[i]][3]) for i in range(self.config['beam_width'])]
-                new_candidates = [(nc[0],
+                new_candidates = [[(new_candidates[j][rowsi[j, i]][0],
+                                   torch.cat((new_candidates[j][rowsi[j, i]][1],
+                                              topi[spb * j + new_candidates[j][rowsi[j, i]][0], s, colsi[j, i]].to('cpu').unsqueeze(0))),
+                                   topsv[j, i],
+                                   new_candidates[j][rowsi[j, i]][3])
+                                   for i in range(self.config['beam_width'])] for j in range(batch_size)]
+                new_candidates = [[(nc[0],
                                    nc[1],
                                    self.normalized_score(nc[2],
                                                          nc[1][:nc[1].numpy().tolist().index(EOS_token)].size()[0]),
-                                   nc[3]) if EOS_token in nc[1] else nc for nc in new_candidates]
+                                   nc[3]) if EOS_token in nc[1] else nc for nc in new_candidate] for new_candidate in new_candidates]
         return [[BeamHypothesis(candidate[1], candidate[2], candidate[3]) for candidate in new_candidate]
                 for new_candidate in new_candidates]
 
@@ -206,7 +209,6 @@ class BeamSearchDecoder(object):
 
             for l in range(int(self.config['max_length']/self.config['span_size'])):
                 sequences, scores, hiddens, encoder_batch = self.collate(encoder_outputs, beams)
-                len_seq = sequences.size()[0]
                 decoder_output, decoder_hidden, decoder_cell, decoder_attn \
                     = self.decoder(sequences[:, -self.config['span_size']:],
                                    hiddens[0].transpose(0, 1),
