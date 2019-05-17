@@ -11,7 +11,7 @@ def add_rnn_args(parser):
     group.add_argument('-d', '--dropout', action='store', type=float, default=0.2,
                             help='Specify the dropout rate of the model')
 
-    group.add_argument('-l', '--num-layers', action='store', type=int, default=4,
+    group.add_argument('--num-layers', action='store', type=int, default=4,
                             help='Specify the number of GRU/LSTM layers of the model')
 
     group.add_argument('--more-decoder-layers', action='store', type=int, default=0,
