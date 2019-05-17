@@ -177,16 +177,6 @@ class BeamSearchDecoder(object):
                                                          nc[1][:nc[1].numpy().tolist().index(EOS_token)].size()[0]),
                                    nc[3]) if EOS_token in nc[1] else nc for nc in new_candidate] for new_candidate in new_candidates]
             else:
-                for j in range(batch_size):
-                    for i in range(self.config['beam_width']):
-                        print("new_candidates[j][rowsi[j, i]][0]", new_candidates[j][rowsi[j, i]][0])
-                        print("torch.cat((new_candidates[j][rowsi[j, i]][1], topi[spb * j + new_candidates[j][rowsi[j, i]][0], s, colsi[j, i]].to('cpu').unsqueeze(0)))",
-                              torch.cat((new_candidates[j][rowsi[j, i]][1],
-                                         topi[new_candidates[j][rowsi[j, i]][0], s, colsi[j, i]].to(
-                                             'cpu').unsqueeze(0)))
-                              )
-                        print("topsv[j, i]", topsv[j, i])
-                        print("new_candidates[j][rowsi[j, i]][3]", new_candidates[j][rowsi[j, i]][3])
                 new_candidates = [[(new_candidates[j][rowsi[j, i]][0],
                                    torch.cat((new_candidates[j][rowsi[j, i]][1],
                                               topi[new_candidates[j][rowsi[j, i]][0], s, colsi[j, i]].to('cpu').unsqueeze(0))),
