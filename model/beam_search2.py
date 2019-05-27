@@ -1,4 +1,5 @@
 import torch
+import time
 from model import utils, DEVICE, EOS_token
 
 
@@ -128,6 +129,7 @@ class BeamSearchDecoder(object):
             rowsi = topsi // self.config['beam_width']  # indices of the topk beams
             colsi = topsi.remainder(self.config['beam_width'])
             if s == 0:
+                start = time.time()
                 new_candidates = [[(spb * j + rowsi[j, i],  # row in the original topv
                                    torch.cat((sequences[spb * j + rowsi[j, i]],
                                               topi[spb * j + rowsi[j, i], s, colsi[j, i]].to('cpu').unsqueeze(0))),  # new sequence
@@ -140,6 +142,17 @@ class BeamSearchDecoder(object):
                                    self.normalized_score(nc[2],
                                                          nc[1][:nc[1].numpy().tolist().index(EOS_token)].size()[0]),
                                    nc[3]) if EOS_token in nc[1] else nc for nc in new_candidate] for new_candidate in new_candidates]
+                print("old time", time.time() - start)
+                start = time.time()
+                new_candidates = []
+                for j in range(batch_size):
+                    for i in range(self.config['beam_width']):
+                        a = spb * j + rowsi[j, i]
+                        b = torch.cat((sequences[a], topi[a, s, colsi[j, i]].to('cpu').unsqueeze(0)))
+                        c = self.normalized_score(topsv[j, i], b[:b.numpy().tolist().index(EOS_token)].size()[0])
+                        d = (hiddens[0][a].unsqueeze(0), hiddens[1][b].unsqueeze(0))
+                        new_candidates.append((a, b, c, d))
+                print("new time", time.time() - start)
             else:
                 new_candidates = [[(new_candidates[j][rowsi[j, i]][0],
                                    torch.cat((new_candidates[j][rowsi[j, i]][1],
