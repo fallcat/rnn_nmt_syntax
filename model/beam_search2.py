@@ -144,9 +144,9 @@ class BeamSearchDecoder(object):
                             new_candidate.append((a, b, c, d))
                         new_candidates.append(new_candidate)
                 else:
-                    new_candidates = []
+                    new_candidates_ = []
                     for j in range(batch_size):
-                        new_candidate = []
+                        new_candidate_ = []
                         for i in range(self.config['beam_width']):
                             candidate = new_candidates[j][rowsi[j, i]]
                             a = candidate[0]
@@ -156,8 +156,9 @@ class BeamSearchDecoder(object):
                             else:
                                 c = topsv[j, i]
                             d = candidate[3]
-                            new_candidate.append((a, b, c, d))
-                        new_candidates.append(new_candidate)
+                            new_candidate_.append((a, b, c, d))
+                        new_candidates_.append(new_candidate_)
+                    new_candidates = new_candidates_
                     # new_candidates = [[(new_candidates[j][rowsi[j, i]][0],
                     #                    torch.cat((new_candidates[j][rowsi[j, i]][1],
                     #                               topi[new_candidates[j][rowsi[j, i]][0], s, colsi[j, i]].to('cpu').unsqueeze(0))),
