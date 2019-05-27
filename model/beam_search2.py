@@ -146,12 +146,15 @@ class BeamSearchDecoder(object):
                 start = time.time()
                 new_candidates = []
                 for j in range(batch_size):
+                    new_candidate = []
                     for i in range(self.config['beam_width']):
                         a = spb * j + rowsi[j, i]
                         b = torch.cat((sequences[a], topi[a, s, colsi[j, i]].to('cpu').unsqueeze(0)))
-                        c = self.normalized_score(topsv[j, i], b[:b.numpy().tolist().index(EOS_token)].size()[0])
+                        c = self.normalized_score(topsv[j, i], b[:b.numpy().tolist().index(EOS_token)].size()[0]) \
+                            if EOS_token in b else topsv[j, i]
                         d = (hiddens[0][a].unsqueeze(0), hiddens[1][b].unsqueeze(0))
-                        new_candidates.append((a, b, c, d))
+                        new_candidate.append((a, b, c, d))
+                    new_candidates.append(new_candidate)
                 print("new time", time.time() - start)
             else:
                 new_candidates = [[(new_candidates[j][rowsi[j, i]][0],
