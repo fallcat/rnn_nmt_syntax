@@ -74,7 +74,8 @@ def main():
         'new_lr_scheduler': args.new_lr_scheduler,
         'average_checkpoints': args.average_checkpoints,
         'start_epoch': args.start_epoch,
-        'end_epoch': args.end_epoch
+        'end_epoch': args.end_epoch,
+        'restore': args.restore
     }
 
     # config dataloader
