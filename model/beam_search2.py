@@ -120,56 +120,77 @@ class BeamSearchDecoder(object):
 
     def search_sequential_batch2(self, sequences, topv, topi, scores, hiddens, batch_size):
         spb = sequences.size()[0] / batch_size  # sequences per batch
-        for s in range(self.config['span_size']):
-            if s == 0:
-                newscores = scores.view(batch_size, -1, 1) + topv[:, s, :].view(batch_size, -1, self.config['beam_width'])
-            else:
-                newscores = torch.cat([nc[2] + topv[nc[0], s, :] for new_candidate in new_candidates for nc in new_candidate]) ### to do
+        if self.config['span_size'] > 1:
+            for s in range(self.config['span_size']):
+                if s == 0:
+                    newscores = scores.view(batch_size, -1, 1) + topv[:, s, :].view(batch_size, -1, self.config['beam_width'])
+                else:
+                    newscores = torch.cat([nc[2] + topv[nc[0], s, :] for new_candidate in new_candidates for nc in new_candidate])
+                topsv, topsi = newscores.view(batch_size, -1).topk(self.config['beam_width'], 1)
+                rowsi = topsi // self.config['beam_width']  # indices of the topk beams
+                colsi = topsi.remainder(self.config['beam_width'])
+                if s == 0:
+                    new_candidates = []
+                    for j in range(batch_size):
+                        new_candidate = []
+                        for i in range(self.config['beam_width']):
+                            a = spb * j + rowsi[j, i]
+                            b = torch.cat((sequences[a], topi[a, s, colsi[j, i]].to('cpu').unsqueeze(0)))
+                            if EOS_token in b:
+                                c = self.normalized_score(topsv[j, i], b[:b.numpy().tolist().index(EOS_token)].size()[0])
+                            else:
+                                c = topsv[j, i]
+                            d = (hiddens[0][a].unsqueeze(0), hiddens[1][a].unsqueeze(0))
+                            new_candidate.append((a, b, c, d))
+                        new_candidates.append(new_candidate)
+                else:
+                    new_candidates = []
+                    for j in range(batch_size):
+                        new_candidate = []
+                        for i in range(self.config['beam_width']):
+                            candidate = new_candidates[j][rowsi[j, i]]
+                            a = candidate[0]
+                            b = torch.cat((candidate[1], topi[a, s, colsi[j, i]].to('cpu').unsqueeze(0)))
+                            if EOS_token in b:
+                                c = self.normalized_score(topsv[j, i], b[:b.numpy().tolist().index(EOS_token)].size()[0])
+                            else:
+                                c = topsv[j, i]
+                            d = candidate[3]
+                            new_candidate.append((a, b, c, d))
+                        new_candidates.append(new_candidate)
+                    # new_candidates = [[(new_candidates[j][rowsi[j, i]][0],
+                    #                    torch.cat((new_candidates[j][rowsi[j, i]][1],
+                    #                               topi[new_candidates[j][rowsi[j, i]][0], s, colsi[j, i]].to('cpu').unsqueeze(0))),
+                    #                    topsv[j, i],
+                    #                    new_candidates[j][rowsi[j, i]][3])
+                    #                    for i in range(self.config['beam_width'])] for j in range(batch_size)]
+                    # new_candidates = [[(nc[0],
+                    #                    nc[1],
+                    #                    self.normalized_score(nc[2],
+                    #                                          nc[1][:nc[1].numpy().tolist().index(EOS_token)].size()[0]),
+                    #                    nc[3]) if EOS_token in nc[1] else nc for nc in new_candidate] for new_candidate in new_candidates]
+            return [[BeamHypothesis(candidate[1], candidate[2], candidate[3]) for candidate in new_candidate]
+                    for new_candidate in new_candidates]
+        else:
+            s = 0
+            newscores = scores.view(batch_size, -1, 1) + topv[:, s, :].view(batch_size, -1, self.config['beam_width'])
             topsv, topsi = newscores.view(batch_size, -1).topk(self.config['beam_width'], 1)
             rowsi = topsi // self.config['beam_width']  # indices of the topk beams
             colsi = topsi.remainder(self.config['beam_width'])
-            if s == 0:
-                new_candidates = []
-                for j in range(batch_size):
-                    new_candidate = []
-                    for i in range(self.config['beam_width']):
-                        a = spb * j + rowsi[j, i]
-                        b = torch.cat((sequences[a], topi[a, s, colsi[j, i]].to('cpu').unsqueeze(0)))
-                        if EOS_token in b:
-                            c = self.normalized_score(topsv[j, i], b[:b.numpy().tolist().index(EOS_token)].size()[0])
-                        else:
-                            c = topsv[j, i]
-                        d = (hiddens[0][a].unsqueeze(0), hiddens[1][a].unsqueeze(0))
-                        new_candidate.append((a, b, c, d))
-                    new_candidates.append(new_candidate)
-            else:
-                new_candidates = []
-                for j in range(batch_size):
-                    new_candidate = []
-                    for i in range(self.config['beam_width']):
-                        candidate = new_candidates[j][rowsi[j, i]]
-                        a = candidate[0]
-                        b = torch.cat((candidate[1], topi[a, s, colsi[j, i]].to('cpu').unsqueeze(0)))
-                        if EOS_token in b:
-                            c = self.normalized_score(topsv[j, i], b[:b.numpy().tolist().index(EOS_token)].size()[0])
-                        else:
-                            c = topsv[j, i]
-                        d = candidate[3]
-                        new_candidate.append((a, b, c, d))
-                    new_candidates.append(new_candidate)
-                # new_candidates = [[(new_candidates[j][rowsi[j, i]][0],
-                #                    torch.cat((new_candidates[j][rowsi[j, i]][1],
-                #                               topi[new_candidates[j][rowsi[j, i]][0], s, colsi[j, i]].to('cpu').unsqueeze(0))),
-                #                    topsv[j, i],
-                #                    new_candidates[j][rowsi[j, i]][3])
-                #                    for i in range(self.config['beam_width'])] for j in range(batch_size)]
-                # new_candidates = [[(nc[0],
-                #                    nc[1],
-                #                    self.normalized_score(nc[2],
-                #                                          nc[1][:nc[1].numpy().tolist().index(EOS_token)].size()[0]),
-                #                    nc[3]) if EOS_token in nc[1] else nc for nc in new_candidate] for new_candidate in new_candidates]
-        return [[BeamHypothesis(candidate[1], candidate[2], candidate[3]) for candidate in new_candidate]
-                for new_candidate in new_candidates]
+            new_candidates = []
+            for j in range(batch_size):
+                new_candidate = []
+                for i in range(self.config['beam_width']):
+                    a = spb * j + rowsi[j, i]
+                    b = torch.cat((sequences[a], topi[a, s, colsi[j, i]].to('cpu').unsqueeze(0)))
+                    if EOS_token in b:
+                        c = self.normalized_score(topsv[j, i], b[:b.numpy().tolist().index(EOS_token)].size()[0])
+                    else:
+                        c = topsv[j, i]
+                    d = (hiddens[0][a].unsqueeze(0), hiddens[1][a].unsqueeze(0))
+                    new_candidate.append(BeamHypothesis(b, c, d))
+                new_candidates.append(new_candidate)
+            return new_candidates
 
     def decode_batch(self, encoder_outputs, encoder_hidden, start_sequences):
         self.decoder.eval()
