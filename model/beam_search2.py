@@ -154,7 +154,7 @@ class BeamSearchDecoder(object):
                             c = self.normalized_score(topsv[j, i], b[:b.numpy().tolist().index(EOS_token)].size()[0])
                         else:
                             c = topsv[j, i]
-                        d = (hiddens[0][a].unsqueeze(0), hiddens[1][b].unsqueeze(0))
+                        d = (hiddens[0][a].unsqueeze(0), hiddens[1][a].unsqueeze(0))
                         new_candidate.append((a, b, c, d))
                     new_candidates.append(new_candidate)
                 print("new time", time.time() - start)
