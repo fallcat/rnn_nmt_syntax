@@ -96,7 +96,9 @@ class Evaluator(object):
                 decoded = [self.dataloader.dataset.index2word[w.item()] for w in sequence]
                 outputs.append(decoded)
                 ordered_outputs.append((example_id, outputs))
-        print("Evaluation time for {} sentences is {}".format(len(self.dataloader.dataset.pairs), time.time() - start))
+        print("Evaluation time for {} sentences is {} for checkpoint {}".format(len(self.dataloader.dataset.pairs),
+                                                                                time.time() - start,
+                                                                                self.config['restore']))
         preds = []
         for _, outputs in sorted(ordered_outputs, key=lambda x: x[0]):  # pylint:disable=consider-using-enumerate
             preds.extend(outputs)
@@ -113,7 +115,9 @@ class Evaluator(object):
             for i, example_id in enumerate(batch['example_ids']):
                 ordered_outputs.append((example_id, [pred[i]]))
             # preds.extend(pred)
-        print("Evaluation time for {} sentences is {}".format(len(self.dataloader.dataset.pairs), time.time() - start))
+        print("Evaluation time for {} sentences is {} for checkpoint {}".format(len(self.dataloader.dataset.pairs),
+                                                                                time.time() - start,
+                                                                                self.config['restore']))
         for _, outputs in sorted(ordered_outputs, key=lambda x: x[0]):  # pylint:disable=consider-using-enumerate
             preds.extend(outputs)
         return preds

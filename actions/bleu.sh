@@ -1,10 +1,7 @@
-#!/usr/bin/env bash
-
-%%shell
 #!/bin/bash
 
 # This is a reference to the gold translations from the dev set
-REFERENCE_FILE="dev.en"
+REFERENCE_FILE="/mnt/nfs/work1/miyyer/wyou/iwslt16_en_de/dev.en"
 
 # XXX: Change the following line to point to your model's output!
 TRANSLATED_FILE="translated_rnmtp_512_do3_l6_sp2_33_42.txt"
