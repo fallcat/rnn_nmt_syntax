@@ -144,7 +144,7 @@ class BeamSearchDecoder(object):
                 lengths = torch.tensor([[len(col) if EOS_token not in col else col.index(EOS_token)
                                          for col in row] for row in b_matrix_list], dtype=torch.float32)
                 c_matrix = self.normalized_score(topsv, lengths - self.config['span_size'])
-                d_matrix = (torch.gather(d_matrix[0], 1, rowsi), torch.gather(d_matrix[1], 1, rowsi))
+                d_matrix = (torch.gather(d_matrix[0], 1, rowsi.to(DEVICE)), torch.gather(d_matrix[1], 1, rowsi.to(DEVICE)))
         print("new time", time.time() - start)
         return [[BeamHypothesis(b_matrix[j, i], c_matrix[j, i], d_matrix[j, i]) for i in range(self.config['beam_width'])]for j in range(batch_size)]
 
