@@ -147,7 +147,7 @@ class BeamSearchDecoder(object):
                 c_matrix = self.normalized_score(topsv, lengths - self.config['span_size'])
                 print("d_matrix", d_matrix[0].size())
                 print("rowsi", rowsi.size())
-                d_matrix_size = d_matrix.size()
+                d_matrix_size = d_matrix[0].size()
                 d_matrix = (d_matrix[0].view(d_matrix_size[0] * d_matrix_size[1], d_matrix_size[2], d_matrix_size[3])[
                                 rowsi.view(-1).to(DEVICE)],
                             d_matrix[1].view(d_matrix_size[0] * d_matrix_size[1], d_matrix_size[2], d_matrix_size[3])[
