@@ -119,7 +119,7 @@ class BeamSearchDecoder(object):
                 for i, new_subseq in enumerate(top_indices)]
 
     def search_sequential_batch(self, sequences, topv, topi, scores, hiddens, batch_size):
-        start = time.time()
+        # start = time.time()
         spb = sequences.size()[0] / batch_size  # sequences per batch
         for s in range(self.config['span_size']):
             if s == 0:
@@ -149,12 +149,12 @@ class BeamSearchDecoder(object):
                                 rowsi.view(-1).to(DEVICE)].view(d_matrix_size),
                             d_matrix[1].view(d_matrix_size[0] * d_matrix_size[1], d_matrix_size[2], d_matrix_size[3])[
                                 rowsi.view(-1).to(DEVICE)].view(d_matrix_size))
-        print("new time", time.time() - start)
+        # print("new time", time.time() - start)
         return [[BeamHypothesis(b_matrix[j, i], c_matrix[j, i], (d_matrix[0][j, i].unsqueeze(0), d_matrix[1][j, i].unsqueeze(0)))
                  for i in range(self.config['beam_width'])]for j in range(batch_size)]
 
     def search_sequential_batch2(self, sequences, topv, topi, scores, hiddens, batch_size):
-        start = time.time()
+        # start = time.time()
         spb = sequences.size()[0] / batch_size  # sequences per batch
         new_candidates = []
         for s in range(self.config['span_size']):
@@ -203,7 +203,7 @@ class BeamSearchDecoder(object):
                             new_candidate_.append(BeamHypothesis(b, c, d))
                     new_candidates_.append(new_candidate_)
                 new_candidates = new_candidates_
-        print("old time", time.time() - start)
+        # print("old time", time.time() - start)
         return new_candidates
 
     def decode_batch(self, encoder_outputs, encoder_hidden, start_sequences):
