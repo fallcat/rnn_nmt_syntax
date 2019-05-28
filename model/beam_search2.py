@@ -130,7 +130,6 @@ class BeamSearchDecoder(object):
             rowsi = (topsi // self.config['beam_width']) # indices of the topk beams
             colsi = (topsi.remainder(self.config['beam_width']))
             if s == 0:
-
                 a_matrix = (spb * torch.tensor(list(range(batch_size))).view(batch_size, 1) + rowsi)  # row numbers in the original batch
                 b_matrix = torch.cat((sequences[a_matrix], topi[a_matrix, s, colsi].to('cpu').unsqueeze(2)), 2)  # new sequences
                 b_matrix_list = b_matrix.numpy().tolist()
