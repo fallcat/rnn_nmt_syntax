@@ -153,7 +153,7 @@ class BeamSearchDecoder(object):
                             d_matrix[1].view(d_matrix_size[0] * d_matrix_size[1], d_matrix_size[2], d_matrix_size[3])[
                                 rowsi.view(-1).to(DEVICE)].view(d_matrix_size))
         print("new time", time.time() - start)
-        return [[BeamHypothesis(b_matrix[j, i], c_matrix[j, i], (d_matrix[0][j, i], d_matrix[1][j, i]))
+        return [[BeamHypothesis(b_matrix[j, i], c_matrix[j, i], (d_matrix[0][j, i].unsqueeze(0), d_matrix[1][j, i].unsqueeze(0)))
                  for i in range(self.config['beam_width'])]for j in range(batch_size)]
 
     def search_sequential_batch2(self, sequences, topv, topi, scores, hiddens, batch_size):
