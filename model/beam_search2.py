@@ -259,10 +259,10 @@ class BeamSearchDecoder(object):
                     new_hypotheses = self.search_all(sequences, topv, topi, scores,
                                                      (decoder_hidden.transpose(0, 1), decoder_cell.transpose(0, 1)))
                 else:
-                    new_hypotheses = self.search_sequential_batch2(sequences, topv, topi, scores,
-                                                                  (decoder_hidden.transpose(0, 1),
-                                                                   decoder_cell.transpose(0, 1)),
-                                                                  batch_size)
+                    # new_hypotheses = self.search_sequential_batch2(sequences, topv, topi, scores,
+                    #                                               (decoder_hidden.transpose(0, 1),
+                    #                                                decoder_cell.transpose(0, 1)),
+                    #                                               batch_size)
                     new_hypotheses = self.search_sequential_batch(sequences, topv, topi, scores,
                                                                   (decoder_hidden.transpose(0, 1),
                                                                    decoder_cell.transpose(0, 1)),
