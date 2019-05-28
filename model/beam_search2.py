@@ -137,7 +137,7 @@ class BeamSearchDecoder(object):
                 print("a_matrix", a_matrix)
                 print("sequences[a_matrix]", sequences[a_matrix].size())
                 print("topi[a_matrix, s, colsi]", topi[a_matrix, s, colsi].size())
-                b_matrix = torch.cat((sequences[a_matrix], topi[a_matrix, s, colsi].to('cpu').unsqueeze(2)))
+                b_matrix = torch.cat((sequences[a_matrix], topi[a_matrix, s, colsi].to('cpu').unsqueeze(2)), 2)
                 print("b_matrix", b_matrix.size())
                 a_matrix = a_matrix.numpy()
                 for j in range(batch_size):
