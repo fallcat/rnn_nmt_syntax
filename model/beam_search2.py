@@ -160,8 +160,9 @@ class BeamSearchDecoder(object):
 
             else:
                 print("a_matrix", a_matrix.size())
-                print("a_matrix[rowsi]", torch.gather(a_matrix, 1, rowsi))
+                print("a_matrix[rowsi]", torch.gather(a_matrix, 1, rowsi).size())
                 a_matrix_ = torch.gather(a_matrix, 1, rowsi)
+                b_matrix_ = torch.cat((b_matrix, topi[a_matrix_, s, colsi].to('cpu').unsqueeze(2)), 2)
                 new_candidates_ = []
                 for j in range(batch_size):
                     new_candidate_ = []
