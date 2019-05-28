@@ -115,6 +115,7 @@ class Evaluator(object):
             for i, example_id in enumerate(batch['example_ids']):
                 ordered_outputs.append((example_id, [pred[i]]))
             # preds.extend(pred)
+            print("output", ordered_outputs[0])
         print("Evaluation time for {} sentences is {} for checkpoint {}".format(len(self.dataloader.dataset.pairs),
                                                                                 time.time() - start,
                                                                                 self.config['restore']))
