@@ -96,6 +96,7 @@ class Evaluator(object):
                 decoded = [self.dataloader.dataset.index2word[w.item()] for w in sequence]
                 outputs.append(decoded)
                 ordered_outputs.append((example_id, outputs))
+            print("output", ordered_outputs[0])
         print("Evaluation time for {} sentences is {} for checkpoint {}".format(len(self.dataloader.dataset.pairs),
                                                                                 time.time() - start,
                                                                                 self.config['restore']))
