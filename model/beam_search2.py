@@ -147,9 +147,11 @@ class BeamSearchDecoder(object):
                 c_matrix = self.normalized_score(topsv, lengths - self.config['span_size'])
                 print("d_matrix", d_matrix[0].size())
                 print("rowsi", rowsi.size())
-                rowsi_size = rowsi.size()
-                d_matrix = (torch.gather(d_matrix[0], 1, rowsi.view(rowsi_size[0], rowsi_size[1], 1, 1).to(DEVICE)),
-                            torch.gather(d_matrix[1], 1, rowsi.view(rowsi_size[0], rowsi_size[1], 1, 1).to(DEVICE)))
+                d_matrix_size = d_matrix.size()
+                d_matrix = (d_matrix[0].view(d_matrix_size[0] * d_matrix_size[1], d_matrix_size[2], d_matrix_size[3])[
+                                rowsi.view(-1).to(DEVICE)],
+                            d_matrix[1].view(d_matrix_size[0] * d_matrix_size[1], d_matrix_size[2], d_matrix_size[3])[
+                                rowsi.view(-1).to(DEVICE)])
         print("new time", time.time() - start)
         return [[BeamHypothesis(b_matrix[j, i], c_matrix[j, i], d_matrix[j, i]) for i in range(self.config['beam_width'])]for j in range(batch_size)]
 
