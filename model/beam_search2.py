@@ -140,7 +140,7 @@ class BeamSearchDecoder(object):
                 # print("b_matrix[ended]", b_matrix[ended])
                 b_matrix_list = b_matrix.numpy().tolist()
                 lengths = torch.tensor([[len(col) if EOS_token not in col else col.index(EOS_token)
-                                         for col in row] for row in b_matrix_list])
+                                         for col in row] for row in b_matrix_list], dtype=torch.float32)
                 c_matrix = self.normalized_score(topsv.to('cpu'), lengths - self.config['span_size'])
                 d_matrix = (hiddens[0][a_matrix], hiddens[1][a_matrix])
                 a_matrix = a_matrix.numpy()
