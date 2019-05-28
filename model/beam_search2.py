@@ -161,6 +161,7 @@ class BeamSearchDecoder(object):
                     #         new_candidate.append(BeamHypothesis(b, c, d))
                     new_candidates.append(list(yield_candidate(j)))
                 print("new time", time.time() - start)
+                new_candidates = []
                 start = time.time()
                 for j in range(batch_size):
                     new_candidate = []
