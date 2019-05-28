@@ -126,23 +126,22 @@ class BeamSearchDecoder(object):
             if s == 0:
                 newscores = scores.view(batch_size, -1, 1) + topv[:, s, :].view(batch_size, -1, self.config['beam_width'])
             else:
-                newscores = torch.cat([nc[2] + topv[nc[0], s, :] for new_candidate in new_candidates for nc in new_candidate])
+                # newscores = torch.cat([nc[2] + topv[nc[0], s, :] for new_candidate in new_candidates for nc in new_candidate])
+                print("c_matrix", c_matrix.size())
+                print("a_matrix", a_matrix.size())
+                newscores = c_matrix + topv[a_matrix, s, :]
             topsv, topsi = newscores.view(batch_size, -1).topk(self.config['beam_width'], 1)
             rowsi = (topsi // self.config['beam_width']).to('cpu')  # indices of the topk beams
             colsi = (topsi.remainder(self.config['beam_width'])).to('cpu')
             if s == 0:
 
-                a_matrix = (spb * torch.tensor(list(range(batch_size))).view(batch_size, 1) + rowsi)
-                b_matrix = torch.cat((sequences[a_matrix], topi[a_matrix, s, colsi].to('cpu').unsqueeze(2)), 2)
-                c_matrix = topsv.clone()
-                # ended = (b_matrix == EOS_token).sum(dim=2)
-                # lengths = torch.full_like(c_matrix, b_matrix.size()[2])
-                # print("b_matrix[ended]", b_matrix[ended])
+                a_matrix = (spb * torch.tensor(list(range(batch_size))).view(batch_size, 1) + rowsi)  # row numbers in the original batch
+                b_matrix = torch.cat((sequences[a_matrix], topi[a_matrix, s, colsi].to('cpu').unsqueeze(2)), 2)  # new sequences
                 b_matrix_list = b_matrix.numpy().tolist()
                 lengths = torch.tensor([[len(col) if EOS_token not in col else col.index(EOS_token)
                                          for col in row] for row in b_matrix_list], dtype=torch.float32)
-                c_matrix = self.normalized_score(topsv.to('cpu'), lengths - self.config['span_size'])
-                d_matrix = (hiddens[0][a_matrix], hiddens[1][a_matrix])
+                c_matrix = self.normalized_score(topsv.to('cpu'), lengths - self.config['span_size'])  # new scores
+                d_matrix = (hiddens[0][a_matrix], hiddens[1][a_matrix])  # hidden states and cell states copied over
                 a_matrix = a_matrix.numpy()
                 for j in range(batch_size):
                     new_candidate = []
