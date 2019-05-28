@@ -145,12 +145,12 @@ class BeamSearchDecoder(object):
                     for i in range(self.config['beam_width']):
                         # b = torch.cat((sequences[a_matrix[j, i]], topi[a_matrix[j, i], s, colsi[j, i]].unsqueeze(0)))
                         if EOS_token in b:
-                            c = self.normalized_score(topsv[j, i], b[:b.numpy().tolist().index(EOS_token)].size()[0])
+                            c = self.normalized_score(topsv[j, i], b_matrix[j, i][:b_matrix[j, i].numpy().tolist().index(EOS_token)].size()[0])
                         else:
                             c = topsv[j, i]
                         d = (hiddens[0][a_matrix[j, i]].unsqueeze(0), hiddens[1][a_matrix[j, i]].unsqueeze(0))
                         if s < self.config['span_size'] - 1:
-                            new_candidate.append((a_matrix[j, i], b[j, i], c, d))
+                            new_candidate.append((a_matrix[j, i], b_matrix[j, i], c, d))
                         else:
                             new_candidate.append(BeamHypothesis(b, c, d))
                     new_candidates.append(new_candidate)
