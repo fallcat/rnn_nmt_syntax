@@ -121,7 +121,6 @@ class BeamSearchDecoder(object):
     def search_sequential_batch(self, sequences, topv, topi, scores, hiddens, batch_size):
         start = time.time()
         spb = sequences.size()[0] / batch_size  # sequences per batch
-        new_candidates = []
         for s in range(self.config['span_size']):
             if s == 0:
                 newscores = scores.view(-1, 1).to('cpu') + topv[:, s, :].view(-1, self.config['beam_width']).to('cpu')
@@ -139,51 +138,18 @@ class BeamSearchDecoder(object):
                                          for col in row] for row in b_matrix_list], dtype=torch.float32)
                 c_matrix = self.normalized_score(topsv.to('cpu'), lengths - self.config['span_size'])  # new scores
                 d_matrix = (hiddens[0][a_matrix], hiddens[1][a_matrix])  # hidden states and cell states copied over
-                for j in range(batch_size):
-                    new_candidate = []
-                    for i in range(self.config['beam_width']):
-                        # b = torch.cat((sequences[a_matrix[j, i]], topi[a_matrix[j, i], s, colsi[j, i]].unsqueeze(0)))
-                        # if EOS_token in b_matrix[j, i]:
-                        #     c = self.normalized_score(topsv[j, i],
-                        #                               b_matrix[j, i].numpy().tolist().index(EOS_token)
-                        #                               - self.config['span_size'])
-                        #     c = self.normalized_score(topsv[j, i], b_matrix[j, i][:b_matrix[j, i].numpy().tolist().index(EOS_token)].size()[0])
-                        # else:
-                        #     c = self.normalized_score(topsv[j, i], b_matrix.size()[2] - self.config['span_size'])
-                        # d = (hiddens[0][a_matrix[j, i]].unsqueeze(0), hiddens[1][a_matrix[j, i]].unsqueeze(0))
-                        if s < self.config['span_size'] - 1:
-                            new_candidate.append((a_matrix[j, i], b_matrix[j, i], c_matrix[j, i],
-                                                  (d_matrix[0][j, i].unsqueeze(0), d_matrix[1][j, i].unsqueeze(0))))
-                        else:
-                            new_candidate.append(BeamHypothesis(b_matrix[j, i], c_matrix[j, i], (d_matrix[0][j, i], d_matrix[1][j, i])))
-                    new_candidates.append(new_candidate)
-
             else:
                 print("a_matrix", a_matrix.size())
                 print("a_matrix[rowsi]", torch.gather(a_matrix, 1, rowsi).size())
-                a_matrix_ = torch.gather(a_matrix, 1, rowsi)
-                b_matrix_ = torch.cat((b_matrix, topi[a_matrix_, s, colsi].to('cpu').unsqueeze(2)), 2)
-                new_candidates_ = []
-                for j in range(batch_size):
-                    new_candidate_ = []
-                    for i in range(self.config['beam_width']):
-                        candidate = new_candidates[j][rowsi[j, i]]
-                        a = candidate[0]
-                        b = torch.cat((candidate[1], topi[a, s, colsi[j, i]].to('cpu').unsqueeze(0)))
-                        if EOS_token in b:
-                            c = self.normalized_score(topsv[j, i],
-                                                      b.numpy().tolist().index(EOS_token) - self.config['span_size'])
-                        else:
-                            c = self.normalized_score(topsv[j, i], b.size()[0] - self.config['span_size'])
-                        d = candidate[3]
-                        if s < self.config['span_size'] - 1:
-                            new_candidate_.append((a, b, c, d))
-                        else:
-                            new_candidate_.append(BeamHypothesis(b, c, d))
-                    new_candidates_.append(new_candidate_)
-                new_candidates = new_candidates_
+                a_matrix = torch.gather(a_matrix, 1, rowsi)
+                b_matrix = torch.cat((b_matrix, topi[a_matrix, s, colsi].to('cpu').unsqueeze(2)), 2)
+                b_matrix_list = b_matrix.numpy().tolist()
+                lengths = torch.tensor([[len(col) if EOS_token not in col else col.index(EOS_token)
+                                         for col in row] for row in b_matrix_list], dtype=torch.float32)
+                c_matrix = self.normalized_score(topsv, lengths - self.config['span_size'])
+                d_matrix = (torch.gather(d_matrix[0], 1, rowsi), torch.gather(d_matrix[1], 1, rowsi))
         print("new time", time.time() - start)
-        return new_candidates
+        return [[BeamHypothesis(b_matrix[j, i], c_matrix[j, i], d_matrix[j, i]) for i in range(self.config['beam_width'])]for j in range(batch_size)]
 
     def search_sequential_batch2(self, sequences, topv, topi, scores, hiddens, batch_size):
         start = time.time()
