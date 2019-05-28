@@ -150,7 +150,7 @@ class BeamSearchDecoder(object):
                         # d = (hiddens[0][a_matrix[j, i]].unsqueeze(0), hiddens[1][a_matrix[j, i]].unsqueeze(0))
                         if s < self.config['span_size'] - 1:
                             new_candidate.append((a_matrix[j, i], b_matrix[j, i], c,
-                                                  (d_matrix[0][j, i], d_matrix[1][j, i])))
+                                                  (d_matrix[0][j, i].unsqueeze(0), d_matrix[1][j, i].unsqueeze(0))))
                         else:
                             new_candidate.append(BeamHypothesis(b_matrix[j, i], c, (d_matrix[0][j, i], d_matrix[1][j, i])))
                     new_candidates.append(new_candidate)
