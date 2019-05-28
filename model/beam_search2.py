@@ -129,7 +129,7 @@ class BeamSearchDecoder(object):
                 # newscores = torch.cat([nc[2] + topv[nc[0], s, :] for new_candidate in new_candidates for nc in new_candidate])
                 print("c_matrix", c_matrix.size())
                 print("a_matrix", a_matrix.size())
-                newscores = c_matrix + topv[a_matrix.view(-1), s, :]
+                newscores = c_matrix.view(-1) + topv[a_matrix.view(-1), s, :]
             topsv, topsi = newscores.view(batch_size, -1).topk(self.config['beam_width'], 1)
             rowsi = (topsi // self.config['beam_width']).to('cpu')  # indices of the topk beams
             colsi = (topsi.remainder(self.config['beam_width'])).to('cpu')
