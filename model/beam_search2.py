@@ -131,7 +131,7 @@ class BeamSearchDecoder(object):
             colsi = topsi.remainder(self.config['beam_width'])
             if s == 0:
                 start = time.time()
-                a_matrix = spb * torch.tensor(list(range(batch_size))).view(batch_size, 1) + rowsi
+                a_matrix = (spb * torch.tensor(list(range(batch_size))).view(batch_size, 1).to(DEVICE) + rowsi).numpy()
                 for j in range(batch_size):
                     new_candidate = []
                     for i in range(self.config['beam_width']):
@@ -147,6 +147,7 @@ class BeamSearchDecoder(object):
                             new_candidate.append(BeamHypothesis(b, c, d))
                     new_candidates.append(new_candidate)
                 print("new time", time.time() - start)
+                new_candidates = []
                 start = time.time()
                 for j in range(batch_size):
                     new_candidate = []
