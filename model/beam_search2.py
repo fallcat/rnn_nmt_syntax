@@ -142,7 +142,6 @@ class BeamSearchDecoder(object):
                                          for col in row] for row in b_matrix_list], dtype=torch.float32)
                 c_matrix = self.normalized_score(topsv.to('cpu'), lengths - self.config['span_size'])  # new scores
                 d_matrix = (hiddens[0][a_matrix], hiddens[1][a_matrix])  # hidden states and cell states copied over
-                a_matrix = a_matrix.numpy()
                 for j in range(batch_size):
                     new_candidate = []
                     for i in range(self.config['beam_width']):
