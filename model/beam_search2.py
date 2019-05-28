@@ -130,6 +130,24 @@ class BeamSearchDecoder(object):
             rowsi = topsi // self.config['beam_width']  # indices of the topk beams
             colsi = topsi.remainder(self.config['beam_width'])
             if s == 0:
+                start = time.time()
+                a_matrix = spb * torch.tensor(list(range(batch_size))).view(batch_size, 1) + rowsi
+                for j in range(batch_size):
+                    new_candidate = []
+                    for i in range(self.config['beam_width']):
+                        b = torch.cat((sequences[a_matrix[j, i]], topi[a_matrix[j, i], s, colsi[j, i]].to('cpu').unsqueeze(0)))
+                        if EOS_token in b:
+                            c = self.normalized_score(topsv[j, i], b[:b.numpy().tolist().index(EOS_token)].size()[0])
+                        else:
+                            c = topsv[j, i]
+                        d = (hiddens[0][a_matrix[j, i]].unsqueeze(0), hiddens[1][a_matrix[j, i]].unsqueeze(0))
+                        if s < self.config['span_size'] - 1:
+                            new_candidate.append((a_matrix[j, i], b, c, d))
+                        else:
+                            new_candidate.append(BeamHypothesis(b, c, d))
+                    new_candidates.append(new_candidate)
+                print("new time", time.time() - start)
+                start = time.time()
                 for j in range(batch_size):
                     new_candidate = []
                     for i in range(self.config['beam_width']):
@@ -145,6 +163,7 @@ class BeamSearchDecoder(object):
                         else:
                             new_candidate.append(BeamHypothesis(b, c, d))
                     new_candidates.append(new_candidate)
+                print("old time", time.time() - start)
             else:
                 new_candidates_ = []
                 for j in range(batch_size):
