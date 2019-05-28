@@ -119,6 +119,7 @@ class BeamSearchDecoder(object):
                 for i, new_subseq in enumerate(top_indices)]
 
     def search_sequential_batch(self, sequences, topv, topi, scores, hiddens, batch_size):
+        start = time.time()
         spb = sequences.size()[0] / batch_size  # sequences per batch
         new_candidates = []
         for s in range(self.config['span_size']):
@@ -130,7 +131,7 @@ class BeamSearchDecoder(object):
             rowsi = topsi // self.config['beam_width']  # indices of the topk beams
             colsi = topsi.remainder(self.config['beam_width'])
             if s == 0:
-                start = time.time()
+
                 a_matrix = (spb * torch.tensor(list(range(batch_size))).view(batch_size, 1) + rowsi.to('cpu')).numpy()
                 for j in range(batch_size):
                     new_candidate = []
@@ -146,25 +147,7 @@ class BeamSearchDecoder(object):
                         else:
                             new_candidate.append(BeamHypothesis(b, c, d))
                     new_candidates.append(new_candidate)
-                print("new time", time.time() - start)
-                new_candidates = []
-                start = time.time()
-                for j in range(batch_size):
-                    new_candidate = []
-                    for i in range(self.config['beam_width']):
-                        a = spb * j + rowsi[j, i]
-                        b = torch.cat((sequences[a], topi[a, s, colsi[j, i]].to('cpu').unsqueeze(0)))
-                        if EOS_token in b:
-                            c = self.normalized_score(topsv[j, i], b[:b.numpy().tolist().index(EOS_token)].size()[0])
-                        else:
-                            c = topsv[j, i]
-                        d = (hiddens[0][a].unsqueeze(0), hiddens[1][a].unsqueeze(0))
-                        if s < self.config['span_size'] - 1:
-                            new_candidate.append((a, b, c, d))
-                        else:
-                            new_candidate.append(BeamHypothesis(b, c, d))
-                    new_candidates.append(new_candidate)
-                print("old time", time.time() - start)
+
             else:
                 new_candidates_ = []
                 for j in range(batch_size):
@@ -185,6 +168,60 @@ class BeamSearchDecoder(object):
                             new_candidate_.append(BeamHypothesis(b, c, d))
                     new_candidates_.append(new_candidate_)
                 new_candidates = new_candidates_
+        print("new time", time.time() - start)
+        return new_candidates
+
+    def search_sequential_batch2(self, sequences, topv, topi, scores, hiddens, batch_size):
+        start = time.time()
+        spb = sequences.size()[0] / batch_size  # sequences per batch
+        new_candidates = []
+        for s in range(self.config['span_size']):
+            if s == 0:
+                newscores = scores.view(batch_size, -1, 1) + topv[:, s, :].view(batch_size, -1, self.config['beam_width'])
+            else:
+                newscores = torch.cat([nc[2] + topv[nc[0], s, :] for new_candidate in new_candidates for nc in new_candidate])
+            topsv, topsi = newscores.view(batch_size, -1).topk(self.config['beam_width'], 1)
+            rowsi = topsi // self.config['beam_width']  # indices of the topk beams
+            colsi = topsi.remainder(self.config['beam_width'])
+            if s == 0:
+
+                for j in range(batch_size):
+                    new_candidate = []
+                    for i in range(self.config['beam_width']):
+                        a = spb * j + rowsi[j, i]
+                        b = torch.cat((sequences[a], topi[a, s, colsi[j, i]].to('cpu').unsqueeze(0)))
+                        if EOS_token in b:
+                            c = self.normalized_score(topsv[j, i], b[:b.numpy().tolist().index(EOS_token)].size()[0])
+                        else:
+                            c = topsv[j, i]
+                        d = (hiddens[0][a].unsqueeze(0), hiddens[1][a].unsqueeze(0))
+                        if s < self.config['span_size'] - 1:
+                            new_candidate.append((a, b, c, d))
+                        else:
+                            new_candidate.append(BeamHypothesis(b, c, d))
+                    new_candidates.append(new_candidate)
+
+            else:
+                new_candidates_ = []
+                for j in range(batch_size):
+                    new_candidate_ = []
+                    for i in range(self.config['beam_width']):
+                        candidate = new_candidates[j][rowsi[j, i]]
+                        a = candidate[0]
+                        b = torch.cat((candidate[1], topi[a, s, colsi[j, i]].to('cpu').unsqueeze(0)))
+                        if EOS_token in b:
+                            c = self.normalized_score(topsv[j, i],
+                                                      b[:b.numpy().tolist().index(EOS_token)].size()[0])
+                        else:
+                            c = topsv[j, i]
+                        d = candidate[3]
+                        if s < self.config['span_size'] - 1:
+                            new_candidate_.append((a, b, c, d))
+                        else:
+                            new_candidate_.append(BeamHypothesis(b, c, d))
+                    new_candidates_.append(new_candidate_)
+                new_candidates = new_candidates_
+        print("old time", time.time() - start)
         return new_candidates
 
     def decode_batch(self, encoder_outputs, encoder_hidden, start_sequences):
@@ -216,6 +253,10 @@ class BeamSearchDecoder(object):
                                                      (decoder_hidden.transpose(0, 1), decoder_cell.transpose(0, 1)))
                 else:
                     new_hypotheses = self.search_sequential_batch(sequences, topv, topi, scores,
+                                                                  (decoder_hidden.transpose(0, 1),
+                                                                   decoder_cell.transpose(0, 1)),
+                                                                  batch_size)
+                    new_hypotheses = self.search_sequential_batch2(sequences, topv, topi, scores,
                                                                   (decoder_hidden.transpose(0, 1),
                                                                    decoder_cell.transpose(0, 1)),
                                                                   batch_size)
