@@ -149,9 +149,9 @@ class BeamSearchDecoder(object):
                 print("rowsi", rowsi.size())
                 d_matrix_size = d_matrix[0].size()
                 d_matrix = (d_matrix[0].view(d_matrix_size[0] * d_matrix_size[1], d_matrix_size[2], d_matrix_size[3])[
-                                rowsi.view(-1).to(DEVICE)],
+                                rowsi.view(-1).to(DEVICE)].view(d_matrix_size),
                             d_matrix[1].view(d_matrix_size[0] * d_matrix_size[1], d_matrix_size[2], d_matrix_size[3])[
-                                rowsi.view(-1).to(DEVICE)])
+                                rowsi.view(-1).to(DEVICE)].view(d_matrix_size))
         print("new time", time.time() - start)
         return [[BeamHypothesis(b_matrix[j, i], c_matrix[j, i], (d_matrix[0][j, i], d_matrix[1][j, i]))
                  for i in range(self.config['beam_width'])]for j in range(batch_size)]
