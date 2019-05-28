@@ -147,7 +147,7 @@ class BeamSearchDecoder(object):
                 c_matrix = self.normalized_score(topsv, lengths - self.config['span_size'])
                 print("d_matrix", d_matrix[0].size())
                 print("rowsi", rowsi.size())
-                rowsi_size = rowsi_size()
+                rowsi_size = rowsi.size()
                 d_matrix = (torch.gather(d_matrix[0], 1, rowsi.view(rowsi_size[0], rowsi_size[1], 1, 1).to(DEVICE)),
                             torch.gather(d_matrix[1], 1, rowsi.view(rowsi_size[0], rowsi_size[1], 1, 1).to(DEVICE)))
         print("new time", time.time() - start)
