@@ -134,11 +134,11 @@ class BeamSearchDecoder(object):
 
                 a_matrix = (spb * torch.tensor(list(range(batch_size))).view(batch_size, 1) + rowsi)
                 b_matrix = torch.cat((sequences[a_matrix], topi[a_matrix, s, colsi].to('cpu').unsqueeze(2)), 2)
-                a_matrix = a_matrix.numpy()
                 c_matrix = topsv.clone()
                 ended = (b_matrix == EOS_token).sum(dim=2)
                 # c_matrix[ended] = self.normalized_score(topsv[ended], b_matrix[ended][:b_matrix[ended]])
                 d_matrix = (hiddens[0][a_matrix], hiddens[1][a_matrix])
+                a_matrix = a_matrix.numpy()
                 for j in range(batch_size):
                     new_candidate = []
                     for i in range(self.config['beam_width']):
