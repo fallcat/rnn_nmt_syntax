@@ -133,13 +133,12 @@ class BeamSearchDecoder(object):
             if s == 0:
 
                 a_matrix = (spb * torch.tensor(list(range(batch_size))).view(batch_size, 1) + rowsi)
-                print("sequences", sequences.size())
-                print("a_matrix", a_matrix)
-                print("sequences[a_matrix]", sequences[a_matrix].size())
-                print("topi[a_matrix, s, colsi]", topi[a_matrix, s, colsi].size())
                 b_matrix = torch.cat((sequences[a_matrix], topi[a_matrix, s, colsi].to('cpu').unsqueeze(2)), 2)
-                print("b_matrix", b_matrix.size())
                 a_matrix = a_matrix.numpy()
+                c_matrix = topsv.clone()
+                ended = (b_matrix == EOS_token).sum(dim=2)
+                # c_matrix[ended] = self.normalized_score(topsv[ended], b_matrix[ended][:b_matrix[ended]])
+                d_matrix = (hiddens[0][a_matrix], hiddens[1][a_matrix])
                 for j in range(batch_size):
                     new_candidate = []
                     for i in range(self.config['beam_width']):
@@ -148,11 +147,12 @@ class BeamSearchDecoder(object):
                             c = self.normalized_score(topsv[j, i], b_matrix[j, i][:b_matrix[j, i].numpy().tolist().index(EOS_token)].size()[0])
                         else:
                             c = topsv[j, i]
-                        d = (hiddens[0][a_matrix[j, i]].unsqueeze(0), hiddens[1][a_matrix[j, i]].unsqueeze(0))
+                        # d = (hiddens[0][a_matrix[j, i]].unsqueeze(0), hiddens[1][a_matrix[j, i]].unsqueeze(0))
                         if s < self.config['span_size'] - 1:
-                            new_candidate.append((a_matrix[j, i], b_matrix[j, i], c, d))
+                            new_candidate.append((a_matrix[j, i], b_matrix[j, i], c,
+                                                  (d_matrix[0][j, i], d_matrix[1][j, i])))
                         else:
-                            new_candidate.append(BeamHypothesis(b, c, d))
+                            new_candidate.append(BeamHypothesis(b_matrix[j, i], c, (d_matrix[0][j, i], d_matrix[1][j, i])))
                     new_candidates.append(new_candidate)
 
             else:
