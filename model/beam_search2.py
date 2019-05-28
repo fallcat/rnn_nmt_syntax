@@ -124,15 +124,15 @@ class BeamSearchDecoder(object):
         new_candidates = []
         for s in range(self.config['span_size']):
             if s == 0:
-                newscores = scores.view(-1, 1) + topv[:, s, :].view(-1, self.config['beam_width'])
+                newscores = scores.view(-1, 1).to('cpu') + topv[:, s, :].view(-1, self.config['beam_width']).to('cpu')
             else:
                 # newscores = torch.cat([nc[2] + topv[nc[0], s, :] for new_candidate in new_candidates for nc in new_candidate])
                 print("c_matrix", c_matrix.size())
                 print("a_matrix", a_matrix.size())
-                newscores = c_matrix.view(-1, 1) + topv[a_matrix.view(-1), s, :]
+                newscores = c_matrix.view(-1, 1) + topv[a_matrix.view(-1), s, :].to('cpu')
             topsv, topsi = newscores.view(batch_size, -1).topk(self.config['beam_width'], 1)
-            rowsi = (topsi // self.config['beam_width']).to('cpu')  # indices of the topk beams
-            colsi = (topsi.remainder(self.config['beam_width'])).to('cpu')
+            rowsi = (topsi // self.config['beam_width']) # indices of the topk beams
+            colsi = (topsi.remainder(self.config['beam_width']))
             if s == 0:
 
                 a_matrix = (spb * torch.tensor(list(range(batch_size))).view(batch_size, 1) + rowsi)  # row numbers in the original batch
