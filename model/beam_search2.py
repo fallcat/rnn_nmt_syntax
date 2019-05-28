@@ -136,7 +136,7 @@ class BeamSearchDecoder(object):
                 b_matrix = torch.cat((sequences[a_matrix], topi[a_matrix, s, colsi].to('cpu').unsqueeze(2)), 2)
                 c_matrix = topsv.clone()
                 ended = (b_matrix == EOS_token).sum(dim=2)
-                lengths = c_matrix.new_full(b_matrix.size()[2])
+                lengths = torch.full_like(c_matrix, b_matrix.size()[2])
                 print("b_matrix[ended]", b_matrix[ended])
                 lengths[ended] = b_matrix[ended]
                 # c_matrix[ended] = self.normalized_score(topsv[ended], b_matrix[ended][:b_matrix[ended]])
