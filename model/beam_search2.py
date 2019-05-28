@@ -138,8 +138,6 @@ class BeamSearchDecoder(object):
                 c_matrix = self.normalized_score(topsv.to('cpu'), lengths - self.config['span_size'])  # new scores
                 d_matrix = (hiddens[0][a_matrix], hiddens[1][a_matrix])  # hidden states and cell states copied over
             else:
-                print("a_matrix", a_matrix.size())
-                print("a_matrix[rowsi]", torch.gather(a_matrix, 1, rowsi).size())
                 a_matrix = torch.gather(a_matrix, 1, rowsi)
                 b_matrix = torch.cat((b_matrix, topi[a_matrix, s, colsi].to('cpu').unsqueeze(2)), 2)
                 b_matrix_list = b_matrix.numpy().tolist()
