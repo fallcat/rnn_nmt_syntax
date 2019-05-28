@@ -132,13 +132,14 @@ class BeamSearchDecoder(object):
             colsi = (topsi.remainder(self.config['beam_width'])).to('cpu')
             if s == 0:
 
-                a_matrix = (spb * torch.tensor(list(range(batch_size))).view(batch_size, 1) + rowsi).numpy()
+                a_matrix = (spb * torch.tensor(list(range(batch_size))).view(batch_size, 1) + rowsi)
                 print("sequences", sequences.size())
                 print("a_matrix", a_matrix)
                 print("sequences[a_matrix]", sequences[a_matrix].size())
                 print("topi[a_matrix, s, colsi]", topi[a_matrix, s, colsi].size())
                 b_matrix = torch.cat((sequences[a_matrix], topi[a_matrix, s, colsi]))
                 print("b_matrix", b_matrix.size())
+                a_matrix = a_matrix.numpy()
                 for j in range(batch_size):
                     new_candidate = []
                     for i in range(self.config['beam_width']):
