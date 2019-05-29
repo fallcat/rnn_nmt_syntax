@@ -155,6 +155,7 @@ class BeamSearchDecoder(object):
             print("a_matrix[0, 0]", a_matrix[0, 0])
             print("b_matrix[0, 0]", b_matrix[0, 0])
             print("c_matrix[0, 0]", c_matrix[0, 0])
+            print("d_matrix[0, 0]", d_matrix[0][0, 0])
         # print("new time", time.time() - start)
         return [[BeamHypothesis(b_matrix[j, i], c_matrix[j, i], (d_matrix[0][j, i].unsqueeze(0), d_matrix[1][j, i].unsqueeze(0)))
                  for i in range(self.config['beam_width'])]for j in range(batch_size)]
@@ -186,6 +187,7 @@ class BeamSearchDecoder(object):
                             print("a", a)
                             print("b", b)
                             print("c", c)
+                            print("d", d[0])
                         if s < self.config['span_size'] - 1:
                             new_candidate.append((a, b, c, d))
                         else:
@@ -210,6 +212,7 @@ class BeamSearchDecoder(object):
                             print("a", a)
                             print("b", b)
                             print("c", c)
+                            print("d", d[0])
                         if s < self.config['span_size'] - 1:
                             new_candidate_.append((a, b, c, d))
                         else:
