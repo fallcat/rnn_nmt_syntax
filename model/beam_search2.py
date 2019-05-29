@@ -143,7 +143,8 @@ class BeamSearchDecoder(object):
                 # b_matrix = torch.cat((b_matrix.view(b_matrix_size[0] * b_matrix_size[1], -1)[rowsi.view(-1)]
                 #                       .view(b_matrix_size),
                 #                       topi[a_matrix, s, colsi].to('cpu').unsqueeze(2)), 2)
-                indices = torch.arange(0, b_matrix_size[0]).expand(b_matrix_size[1], b_matrix_size[0]).transpose(0, 1).view(-1)
+                indices = torch.arange(0, b_matrix_size[0]).expand(b_matrix_size[1], b_matrix_size[0])\
+                    .transpose(0, 1).contiguous().view(-1)
                 b_matrix = torch.cat((b_matrix[indices, rowsi.view(-1)], topi[a_matrix, s, colsi].to('cpu').unsqueeze(2)), 2)
                 b_matrix_list = b_matrix.numpy().tolist()
                 lengths = torch.tensor([[len(col) if EOS_token not in col else col.index(EOS_token)
