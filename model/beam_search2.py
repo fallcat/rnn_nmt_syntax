@@ -173,9 +173,9 @@ class BeamSearchDecoder(object):
                         a = spb * j + rowsi[j, i]
                         b = torch.cat((sequences[a], topi[a, s, colsi[j, i]].to('cpu').unsqueeze(0)))
                         if EOS_token in b:
-                            c = self.normalized_score(topsv[j, i], b[:b.numpy().tolist().index(EOS_token)].size()[0])
+                            c = self.normalized_score(topsv[j, i], b[:b.numpy().tolist().index(EOS_token)].size()[0] - self.config['span_size'])
                         else:
-                            c = topsv[j, i]
+                            c = self.normalized_score(topsv[j, i], b.size()[0] - self.config['span_size'])
                         d = (hiddens[0][a].unsqueeze(0), hiddens[1][a].unsqueeze(0))
                         if s < self.config['span_size'] - 1:
                             new_candidate.append((a, b, c, d))
@@ -193,9 +193,9 @@ class BeamSearchDecoder(object):
                         b = torch.cat((candidate[1], topi[a, s, colsi[j, i]].to('cpu').unsqueeze(0)))
                         if EOS_token in b:
                             c = self.normalized_score(topsv[j, i],
-                                                      b[:b.numpy().tolist().index(EOS_token)].size()[0])
+                                                      b[:b.numpy().tolist().index(EOS_token)].size()[0] - self.config['span_size'])
                         else:
-                            c = topsv[j, i]
+                            c = self.normalized_score(topsv[j, i], b.size()[0] - self.config['span_size'])
                         d = candidate[3]
                         if s < self.config['span_size'] - 1:
                             new_candidate_.append((a, b, c, d))
