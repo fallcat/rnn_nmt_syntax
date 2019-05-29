@@ -130,8 +130,8 @@ class BeamSearchDecoder(object):
                 b_matrix_list = b_matrix_.view(batch_size * self.config['beam_width'], self.config['beam_width'], -1).numpy().tolist()
                 lengths = torch.tensor([[len(col) if EOS_token not in col else col.index(EOS_token)
                                          for col in row] for row in b_matrix_list], dtype=torch.float32)
-                print("newscores", newscores.size())
-                print("lengths", lengths.size())
+                # print("newscores", newscores.size())
+                # print("lengths", lengths.size())
                 newscores = self.normalized_score(newscores, lengths - self.config['span_size'])
 
             topsv, topsi = newscores.view(batch_size, -1).topk(self.config['beam_width'], 1)
