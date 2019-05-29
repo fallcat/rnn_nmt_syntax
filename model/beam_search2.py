@@ -264,6 +264,10 @@ class BeamSearchDecoder(object):
                                                                   (decoder_hidden.transpose(0, 1),
                                                                    decoder_cell.transpose(0, 1)),
                                                                   batch_size)
+                    new_hypotheses = self.search_sequential_batch2(sequences, topv, topi, scores,
+                                                                  (decoder_hidden.transpose(0, 1),
+                                                                   decoder_cell.transpose(0, 1)),
+                                                                  batch_size)
                 for i, new_hypothesis in enumerate(new_hypotheses):
                     beams[i].hypotheses = new_hypothesis
 
