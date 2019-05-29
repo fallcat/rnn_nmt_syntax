@@ -254,12 +254,22 @@ class BeamSearchDecoder(object):
                                                                   (decoder_hidden.transpose(0, 1),
                                                                    decoder_cell.transpose(0, 1)),
                                                                   batch_size)
-                    # print("new_hypotheses new", new_hypotheses[0][1].sequence)
-                    # new_hypotheses = self.search_sequential_batch2(sequences, topv, topi, scores,
-                    #                                               (decoder_hidden.transpose(0, 1),
-                    #                                                decoder_cell.transpose(0, 1)),
-                    #                                               batch_size)
-                    # print("new_hypotheses old", new_hypotheses[0][1].sequence)
+                    print("new_hypotheses new", new_hypotheses[0][1].sequence)
+                    print("new_hypotheses new", new_hypotheses[1][1].sequence)
+                    print("new_hypotheses new", max(new_hypotheses[0], key=lambda h: h.score))
+                    print("new_hypotheses new", max(new_hypotheses[1], key=lambda h: h.score))
+                    print("new_hypotheses new", max(new_hypotheses[2], key=lambda h: h.score))
+                    print("new_hypotheses new", max(new_hypotheses[3], key=lambda h: h.score))
+                    new_hypotheses = self.search_sequential_batch2(sequences, topv, topi, scores,
+                                                                  (decoder_hidden.transpose(0, 1),
+                                                                   decoder_cell.transpose(0, 1)),
+                                                                  batch_size)
+                    print("new_hypotheses old", new_hypotheses[0][1].sequence)
+                    print("new_hypotheses old", new_hypotheses[1][1].sequence)
+                    print("new_hypotheses old", max(new_hypotheses[0], key=lambda h: h.score))
+                    print("new_hypotheses old", max(new_hypotheses[1], key=lambda h: h.score))
+                    print("new_hypotheses old", max(new_hypotheses[2], key=lambda h: h.score))
+                    print("new_hypotheses old", max(new_hypotheses[3], key=lambda h: h.score))
                 for i, new_hypothesis in enumerate(new_hypotheses):
                     beams[i].hypotheses = new_hypothesis
 
