@@ -119,7 +119,6 @@ class BeamSearchDecoder(object):
                 for i, new_subseq in enumerate(top_indices)]
 
     def search_sequential_batch(self, sequences, topv, topi, scores, hiddens, batch_size):
-        # start = time.time()
         spb = sequences.size()[0] / batch_size  # sequences per batch
         for s in range(self.config['span_size']):
             if s == 0:
@@ -140,16 +139,8 @@ class BeamSearchDecoder(object):
             else:
                 a_matrix = torch.gather(a_matrix, 1, rowsi)
                 b_matrix_size = b_matrix.size()
-                # b_matrix = torch.cat((b_matrix.view(b_matrix_size[0] * b_matrix_size[1], -1)[rowsi.view(-1)]
-                #                       .view(b_matrix_size),
-                #                       topi[a_matrix, s, colsi].to('cpu').unsqueeze(2)), 2)
                 indices = torch.arange(0, b_matrix_size[0]).expand(b_matrix_size[1], b_matrix_size[0])\
                     .transpose(0, 1).contiguous().view(-1)
-                # print("indices", indices.size())
-                # print(indices)
-                # print("rowsi", rowsi.size())
-                # print("b_matrix", b_matrix.size())
-                # print("b_matrix[indices, rowsi.view(-1)]", b_matrix[indices, rowsi.view(-1)].size())
                 b_matrix = torch.cat((b_matrix[indices, rowsi.view(-1)].view(b_matrix_size), topi[a_matrix, s, colsi].to('cpu').unsqueeze(2)), 2)
                 b_matrix_list = b_matrix.numpy().tolist()
                 lengths = torch.tensor([[len(col) if EOS_token not in col else col.index(EOS_token)
@@ -158,75 +149,8 @@ class BeamSearchDecoder(object):
                 d_matrix_size = d_matrix[0].size()
                 d_matrix = (d_matrix[0][indices, rowsi.view(-1)].view(d_matrix_size),
                             d_matrix[1][indices, rowsi.view(-1)].view(d_matrix_size))
-            # print("a_matrix[0, 0]", a_matrix[1, 1])
-            # print("b_matrix[0, 0]", b_matrix[1, 1])
-            # print("c_matrix[0, 0]", c_matrix[1, 1])
-            # print("d_matrix[0, 0]", d_matrix[0][1, 1])
-        # print("new time", time.time() - start)
         return [[BeamHypothesis(b_matrix[j, i], c_matrix[j, i], (d_matrix[0][j, i].unsqueeze(0), d_matrix[1][j, i].unsqueeze(0)))
                  for i in range(self.config['beam_width'])]for j in range(batch_size)]
-
-    def search_sequential_batch2(self, sequences, topv, topi, scores, hiddens, batch_size):
-        # start = time.time()
-        spb = sequences.size()[0] / batch_size  # sequences per batch
-        new_candidates = []
-        for s in range(self.config['span_size']):
-            if s == 0:
-                newscores = scores.view(batch_size, -1, 1) + topv[:, s, :].view(batch_size, -1, self.config['beam_width'])
-            else:
-                newscores = torch.cat([nc[2] + topv[nc[0], s, :] for new_candidate in new_candidates for nc in new_candidate])
-            topsv, topsi = newscores.view(batch_size, -1).topk(self.config['beam_width'], 1)
-            rowsi = topsi // self.config['beam_width']  # indices of the topk beams
-            colsi = topsi.remainder(self.config['beam_width'])
-            if s == 0:
-                for j in range(batch_size):
-                    new_candidate = []
-                    for i in range(self.config['beam_width']):
-                        a = spb * j + rowsi[j, i]
-                        b = torch.cat((sequences[a], topi[a, s, colsi[j, i]].to('cpu').unsqueeze(0)))
-                        if EOS_token in b:
-                            c = self.normalized_score(topsv[j, i], b[:b.numpy().tolist().index(EOS_token)].size()[0] - self.config['span_size'])
-                        else:
-                            c = self.normalized_score(topsv[j, i], b.size()[0] - self.config['span_size'])
-                        d = (hiddens[0][a].unsqueeze(0), hiddens[1][a].unsqueeze(0))
-                        # if i == 1 and j == 1:
-                            # print("a", a)
-                            # print("b", b)
-                            # print("c", c)
-                            # print("d", d[0])
-                        if s < self.config['span_size'] - 1:
-                            new_candidate.append((a, b, c, d))
-                        else:
-                            new_candidate.append(BeamHypothesis(b, c, d))
-                    new_candidates.append(new_candidate)
-
-            else:
-                new_candidates_ = []
-                for j in range(batch_size):
-                    new_candidate_ = []
-                    for i in range(self.config['beam_width']):
-                        candidate = new_candidates[j][rowsi[j, i]]
-                        a = candidate[0]
-                        b = torch.cat((candidate[1], topi[a, s, colsi[j, i]].to('cpu').unsqueeze(0)))
-                        if EOS_token in b:
-                            c = self.normalized_score(topsv[j, i],
-                                                      b[:b.numpy().tolist().index(EOS_token)].size()[0] - self.config['span_size'])
-                        else:
-                            c = self.normalized_score(topsv[j, i], b.size()[0] - self.config['span_size'])
-                        d = candidate[3]
-                        # if i == 1 and j == 1:
-                            # print("a", a)
-                            # print("b", b)
-                            # print("c", c)
-                            # print("d", d[0])
-                        if s < self.config['span_size'] - 1:
-                            new_candidate_.append((a, b, c, d))
-                        else:
-                            new_candidate_.append(BeamHypothesis(b, c, d))
-                    new_candidates_.append(new_candidate_)
-                new_candidates = new_candidates_
-        # print("old time", time.time() - start)
-        return new_candidates
 
     def decode_batch(self, encoder_outputs, encoder_hidden, start_sequences):
         self.decoder.eval()
@@ -260,22 +184,6 @@ class BeamSearchDecoder(object):
                                                                   (decoder_hidden.transpose(0, 1),
                                                                    decoder_cell.transpose(0, 1)),
                                                                   batch_size)
-                    # print("new_hypotheses new", new_hypotheses[0][1].sequence)
-                    # print("new_hypotheses new", new_hypotheses[1][1].sequence)
-                    # print("new_hypotheses new", max(new_hypotheses[0], key=lambda h: h.score).sequence)
-                    # print("new_hypotheses new", max(new_hypotheses[1], key=lambda h: h.score).sequence)
-                    # print("new_hypotheses new", max(new_hypotheses[2], key=lambda h: h.score).sequence)
-                    # print("new_hypotheses new", max(new_hypotheses[3], key=lambda h: h.score).sequence)
-                    # new_hypotheses = self.search_sequential_batch2(sequences, topv, topi, scores,
-                    #                                               (decoder_hidden.transpose(0, 1),
-                    #                                                decoder_cell.transpose(0, 1)),
-                    #                                               batch_size)
-                    # print("new_hypotheses old", new_hypotheses[0][1].sequence)
-                    # print("new_hypotheses old", new_hypotheses[1][1].sequence)
-                    # print("new_hypotheses old", max(new_hypotheses[0], key=lambda h: h.score).sequence)
-                    # print("new_hypotheses old", max(new_hypotheses[1], key=lambda h: h.score).sequence)
-                    # print("new_hypotheses old", max(new_hypotheses[2], key=lambda h: h.score).sequence)
-                    # print("new_hypotheses old", max(new_hypotheses[3], key=lambda h: h.score).sequence)
                 for i, new_hypothesis in enumerate(new_hypotheses):
                     beams[i].hypotheses = new_hypothesis
 
