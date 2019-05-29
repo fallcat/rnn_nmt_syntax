@@ -125,7 +125,9 @@ class BeamSearchDecoder(object):
                 newscores = scores.view(-1, 1).to('cpu') + topv[:, s, :].view(-1, self.config['beam_width']).to('cpu')
             else:
                 newscores = c_matrix.view(-1, 1) + topv[a_matrix.view(-1), s, :].to('cpu')
-                b_matrix_list = b_matrix.numpy().tolist()
+                b_matrix_ = torch.cat((b_matrix.unsqueeze(2).expand(batch_size, self.config['beam_width'], self.config['beam_width'], b_matrix.size()[2]),
+                                       topi[a_matrix.view(-1), s, :].view(batch_size, self.config['beam_width'], -1, 1)), 3)
+                b_matrix_list = b_matrix.view(batch_size * self.config['beam_width'], self.config['beam_width'], -1).numpy().tolist()
                 lengths = torch.tensor([[len(col) if EOS_token not in col else col.index(EOS_token)
                                          for col in row] for row in b_matrix_list], dtype=torch.float32)
                 print("newscores", newscores.size())
