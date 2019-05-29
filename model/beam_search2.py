@@ -259,7 +259,7 @@ class BeamSearchDecoder(object):
                                                                   (decoder_hidden.transpose(0, 1),
                                                                    decoder_cell.transpose(0, 1)),
                                                                   batch_size)
-                    print("new_hypotheses old", new_hypotheses[0]
+                    print("new_hypotheses old", new_hypotheses[0])
                 for i, new_hypothesis in enumerate(new_hypotheses):
                     beams[i].hypotheses = new_hypothesis
 
