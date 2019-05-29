@@ -89,12 +89,15 @@ class Evaluator(object):
         ordered_outputs = []
         for batch in batches:
             beams = self.generate_batch_beam(batch['inputs'], batch['input_lens'])
+            print("inputs", [self.dataloader.dataset.index2word[w.item()] for w in batch['inputs'][0]])
             for i, example_id in enumerate(batch['example_ids']):
                 outputs = []
                 beam = beams[i]
                 sequence = beam.best_hypothesis.sequence[self.config['span_size']:]
                 decoded = [self.dataloader.dataset.index2word[w.item()] for w in sequence]
                 outputs.append(decoded)
+                if i == 0:
+                    print("decoded", decoded)
                 ordered_outputs.append((example_id, outputs))
         print("Evaluation time for {} sentences is {} for checkpoint {}".format(len(self.dataloader.dataset.pairs),
                                                                                 time.time() - start,
