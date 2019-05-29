@@ -137,6 +137,18 @@ class BeamSearchDecoder(object):
                                          for col in row] for row in b_matrix_list], dtype=torch.float32)
                 c_matrix = self.normalized_score(topsv.to('cpu'), lengths - self.config['span_size'])  # new scores
                 d_matrix = (hiddens[0][a_matrix], hiddens[1][a_matrix])  # hidden states and cell states copied over
+                print("i = 0, j = 0")
+                print("a_matrix", a_matrix[0,0])
+                print("b_matrix", b_matrix[0,0])
+                print("c_matrix", c_matrix[0, 0])
+                print("d_matrix", d_matrix[0][0, 0])
+                print("d_matrix", d_matrix[0].size())
+                print("i = -1, j = -1")
+                print("a_matrix", a_matrix[-1, -1])
+                print("b_matrix", b_matrix[-1, -1])
+                print("c_matrix", c_matrix[-1, -1])
+                print("d_matrix", d_matrix[0][-1, -1])
+                print("d_matrix", d_matrix[0].size())
             else:
                 a_matrix = torch.gather(a_matrix, 1, rowsi)
                 b_matrix = torch.cat((b_matrix, topi[a_matrix, s, colsi].to('cpu').unsqueeze(2)), 2)
@@ -177,6 +189,20 @@ class BeamSearchDecoder(object):
                         else:
                             c = self.normalized_score(topsv[j, i], b.size()[0] - self.config['span_size'])
                         d = (hiddens[0][a].unsqueeze(0), hiddens[1][a].unsqueeze(0))
+                        if i == 0 and j == 0:
+                            print("i = 0, j = 0")
+                            print("a", a)
+                            print("b", b)
+                            print("c", c)
+                            print("d", d[0])
+                            print("d", d[0].size())
+                        if i == batch_size - 1 and j == self.config['beam_width'] - 1:
+                            print("i = -1, j = -1")
+                            print("a", a)
+                            print("b", b)
+                            print("c", c)
+                            print("d", d[0])
+                            print("d", d[0].size())
                         if s < self.config['span_size'] - 1:
                             new_candidate.append((a, b, c, d))
                         else:
