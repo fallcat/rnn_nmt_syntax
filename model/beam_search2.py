@@ -156,10 +156,8 @@ class BeamSearchDecoder(object):
                                          for col in row] for row in b_matrix_list], dtype=torch.float32)
                 c_matrix = self.normalized_score(topsv, lengths - self.config['span_size'])
                 d_matrix_size = d_matrix[0].size()
-                d_matrix = (d_matrix[0].view(d_matrix_size[0] * d_matrix_size[1], d_matrix_size[2], d_matrix_size[3])[
-                                rowsi.view(-1).to(DEVICE)].view(d_matrix_size),
-                            d_matrix[1].view(d_matrix_size[0] * d_matrix_size[1], d_matrix_size[2], d_matrix_size[3])[
-                                rowsi.view(-1).to(DEVICE)].view(d_matrix_size))
+                d_matrix = (d_matrix[0][indices, rowsi.view(-1)].view(d_matrix_size),
+                            d_matrix[1][indices, rowsi.view(-1)].view(d_matrix_size))
             print("a_matrix[0, 0]", a_matrix[1, 1])
             print("b_matrix[0, 0]", b_matrix[1, 1])
             print("c_matrix[0, 0]", c_matrix[1, 1])
