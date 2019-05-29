@@ -196,7 +196,7 @@ class BeamSearchDecoder(object):
                             print("c", c)
                             print("d", d[0])
                             print("d", d[0].size())
-                        if i == batch_size - 1 and j == self.config['beam_width'] - 1:
+                        if j == batch_size - 1 and i == self.config['beam_width'] - 1:
                             print("i = -1, j = -1")
                             print("a", a)
                             print("b", b)
