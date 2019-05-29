@@ -152,6 +152,9 @@ class BeamSearchDecoder(object):
                                 rowsi.view(-1).to(DEVICE)].view(d_matrix_size),
                             d_matrix[1].view(d_matrix_size[0] * d_matrix_size[1], d_matrix_size[2], d_matrix_size[3])[
                                 rowsi.view(-1).to(DEVICE)].view(d_matrix_size))
+            print("a_matrix[0, 0]", a_matrix[0, 0])
+            print("b_matrix[0, 0]", b_matrix[0, 0])
+            print("c_matrix[0, 0]", c_matrix[0, 0])
         # print("new time", time.time() - start)
         return [[BeamHypothesis(b_matrix[j, i], c_matrix[j, i], (d_matrix[0][j, i].unsqueeze(0), d_matrix[1][j, i].unsqueeze(0)))
                  for i in range(self.config['beam_width'])]for j in range(batch_size)]
@@ -169,7 +172,6 @@ class BeamSearchDecoder(object):
             rowsi = topsi // self.config['beam_width']  # indices of the topk beams
             colsi = topsi.remainder(self.config['beam_width'])
             if s == 0:
-
                 for j in range(batch_size):
                     new_candidate = []
                     for i in range(self.config['beam_width']):
@@ -180,6 +182,10 @@ class BeamSearchDecoder(object):
                         else:
                             c = self.normalized_score(topsv[j, i], b.size()[0] - self.config['span_size'])
                         d = (hiddens[0][a].unsqueeze(0), hiddens[1][a].unsqueeze(0))
+                        if i == 0 and j == 0:
+                            print("a", a)
+                            print("b", b)
+                            print("c", c)
                         if s < self.config['span_size'] - 1:
                             new_candidate.append((a, b, c, d))
                         else:
@@ -200,6 +206,10 @@ class BeamSearchDecoder(object):
                         else:
                             c = self.normalized_score(topsv[j, i], b.size()[0] - self.config['span_size'])
                         d = candidate[3]
+                        if i == 0 and j == 0:
+                            print("a", a)
+                            print("b", b)
+                            print("c", c)
                         if s < self.config['span_size'] - 1:
                             new_candidate_.append((a, b, c, d))
                         else:
