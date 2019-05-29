@@ -96,13 +96,13 @@ class Evaluator(object):
                 sequence = beam.best_hypothesis.sequence[self.config['span_size']:]
                 decoded = [self.dataloader.dataset.index2word[w.item()] for w in sequence]
                 outputs.append(decoded)
-                if i == 0:
-                    print("example_id", example_id)
-                    print("decoded", decoded)
-                if example_id == 789:
-                    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                    print("example_id", example_id)
-                    print("decoded", decoded)
+                # if i == 0:
+                #     print("example_id", example_id)
+                #     print("decoded", decoded)
+                # if example_id == 789:
+                #     print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                #     print("example_id", example_id)
+                #     print("decoded", decoded)
                 ordered_outputs.append((example_id, outputs))
         print("Evaluation time for {} sentences is {} for checkpoint {}".format(len(self.dataloader.dataset.pairs),
                                                                                 time.time() - start,
