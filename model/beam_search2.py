@@ -152,10 +152,10 @@ class BeamSearchDecoder(object):
                                 rowsi.view(-1).to(DEVICE)].view(d_matrix_size),
                             d_matrix[1].view(d_matrix_size[0] * d_matrix_size[1], d_matrix_size[2], d_matrix_size[3])[
                                 rowsi.view(-1).to(DEVICE)].view(d_matrix_size))
-            print("a_matrix[0, 0]", a_matrix[0, 0])
-            print("b_matrix[0, 0]", b_matrix[0, 0])
-            print("c_matrix[0, 0]", c_matrix[0, 0])
-            print("d_matrix[0, 0]", d_matrix[0][0, 0])
+            print("a_matrix[0, 0]", a_matrix[0, 1])
+            print("b_matrix[0, 0]", b_matrix[0, 1])
+            print("c_matrix[0, 0]", c_matrix[0, 1])
+            print("d_matrix[0, 0]", d_matrix[0][0, 1])
         # print("new time", time.time() - start)
         return [[BeamHypothesis(b_matrix[j, i], c_matrix[j, i], (d_matrix[0][j, i].unsqueeze(0), d_matrix[1][j, i].unsqueeze(0)))
                  for i in range(self.config['beam_width'])]for j in range(batch_size)]
@@ -183,7 +183,7 @@ class BeamSearchDecoder(object):
                         else:
                             c = self.normalized_score(topsv[j, i], b.size()[0] - self.config['span_size'])
                         d = (hiddens[0][a].unsqueeze(0), hiddens[1][a].unsqueeze(0))
-                        if i == 0 and j == 0:
+                        if i == 1 and j == 0:
                             print("a", a)
                             print("b", b)
                             print("c", c)
@@ -208,7 +208,7 @@ class BeamSearchDecoder(object):
                         else:
                             c = self.normalized_score(topsv[j, i], b.size()[0] - self.config['span_size'])
                         d = candidate[3]
-                        if i == 0 and j == 0:
+                        if i == 1 and j == 0:
                             print("a", a)
                             print("b", b)
                             print("c", c)
@@ -254,12 +254,12 @@ class BeamSearchDecoder(object):
                                                                   (decoder_hidden.transpose(0, 1),
                                                                    decoder_cell.transpose(0, 1)),
                                                                   batch_size)
-                    print("new_hypotheses new", new_hypotheses[0])
+                    print("new_hypotheses new", new_hypotheses[0][1].sequence)
                     new_hypotheses = self.search_sequential_batch2(sequences, topv, topi, scores,
                                                                   (decoder_hidden.transpose(0, 1),
                                                                    decoder_cell.transpose(0, 1)),
                                                                   batch_size)
-                    print("new_hypotheses old", new_hypotheses[0])
+                    print("new_hypotheses old", new_hypotheses[0][1].sequence)
                 for i, new_hypothesis in enumerate(new_hypotheses):
                     beams[i].hypotheses = new_hypothesis
 
