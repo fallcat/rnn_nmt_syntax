@@ -53,7 +53,7 @@ class Trainer(object):
         else:
             self.lr_scheduler = optim.lr_scheduler.LambdaLR(
                 self.optimizer,
-                config['lr_decay']
+                [lambda step: step - config['lr_decay']]
             )
         self.criterion = Parallel(
             LabelSmoothingLoss(
@@ -138,7 +138,7 @@ class Trainer(object):
         self.optimizer.step()
         self.lr_scheduler.step()
         self.lr_scheduler.zero_grad()
-        return self.lr_scheduler.get_lr()
+        return self.lr_scheduler.get_lr()[0]
 
     def train_epoch(self, epoch):
         self.encoder.train()
