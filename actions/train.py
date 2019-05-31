@@ -178,14 +178,15 @@ class Trainer(object):
             # print("now in batch", i)
 
             self.step = i
-            if self.experiment is not None:
-                self.experiment.set_step(self.experiment.curr_step + 1)
+
             # loss = self.train_batch3(batch)
             try:
                 # print("train now")
                 torch.cuda.empty_cache()
                 loss, total_length = self.train_batch(batch)
                 did_optimize = try_optimize(i, i == len_batches)
+                if self.experiment is not None and did_optimize:
+                    self.experiment.set_step(self.experiment.curr_step + 1)
                 # GPUtil.showUtilization()
 
                 epoch_loss += loss
