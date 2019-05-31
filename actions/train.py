@@ -138,7 +138,7 @@ class Trainer(object):
         self.optimizer.step()
         self.lr_scheduler.step()
         self.lr_scheduler.zero_grad()
-        return self.lr_scheduler.get_lr()[0]
+        return self.lr_scheduler.get_lr()
 
     def train_epoch(self, epoch):
         self.encoder.train()
