@@ -135,9 +135,9 @@ class Trainer(object):
         return smoothed_nll.item(), torch.sum(batch['target_lens']).item()
 
     def optimize(self):
-        self.optimizer.step()
         self.lr_scheduler.step()
-        self.lr_scheduler.zero_grad()
+        self.optimizer.step()
+        self.optimizer.zero_grad()
         return self.lr_scheduler.get_lr()[0]
 
     def train_epoch(self, epoch):
