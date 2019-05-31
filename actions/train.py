@@ -53,7 +53,7 @@ class Trainer(object):
         else:
             self.lr_scheduler = optim.lr_scheduler.LambdaLR(
                 self.optimizer,
-                [lambda step: step - config['lr_decay']]
+                [lambda step: 1 - step * config['lr_decay']]
             )
         self.criterion = Parallel(
             LabelSmoothingLoss(
