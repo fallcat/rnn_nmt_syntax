@@ -75,7 +75,8 @@ def main():
         'average_checkpoints': args.average_checkpoints,
         'start_epoch': args.start_epoch,
         'end_epoch': args.end_epoch,
-        'restore': args.restore
+        'restore': args.restore,
+        'accumulate_steps': args.accumulate_steps
     }
 
     # config dataloader

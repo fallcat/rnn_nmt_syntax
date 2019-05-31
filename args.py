@@ -75,7 +75,7 @@ def add_train_args(parser):
                        help='Decay the learning rate at which epoch')
 
     group.add_argument('--lr-scheduler-type', action='store', type=str, default="ExponentialLR",
-                       choices=["ExponentialLR", "MultiStepLR", "ReduceLROnPlateau"],
+                       choices=["ExponentialLR", "MultiStepLR", "ReduceLROnPlateau", "LambdaLR"],
                        help='Specify which type of lr scheduler to use')
 
     group.add_argument('--teacher-forcing-ratio', action='store', type=float, default=0.5,
@@ -94,6 +94,13 @@ def add_train_args(parser):
         '--new-lr-scheduler',
         action='store_true',
         help='Use a new lr scheduler'
+    )
+
+    group.add_argument(
+        '--accumulate-steps',
+        type=int,
+        default=1,
+        help='How many batches of data to accumulate gradients over'
     )
 
     return group

@@ -45,10 +45,15 @@ class Trainer(object):
                 milestones=[self.config['lr_milestone']],
                 gamma=config['lr_decay']
             )
-        else:
+        elif self.config['lr_scheduler_type'] == "ReduceLROnPlateau":
             self.lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(
                 self.optimizer,
                 'min'
+            )
+        else:
+            self.lr_scheduler = optim.lr_scheduler.LambdaLR(
+                self.optimizer,
+                config['lr_decay']
             )
         self.criterion = Parallel(
             LabelSmoothingLoss(
@@ -82,7 +87,7 @@ class Trainer(object):
         """
 
         # Zero gradients of both optimizers
-        self.optimizer.zero_grad()
+        # self.optimizer.zero_grad()
 
         # Run words through encoder
         # Make sure inputs are all gathered to be the longest length of the input, or else error will occur
@@ -126,8 +131,14 @@ class Trainer(object):
         nn.utils.clip_grad_norm_(self.encoder.parameters(), self.config['clip'])
         nn.utils.clip_grad_norm_(self.decoder.parameters(), self.config['clip'])
         # self.lr_scheduler.step()
-        self.optimizer.step()
+
         return smoothed_nll.item(), torch.sum(batch['target_lens']).item()
+
+    def optimize(self):
+        self.optimizer.step()
+        self.lr_scheduler.step()
+        self.lr_scheduler.zero_grad()
+        return self.lr_scheduler.get_lr()[0]
 
     def train_epoch(self, epoch):
         self.encoder.train()
@@ -148,6 +159,20 @@ class Trainer(object):
         accumulated_loss_n = 0
         # print("begin")
 
+        def try_optimize(i, last=False):
+            # optimize if:
+            #  1) last and remainder
+            #  2) not last and not remainder
+            remainder = bool(i % self.config['accumulate_steps'])
+            if not last ^ remainder:
+                next_lr = self.optimize()
+
+                # learning_rate.update(next_lr)
+                self.experiment.log_metric('learning_rate', next_lr)
+                return True
+
+            return False
+
         # with tqdm_wrap_stdout():
         for i, batch in enumerate(batches, 1):
             # print("now in batch", i)
@@ -160,7 +185,9 @@ class Trainer(object):
                 # print("train now")
                 torch.cuda.empty_cache()
                 loss, total_length = self.train_batch(batch)
+                did_optimize = try_optimize(i, i == len_batches)
                 # GPUtil.showUtilization()
+
                 epoch_loss += loss
                 accumulated_loss += loss
                 accumulated_loss_n += total_length
@@ -213,10 +240,10 @@ class Trainer(object):
             self.train_epoch(epoch)
             if self.config['eval_when_train']:
                 valid_nll = self.evaluate_nll()
-                if self.config['lr_scheduler_type'] == "ReduceLROnPlateau":
-                    self.lr_scheduler.step(valid_nll)
-                else:
-                    self.lr_scheduler.step()
+                # if self.config['lr_scheduler_type'] == "ReduceLROnPlateau":
+                #     self.lr_scheduler.step(valid_nll)
+                # else:
+                #     self.lr_scheduler.step()
 
     def evaluate_nll(self):
         batches = self.dataloader
