@@ -51,9 +51,10 @@ class Trainer(object):
                 'min'
             )
         else:
+            coefficient = config['lr_decay'] * config['accumulate_steps']
             self.lr_scheduler = optim.lr_scheduler.LambdaLR(
                 self.optimizer,
-                [lambda step: 1 - step * config['lr_decay'] * config['accumulate_steps']]
+                [lambda step: 1 - step * coefficient]
             )
         self.criterion = Parallel(
             LabelSmoothingLoss(
