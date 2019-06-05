@@ -156,8 +156,9 @@ class BeamSearchDecoder(object):
         return [[BeamHypothesis(b_matrix[j, i], c_matrix[j, i], (d_matrix[0][j, i].unsqueeze(0), d_matrix[1][j, i].unsqueeze(0)))
                  for i in range(self.config['beam_width'])]for j in range(batch_size)]
 
-    def search_sequential_batch2(self, sequences, topv, topi, scores, hiddens, batch_size):
+    def search_sequential_single(self, sequences, topv, topi, scores, hiddens, batch_size):
         spb = sequences.size()[0] / batch_size  # sequences per batch
+        all_ended = False
         for s in range(self.config['span_size']):
             if s == 0:
                 newscores = scores.view(-1, 1).to('cpu') + topv[:, s, :].view(-1, self.config['beam_width']).to('cpu')
@@ -172,8 +173,14 @@ class BeamSearchDecoder(object):
                 b_matrix_list = b_matrix.numpy().tolist()
                 lengths = torch.tensor([[len(col) if EOS_token not in col else col.index(EOS_token)
                                          for col in row] for row in b_matrix_list], dtype=torch.float32)
-                c_matrix = self.normalized_score(topsv.to('cpu'), lengths - self.config['span_size'])  # new scores
+                c_matrix = topsv
+                need_norm = lengths < b_matrix.size()[-1]
+                if sum(need_norm) == c_matrix.size()[0]:
+                    all_ended = True
+                c_matrix[need_norm] = self.normalized_score(c_matrix[need_norm], lengths[need_norm] - self.config['span_size'])  # new scores
                 d_matrix = (hiddens[0][a_matrix], hiddens[1][a_matrix])  # hidden states and cell states copied over
+                if all_ended:
+                    break
             else:
                 a_matrix = torch.gather(a_matrix, 1, rowsi)
                 b_matrix_size = b_matrix.size()
@@ -183,12 +190,14 @@ class BeamSearchDecoder(object):
                 b_matrix_list = b_matrix.numpy().tolist()
                 lengths = torch.tensor([[len(col) if EOS_token not in col else col.index(EOS_token)
                                          for col in row] for row in b_matrix_list], dtype=torch.float32)
-                c_matrix = self.normalized_score(topsv, lengths - self.config['span_size'])
+                c_matrix = topsv
+                need_norm = lengths < b_matrix.size()[-1]
+                c_matrix[need_norm] = self.normalized_score(c_matrix[need_norm], lengths[need_norm] - self.config['span_size'])
                 d_matrix_size = d_matrix[0].size()
                 d_matrix = (d_matrix[0][indices, rowsi.view(-1)].view(d_matrix_size),
                             d_matrix[1][indices, rowsi.view(-1)].view(d_matrix_size))
         return [[BeamHypothesis(b_matrix[j, i], c_matrix[j, i], (d_matrix[0][j, i].unsqueeze(0), d_matrix[1][j, i].unsqueeze(0)))
-                 for i in range(self.config['beam_width'])]for j in range(batch_size)]
+                 for i in range(self.config['beam_width'])]for j in range(batch_size)], all_ended
 
     def decode_batch(self, encoder_outputs, encoder_hidden, start_sequences):
         self.decoder.eval()
@@ -214,15 +223,16 @@ class BeamSearchDecoder(object):
                                    hiddens[1].transpose(0, 1),
                                    encoder_batch)
                 topv, topi = decoder_output.topk(self.config['beam_width'], dim=2)
-                if self.config['beam_search_all']:
-                    new_hypotheses = self.search_all(sequences, topv, topi, scores,
-                                                     (decoder_hidden.transpose(0, 1), decoder_cell.transpose(0, 1)))
-                else:
-                    new_hypotheses = self.search_sequential_batch(sequences, topv, topi, scores,
-                                                                  (decoder_hidden.transpose(0, 1),
-                                                                   decoder_cell.transpose(0, 1)),
-                                                                  batch_size)
+                # if self.config['beam_search_all']:
+                #     new_hypotheses = self.search_all(sequences, topv, topi, scores,
+                #                                      (decoder_hidden.transpose(0, 1), decoder_cell.transpose(0, 1)))
+                # else:
+                new_hypotheses, all_ended = self.search_sequential_single(sequences, topv, topi, scores,
+                                                              (decoder_hidden.transpose(0, 1),
+                                                               decoder_cell.transpose(0, 1)),
+                                                              batch_size)
                 for i, new_hypothesis in enumerate(new_hypotheses):
                     beams[i].hypotheses = new_hypothesis
-
+                if all_ended:
+                    break
             return beams

@@ -14,7 +14,6 @@ class RNMTPlusEncoderRNN(nn.Module):
         self.num_directions = num_directions
         self.dropout_p = dropout_p
         self.dropout = nn.Dropout(self.dropout_p)
-        self.convert = nn.Linear(2, 1)
 
         self.embedding = nn.Embedding(input_size, hidden_size)
         self.rnn_type = rnn_type
@@ -77,8 +76,6 @@ class RNMTPlusEncoderLayer(nn.Module):
         output, _ = torch.nn.utils.rnn.pad_packed_sequence(output, batch_first=True, total_length=input_length)  # unpack (back to padded)
         output = self.layer_norm(output)
         if self.num_directions == 2:
-            hidden = self.convert(hidden.view(self.num_layers, self.num_directions, batch_size, self.hidden_size)
-                                  .transpose(1, 3)).transpose(1,3).squeeze(1)
             output = self.convert(output.view(batch_size, -1, self.num_directions, self.hidden_size)
                                   .transpose(2, 3)).squeeze(3)
         output = self.dropout(output)
