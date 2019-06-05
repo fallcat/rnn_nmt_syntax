@@ -175,7 +175,7 @@ class BeamSearchDecoder(object):
                                          for col in row] for row in b_matrix_list], dtype=torch.float32)
                 c_matrix = topsv
                 need_norm = lengths < b_matrix.size()[-1]
-                if sum(need_norm) == c_matrix.size()[0]:
+                if torch.sum(need_norm).item() == c_matrix.size()[0]:
                     all_ended = True
                 c_matrix[need_norm] = self.normalized_score(c_matrix[need_norm], lengths[need_norm] - self.config['span_size'])  # new scores
                 d_matrix = (hiddens[0][a_matrix], hiddens[1][a_matrix])  # hidden states and cell states copied over
