@@ -103,6 +103,12 @@ def add_train_args(parser):
         help='How many batches of data to accumulate gradients over'
     )
 
+    group.add_argument(
+        '--reverse',
+        action='store_true',
+        help='Reverse the direction of translation. If true, translate from English; if false, translate to English'
+    )
+
     return group
 
 
