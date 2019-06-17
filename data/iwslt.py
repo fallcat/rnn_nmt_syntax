@@ -3,7 +3,7 @@ from data.text import TextDataset, SOS
 
 class IWSLTDataset(TextDataset):
     """ CLass that encapsulates IWSLT Dataset"""
-    DIR_PATH = "/mnt/nfs/work1/miyyer/wyou/iwslt16/"
+    DIR_PATH = "/mnt/nfs/work1/miyyer/wyou/iwslt/"
     VOCAB_FILE = 'vocab.bpe.32000'
     SPLITS = {
         'valid': 'dev.tok.bpe.32000',
