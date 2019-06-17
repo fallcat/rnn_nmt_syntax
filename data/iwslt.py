@@ -3,12 +3,12 @@ from data.text import TextDataset, SOS
 
 class IWSLTDataset(TextDataset):
     """ CLass that encapsulates IWSLT Dataset"""
-    DIR_PATH = "/mnt/nfs/work1/miyyer/wyou/iwslt16_en_de/"
-    VOCAB_FILE = 'vocab.bpe.37000'
+    DIR_PATH = "/mnt/nfs/work1/miyyer/wyou/iwslt16/"
+    VOCAB_FILE = 'vocab.bpe.32000'
     SPLITS = {
-        'valid': 'dev.tok.bpe.37000',
-        'train': 'train.tok.bpe.37000',
-        'test': 'test.tok.bpe.37000'
+        'valid': 'dev.tok.bpe.32000',
+        'train': 'train.tok.bpe.32000',
+        'test': 'test.tok.bpe.32000'
     }
 
     """
