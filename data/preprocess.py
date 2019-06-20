@@ -19,8 +19,8 @@ from contextlib import ExitStack
 from subword_nmt.apply_bpe import BPE as _BPE
 from tqdm import tqdm
 import pkg_resources
-import spacy
-from spacy.lang.char_classes import ALPHA, HYPHENS
+# import spacy
+# from spacy.lang.char_classes import ALPHA, HYPHENS
 
 import utils.file as file_utils
 from utils import tqdm_wrap_stdout
