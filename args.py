@@ -224,6 +224,21 @@ def add_data_args(parser):
         help='Whether or not filter data by length'
     )
 
+    group.add_argument(
+        '-p',
+        '--preprocess-directory',
+        type=str,
+        default='/mnt/nfs/work1/miyyer/wyou/iwslt',
+        help='Location for the preprocessed data'
+    )
+
+    group.add_argument(
+        '--preprocess-buffer-size',
+        type=int,
+        default=12500,
+        help='Number of lines to preprocess at once'
+    )
+
     return group
 
 

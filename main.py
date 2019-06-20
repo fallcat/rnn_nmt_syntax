@@ -77,7 +77,9 @@ def main():
         'end_epoch': args.end_epoch,
         'restore': args.restore,
         'accumulate_steps': args.accumulate_steps,
-        'reverse': args.reverse
+        'reverse': args.reverse,
+        'preprocess_directory': args.preprocess_directory,
+        'preprocess_buffer_size': args.preprocess_buffer_size
     }
 
     # config dataloader

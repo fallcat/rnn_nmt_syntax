@@ -22,9 +22,8 @@ class TextDataset(Dataset):
     """
     def __init__(self, max_length, span_size, filter, split="train", reverse=False, trim=False):
         self.word2index = {PAD: 0, SOS: 1, EOS: 2, UNK: 3}
-        self.word2count = {}
-        self.index2word = {0: PAD, 1: SOS, 2: EOS, 3: UNK}
-        self.num_words = 4  # Count SOS and EOS and UNK
+        # self.word2count = {}
+        self.index2word = [PAD, SOS, EOS, UNK]
         self.split = split
         self.filter = filter
 
@@ -70,14 +69,17 @@ class TextDataset(Dataset):
         ''' Return the end of summary value '''
         return self.word2index[UNK]
 
+    @property
+    def num_words(self):
+        return len(self.index2word)
+
     def add_word(self, word):
         if word not in self.word2index:
             self.word2index[word] = self.num_words
-            self.word2count[word] = 1
-            self.index2word[self.num_words] = word
-            self.num_words += 1
-        else:
-            self.word2count[word] += 1
+            # self.word2count[word] = 1
+            self.index2word.append(word)
+        # else:
+            # self.word2count[word] += 1
 
     def prepare_data(self):
         self.read_langs()
@@ -116,6 +118,9 @@ class TextDataset(Dataset):
         input_tensor = self.tensor_from_sentence(pair[0])
         target_tensor = self.tensor_from_sentence(pair[1])
         return input_tensor, target_tensor
+
+    def load(self):
+        return self
 
     def collate(self, data, sort=False):
         ''' Collate the data into a batch '''
